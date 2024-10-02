@@ -1,0 +1,78 @@
+/* Layout.css */
+
+/* Asegúrate de que el contenedor ocupe todo el espacio de la pantalla */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+.layout {
+    display: grid;
+    grid-template-areas:
+        "navbar navbar navbar"
+        "left-sidebar main-content right-sidebar";
+    grid-template-columns: 1fr 3fr 1fr; /* 1fr para la izquierda/derecha, 3fr para el centro */
+    grid-template-rows: auto 1fr; /* La fila superior es para la barra de navegación */
+    height: 100vh;
+}
+
+/* Barra de navegación (zona superior) */
+.navbar {
+    grid-area: navbar;
+    background-color: #333;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+    .navbar ul {
+        list-style: none;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+    }
+
+        .navbar ul li {
+            margin: 0 15px;
+        }
+
+            .navbar ul li a {
+                color: white;
+                text-decoration: none;
+            }
+
+/* Zona izquierda */
+.left-sidebar {
+    grid-area: left-sidebar;
+    background-color: #f4f4f4;
+    padding: 20px;
+    border-right: 1px solid #ccc;
+}
+
+/* Zona central (contenedor principal) */
+.main-content {
+    grid-area: main-content;
+    padding: 20px;
+    background-color: #fff;
+}
+
+/* Zona derecha */
+.right-sidebar {
+    grid-area: right-sidebar;
+    background-color: #f4f4f4;
+    padding: 20px;
+    border-left: 1px solid #ccc;
+}
+
+/* Responsividad: cuando la pantalla es más pequeña (por ejemplo, un móvil) */
+@media (max-width: 768px) {
+    .layout {
+        grid-template-areas:
+            "navbar"
+            "main-content"
+            "left-sidebar"
+            "right-sidebar";
+        grid-template-columns: 1fr;
+    }
+}
