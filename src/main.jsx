@@ -10,27 +10,27 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 
 
 // Components imports
-import CreateBook from "./components/CreateBook.jsx";
-import ShowBookList from "./components/ShowBookList.jsx";
-import ShowBookDetails from "./components/ShowBookDetails.jsx";
-import UpdateBookInfo from "./components/UpdateBookInfo.jsx";
+import CreateGame from "./components/CreateGame.jsx";
+import ShowGameList from "./components/ShowGameList.jsx";
+import ShowGameDetails from "./components/ShowGameDetails.jsx";
+import UpdateGameInfo from "./components/UpdateGameInfo.jsx";
 
 import Layout from "./components/Layout.jsx";
 
 
 // Routes
 //const router = createBrowserRouter([
-//  { path: "/", element: <ShowBookList /> },
-//  { path: "/create-book", element: <CreateBook /> },
-//  { path: "/show-book/:id", element: <ShowBookDetails /> },
-//  { path: "/edit-book/:id", element: <UpdateBookInfo /> },
+//  { path: "/", element: <ShowGameList /> },
+//  { path: "/create-Game", element: <CreateGame /> },
+//  { path: "/show-Game/:id", element: <ShowGameDetails /> },
+//  { path: "/edit-Game/:id", element: <UpdateGameInfo /> },
 //]);
 
 const router = createBrowserRouter([
-    {path: "/",element: (<Layout><ShowBookList /></Layout>),},
-    {path: "/create-book", element: (<Layout><CreateBook /></Layout>),},
-    {path: "/show-book/:id",element: (<Layout><ShowBookDetails /></Layout>),},
-    {path: "/edit-book/:id",element: (<Layout><UpdateBookInfo /></Layout>),},
+    {path: "/",element: (<Layout><ShowGameList /></Layout>),},
+    {path: "/create-Game", element: (<Layout><CreateGame /></Layout>),},
+    {path: "/show-Game/:id",element: (<Layout><ShowGameDetails /></Layout>),},
+    {path: "/edit-Game/:id",element: (<Layout><UpdateGameInfo /></Layout>),},
 ]);
 
 

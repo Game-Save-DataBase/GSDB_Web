@@ -3,67 +3,52 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import '../App.css';
 import axios from 'axios';
 
-function ShowBookDetails(props) {
-  const [book, setBook] = useState({});
+function ShowGameDetails(props) {
+  const [game, setGame] = useState({});
 
   const { id } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8082/api/books/${id}`)
+      .get(`http://localhost:8082/api/games/${id}`)
       .then((res) => {
-        setBook(res.data);
+        setGame(res.data);
       })
       .catch((err) => {
-        console.log('Error from ShowBookDetails');
+        console.log('Error from ShowGameDetails');
       });
   }, [id]);
 
   const onDeleteClick = (id) => {
     axios
-      .delete(`http://localhost:8082/api/books/${id}`)
+      .delete(`http://localhost:8082/api/games/${id}`)
       .then((res) => {
         navigate('/');
       })
       .catch((err) => {
-        console.log('Error form ShowBookDetails_deleteClick');
+        console.log('Error form ShowGameDetails_deleteClick');
       });
   };
 
-  const BookItem = (
+  const GameItem = (
     <div>
       <table className='table table-hover table-dark'>
         <tbody>
           <tr>
             <th scope='row'>1</th>
             <td>Title</td>
-            <td>{book.title}</td>
+            <td>{game.title}</td>
           </tr>
           <tr>
             <th scope='row'>2</th>
-            <td>Author</td>
-            <td>{book.author}</td>
+            <td>Platform</td>
+            <td>{game.platformsID}</td>
           </tr>
           <tr>
             <th scope='row'>3</th>
-            <td>ISBN</td>
-            <td>{book.isbn}</td>
-          </tr>
-          <tr>
-            <th scope='row'>4</th>
-            <td>Publisher</td>
-            <td>{book.publisher}</td>
-          </tr>
-          <tr>
-            <th scope='row'>5</th>
-            <td>Published Date</td>
-            <td>{book.published_date}</td>
-          </tr>
-          <tr>
-            <th scope='row'>6</th>
-            <td>Description</td>
-            <td>{book.description}</td>
+            <td>Savepath</td>
+            <td>{game.savePathID}</td>
           </tr>
         </tbody>
       </table>
@@ -71,39 +56,39 @@ function ShowBookDetails(props) {
   );
 
   return (
-    <div className='ShowBookDetails'>
+    <div className='ShowGameDetails'>
       <div className='container'>
         <div className='row'>
           <div className='col-md-10 m-auto'>
             <br /> <br />
             <Link to='/' className='btn btn-outline-warning float-left'>
-              Show Book List
+              Show Game List
             </Link>
           </div>
           <br />
           <div className='col-md-8 m-auto'>
-            <h1 className='display-4 text-center'>Book's Record</h1>
-            <p className='lead text-center'>View Book's Info</p>
+            <h1 className='display-4 text-center'>Game's Record</h1>
+            <p className='lead text-center'>View Game's Info</p>
             <hr /> <br />
           </div>
-          <div className='col-md-10 m-auto'>{BookItem}</div>
+          <div className='col-md-10 m-auto'>{GameItem}</div>
           <div className='col-md-6 m-auto'>
             <button
               type='button'
               className='btn btn-outline-danger btn-lg btn-block'
               onClick={() => {
-                onDeleteClick(book._id);
+                onDeleteClick(game._id);
               }}
             >
-              Delete Book
+              Delete Game
             </button>
           </div>
           <div className='col-md-6 m-auto'>
             <Link
-              to={`/edit-book/${book._id}`}
+              to={`/edit-game/${game._id}`}
               className='btn btn-outline-info btn-lg btn-block'
             >
-              Edit Book
+              Edit Game
             </Link>
           </div>
         </div>
@@ -112,4 +97,4 @@ function ShowBookDetails(props) {
   );
 }
 
-export default ShowBookDetails;
+export default ShowGameDetails;

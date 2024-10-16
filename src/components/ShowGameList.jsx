@@ -2,42 +2,42 @@ import React, { useState, useEffect } from 'react';
 import '../App.css';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import BookCard from './BookCard';
+import GameCard from './GameCard';
 
-function ShowBookList() {
-  const [books, setBooks] = useState([]);
+function ShowGameList() {
+  const [games, setGames] = useState([]);
 
   useEffect(() => {
     axios
-      .get('http://localhost:8082/api/books')
+      .get('http://localhost:8082/api/games')
       .then((res) => {
-        setBooks(res.data);
+        setGames(res.data);
       })
       .catch((err) => {
-        console.log('Error from ShowBookList');
+        console.log('Error from ShowGameList');
       });
   }, []);
 
-  const bookList =
-    books.length === 0
-      ? 'there is no book record!'
-      : books.map((book, k) => <BookCard book={book} key={k} />);
+  const gameList =
+    games.length === 0
+      ? 'there is no game record!'
+      : games.map((game, k) => <GameCard game={game} key={k} />);
 
   return (
-    <div className='ShowBookList'>
+    <div className='ShowGameList'>
       <div className='container'>
         <div className='row'>
           <div className='col-md-12'>
             <br />
-            <h2 className='display-4 text-center'>Books List</h2>
+            <h2 className='display-4 text-center'>Games List</h2>
           </div>
 
           <div className='col-md-11'>
             <Link
-              to='/create-book'
+              to='/create-game'
               className='btn btn-outline-warning float-right'
             >
-              + Add New Book
+              + Add New Game
             </Link>
             <br />
             <br />
@@ -45,10 +45,10 @@ function ShowBookList() {
           </div>
         </div>
 
-        <div className='list'>{bookList}</div>
+        <div className='list'>{gameList}</div>
       </div>
     </div>
   );
 }
 
-export default ShowBookList;
+export default ShowGameList;

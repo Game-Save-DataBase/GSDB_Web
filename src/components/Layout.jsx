@@ -1,7 +1,7 @@
 // Layout.jsx
 import React from "react";
 import { Link } from "react-router-dom";
-import './Layout.css'; // Aquí colocaremos el CSS para el layout
+import './Layout.css'; // Aquï¿½ colocaremos el CSS para el layout
 
 const Layout = ({ children }) => {
     return (
@@ -11,7 +11,7 @@ const Layout = ({ children }) => {
                 <nav>
                     <ul>
                         <li><Link to="/">Inicio</Link></li>
-                        <li><Link to="/create-book">Crear Libro</Link></li>
+                        <li><Link to="/create-game">Crear Juego</Link></li>
                     </ul>
                 </nav>
             </header>
@@ -33,7 +33,7 @@ const Layout = ({ children }) => {
             {/* Zona derecha */}
             <aside className="right-sidebar">
                 <h2>Recomendaciones</h2>
-                <p>Libro destacado del mes</p>
+                <p>Juego destacado del mes</p>
             </aside>
         </div>
     );
