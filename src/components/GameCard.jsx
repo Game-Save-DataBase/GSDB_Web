@@ -13,9 +13,9 @@ const GameCard = ({game}) => {
       />
       <div className='desc'>
         <h2>
-          <Link to={`/show-game/${game._id}`}>{game.title}</Link>
+          <Link to={`/show-game/${game._id}`}>{game.name}</Link>
         </h2>
-        <h3>{game.platform}</h3>
+        <h3>{game.platformsID}</h3>
       </div>
     </div>
   );

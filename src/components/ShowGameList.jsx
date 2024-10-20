@@ -12,6 +12,7 @@ function ShowGameList() {
       .get('http://localhost:8082/api/games')
       .then((res) => {
         setGames(res.data);
+        console.log(res.data);
       })
       .catch((err) => {
         console.log('Error from ShowGameList');

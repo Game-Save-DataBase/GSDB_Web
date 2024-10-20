@@ -18,9 +18,9 @@ function UpdateGameInfo(props) {
       .get(`http://localhost:8082/api/games/${id}`)
       .then((res) => {
         setGame({
-          name: res.data.title,
-          platformsID: res.data.platformsIDsID,
-          savePathID: res.data.savePathIDID,
+          name: res.data.name,
+          platformsID: res.data.platformsID,
+          savePathID: res.data.savePathID,
         });
       })
       .catch((err) => {
@@ -37,8 +37,8 @@ function UpdateGameInfo(props) {
 
     const data = {
       name: game.name,
-      platformsIDsID: game.platformsID,
-      savePathIDID: game.savePathID,
+      platformsID: game.platformsID,
+      savePathID: game.savePathID,
     };
 
     axios
@@ -74,7 +74,7 @@ function UpdateGameInfo(props) {
               <input
                 type='text'
                 placeholder='Title of the Game'
-                name='title'
+                name='name'
                 className='form-control'
                 value={game.name}
                 onChange={onChange}
@@ -83,7 +83,7 @@ function UpdateGameInfo(props) {
             <br />
 
             <div className='form-group'>
-              <label htmlFor='isbn'>Platform</label>
+              <label htmlFor='platform'>Platform</label>
               <input
                 type='text'
                 placeholder='Platform'
@@ -95,16 +95,17 @@ function UpdateGameInfo(props) {
             </div>
             <br />
             <div className='form-group'>
-              <label htmlFor='author'>Save Path</label>
+              <label htmlFor='savepath'>Save Path</label>
               <input
                 type='text'
-                placeholder='SavePath'
-                name='savepath'
+                placeholder='Platform'
+                name='savePathID'
                 className='form-control'
                 value={game.savePathID}
                 onChange={onChange}
               />
             </div>
+
             <button
               type='submit'
               className='btn btn-outline-info btn-lg btn-block'

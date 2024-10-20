@@ -38,7 +38,7 @@ function ShowGameDetails(props) {
           <tr>
             <th scope='row'>1</th>
             <td>Title</td>
-            <td>{game.title}</td>
+            <td>{game.name}</td>
           </tr>
           <tr>
             <th scope='row'>2</th>
