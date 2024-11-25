@@ -1,7 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import './index.css'
 
 // Bootstrap CSS
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -19,17 +18,10 @@ import Layout from "./components/Layout.jsx";
 
 
 // Routes
-//const router = createBrowserRouter([
-//  { path: "/", element: <ShowGameList /> },
-//  { path: "/create-Game", element: <CreateGame /> },
-//  { path: "/show-Game/:id", element: <ShowGameDetails /> },
-//  { path: "/edit-Game/:id", element: <UpdateGameInfo /> },
-//]);
-
 const router = createBrowserRouter([
     {path: "/",element: (<Layout><ShowGameList /></Layout>),},
     {path: "/create-Game", element: (<Layout><CreateGame /></Layout>),},
-    {path: "/show-Game/:id",element: (<Layout><ShowGameDetails /></Layout>),},
+    {path: "/game/:id",element: (<Layout><ShowGameDetails /></Layout>),},
     {path: "/edit-Game/:id",element: (<Layout><UpdateGameInfo /></Layout>),},
 ]);
 

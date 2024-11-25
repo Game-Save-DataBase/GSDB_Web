@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import '../App.css';
+import '../styles/App.css';
 
 function UpdateGameInfo(props) {
   const [game, setGame] = useState({
@@ -44,7 +44,7 @@ function UpdateGameInfo(props) {
     axios
       .put(`http://localhost:8082/api/games/${id}`, data)
       .then((res) => {
-        navigate(`/show-game/${id}`);
+        navigate(`/game/${id}`);
       })
       .catch((err) => {
         console.log('Error in UpdateGameInfo!');

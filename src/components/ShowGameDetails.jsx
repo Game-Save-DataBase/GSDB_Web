@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import '../App.css';
+import '../styles/App.css';
 import axios from 'axios';
 //TODO: Hacer una llamada a IGDB para BUSCAR un juego que tenga el mismo valor que nuestro campo IGDBID.
 function ShowGameDetails(props) {

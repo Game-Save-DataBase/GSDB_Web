@@ -1,45 +1,44 @@
-/* Layout.css */
+/* Layout.css. Es el css que incluye los estilos generales para las partes fijas de la web. (laterales, inferiores, superiores) */
 
-/* Asegúrate de que el contenedor ocupe todo el espacio de la pantalla */
 html, body {
     margin: 0;
     padding: 0;
     height: 100%;
 }
-
+/* estilo principal para hacer un grid con cada seccion */
 .layout {
     display: grid;
+    /*  */
     grid-template-areas:
-        "navbar navbar navbar"
+        "navbar         navbar      navbar"
         "left-sidebar main-content right-sidebar";
-    grid-template-columns: 1fr 3fr 1fr; /* 1fr para la izquierda/derecha, 3fr para el centro */
-    grid-template-rows: auto 1fr; /* La fila superior es para la barra de navegación */
-    height: 100vh;
+    grid-template-columns: 1fr 3fr 1fr; /* divide en tres secciones la pagina*/
+    /* grid-template-rows: auto 1fr; La fila superior es para la barra de navegaciï¿½n */
 }
 
-/* Barra de navegación (zona superior) */
+/* Barra de navegacion (zona superior) */
 .navbar {
     grid-area: navbar;
-    background-color: #333;
-    color: white;
+    background-color: #f4f4f4;
     padding: 20px;
     text-align: center;
+    border-bottom: 2px solid #ccc; 
 }
-
+/* para generar listas que esten en horizontal y sin puntitos */
     .navbar ul {
         list-style: none;
         padding: 0;
         display: flex;
         justify-content: center;
     }
-
+    /* le aÃ±ade separacion a cada elemento */
         .navbar ul li {
             margin: 0 15px;
         }
-
+        /* le quita la decoracion a los enlaces*/
             .navbar ul li a {
-                color: white;
                 text-decoration: none;
+                /* color: black */
             }
 
 /* Zona izquierda */
@@ -65,14 +64,3 @@ html, body {
     border-left: 1px solid #ccc;
 }
 
-/* Responsividad: cuando la pantalla es más pequeña (por ejemplo, un móvil) */
-@media (max-width: 768px) {
-    .layout {
-        grid-template-areas:
-            "navbar"
-            "main-content"
-            "left-sidebar"
-            "right-sidebar";
-        grid-template-columns: 1fr;
-    }
-}

@@ -1,3 +1,5 @@
+/* estilos para secciones de la pagina que se pueden reutilizar en otras (por necesitar los mismos botones) */
+
 .CreateGame {
   background-color: #2c3e50;
   min-height: 100vh;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import '../App.css';
+import '../styles/App.css';
 
 const GameCard = ({game}) => {
 
@@ -13,7 +13,7 @@ const GameCard = ({game}) => {
       />
       <div className='desc'>
         <h2>
-          <Link to={`/show-game/${game._id}`}>{game.name}</Link>
+          <Link to={`/game/${game._id}`}>{game.name}</Link>
         </h2>
         <h3>{game.platformsID}</h3>
       </div>
