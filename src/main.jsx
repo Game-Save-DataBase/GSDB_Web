@@ -9,20 +9,20 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 
 
 // Components imports
-import CreateGame from "./components/CreateGame.jsx";
+import Layout from "./components/Layout.jsx"; /*contenedor principal */
+import CreateGame from "./components/CreateGame.jsx"; //esta de aqui no deberia existir. borrarla cuando se integre del todo la web
 import ShowGameList from "./components/ShowGameList.jsx";
 import ShowGameDetails from "./components/ShowGameDetails.jsx";
-import UpdateGameInfo from "./components/UpdateGameInfo.jsx";
+import ShowSaveDetails from "./components/ShowSaveDetails.jsx";
 
-import Layout from "./components/Layout.jsx";
 
 
 // Routes
 const router = createBrowserRouter([
     {path: "/",element: (<Layout><ShowGameList /></Layout>),},
-    {path: "/create-Game", element: (<Layout><CreateGame /></Layout>),},
+    {path: "/create-Game", element: (<Layout><CreateGame /></Layout>),}, //esta de aqui no deberia existir. borrarla cuando se integre del todo la web
     {path: "/game/:id",element: (<Layout><ShowGameDetails /></Layout>),},
-    {path: "/edit-Game/:id",element: (<Layout><UpdateGameInfo /></Layout>),},
+    {path: "/save/:id",element: (<Layout><ShowSaveDetails /></Layout>),},
 ]);
 
 

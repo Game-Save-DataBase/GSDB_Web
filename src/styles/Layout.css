@@ -1,10 +1,6 @@
-/* Layout.css. Es el css que incluye los estilos generales para las partes fijas de la web. (laterales, inferiores, superiores) */
+/* Layout.css. Es el css que incluye los estilos generales para las partes fijas de la web (laterales, fijos, inferiores)*/
 
-html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-}
+
 /* estilo principal para hacer un grid con cada seccion */
 .layout {
     display: grid;

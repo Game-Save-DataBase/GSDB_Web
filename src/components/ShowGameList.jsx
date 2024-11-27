@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import GameCard from './GameCard';
+import '../styles/Common.css';
+
 
 function ShowGameList() {
   const [games, setGames] = useState([]);
