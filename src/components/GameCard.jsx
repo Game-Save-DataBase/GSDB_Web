@@ -1,22 +1,19 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import '../styles/App.css';
 
-const GameCard = ({game}) => {
+const GameCard = ({ game }) => {
 
   return (
-    <div className='card-container'>
+    <div>
       <img
-        src='https://images.unsplash.com/photo-1495446815901-a7297e633e8d'
+        src='https://i0.wp.com/bossrush.net/wp-content/uploads/2022/07/retro-1.jpg?resize=1200%2C1080&ssl=1'
         alt='Games'
         height={200}
       />
-      <div className='desc'>
-        <h2>
-          <Link to={`/game/${game._id}`}>{game.name}</Link>
-        </h2>
-        <h3>{game.platformsID}</h3>
-      </div>
+      <h2>
+        <Link to={`/game/${game._id}`}>{game.name}</Link>
+      </h2>
+      <h3>{game.platformsID}</h3>
     </div>
   );
 };
