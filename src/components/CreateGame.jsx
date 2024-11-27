@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -12,10 +11,11 @@ const CreateGame = (props) => {
     savePathID: "",
   });
 
+  /*funcion para realizar cuando cambia el valor de los inputs */
   const onChange = (e) => {
     setGame({ ...game, [e.target.name]: e.target.value });
   };
-
+/*funcion a realizar para cuando se pulsa el boton de añadir juego */
   const onSubmit = (e) => {
     e.preventDefault();
     axios
@@ -35,61 +35,40 @@ const CreateGame = (props) => {
   };
 
   return (
-    <div className="CreateGame">
-      <div className="container">
-        <div className="row">
-          <div className="col-md-8 m-auto">
-            <br />
-            <Link to="/" className="btn btn-outline-warning float-left">
-              Show Game List
-            </Link>
-          </div>
-          <div className="col-md-10 m-auto">
-            <h1 className="display-4 text-center">Add Game</h1>
-            <p className="lead text-center">Create new game</p>
-            <form noValidate onSubmit={onSubmit}>
-              <div className="form-group">
-                <input
-                  type="text"
-                  placeholder="Title of the Game"
-                  name="name"
-                  className="form-control"
-                  value={game.name}
-                  onChange={onChange}
-                />
-              </div>
-              <br />
-              <div className="form-group">
-                <input
-                  type="text"
-                  placeholder="Platform"
-                  name="platformsID"
-                  className="form-control"
-                  value={game.platformsID}
-                  onChange={onChange}
-                />
-              </div>
-              <br />
-              <div className="form-group">
-                <input
-                  type="text"
-                  placeholder="Save path"
-                  name="savePathID"
-                  className="form-control"
-                  value={game.savePathID}
-                  onChange={onChange}
-                />
-              </div>
-              <button
-                type="submit"
-                className="btn btn-outline-warning btn-block mt-4 mb-4 w-100"
-              >
-                Submit
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
+    <div>
+      <h2>Add Game to Database</h2>
+      <br></br>
+      {/* formulario, esto es donde se mete el input 
+      se le indica que la funcion a realizar cuando se hace submit sea la de arriba
+      se le añade un input y un espacio en blanco para cada elem
+        los inputs llevan dentro el valor que van a sustituir en la bbdd*/}
+      <form noValidate onSubmit={onSubmit}>
+        <input
+          type="text"
+          placeholder="Title of the Game"
+          name="name"
+          value={game.name}
+          onChange={onChange}
+        />
+        <br />
+        <input
+          type="text"
+          placeholder="Platform"
+          name="platformsID"
+          value={game.platformsID}
+          onChange={onChange}
+        />
+        <br />
+        <input
+          type="text"
+          placeholder="Save path"
+          name="savePathID"
+          value={game.savePathID}
+          onChange={onChange}
+        />
+        <br />
+        <button type="submit">Submit</button>
+      </form>
     </div>
   );
 };
