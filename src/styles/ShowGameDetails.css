@@ -1,0 +1,65 @@
+/* ShowGameDetails.css 
+Estilos para esta pagina. Tiene dos secciones principales: la de la info del juego, y debajo un grid con todos los savedata.
+*/
+
+/* Contenedor principal */
+.container {
+    margin-top: 2rem;
+  }
+  
+  /* Primera seccion (arriba): info del juego */
+  .info-section {
+    padding: 2rem 0;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  /* modifica h1, p e img. pendiente, quizas como son estilos comunes no convendria modificarlo segun la pagina. */
+  .info-section img {
+    max-width: 100%;
+    border-radius: 8px;
+  }
+  .info-section h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .info-section p {
+    font-size: 1rem;
+    color: #555;
+  }
+  
+  .info-section .btn-primary {
+    margin-top: 1rem;
+  }
+  /* ------------------------------------------------------------------ */
+  /* Segunda seccion: archivos guardados */
+  .grid-section {
+    padding: 2rem 0;
+  }
+  
+  .grid-section h2 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* cards son los elementos del grid */
+  .card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: none;
+    border-radius: 8px;
+  }
+  
+  .card-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+  }
+  
+  .card-text {
+    font-size: 0.95rem;
+    color: #555;
+  }
+  
+  .card .btn-outline-primary {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+  }

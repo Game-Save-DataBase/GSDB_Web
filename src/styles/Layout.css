@@ -9,7 +9,7 @@
         "navbar         navbar      navbar"
         "left-sidebar main-content right-sidebar"
         "bottom-bar     bottom-bar     bottom-bar";
-        grid-template-columns: 1fr 3fr 1fr; /* Tres columnas */
+        grid-template-columns: 1fr 6fr 1fr; /* Tres columnas */
         grid-template-rows: auto 1fr auto; /* Fila superior (navbar), contenido, y fila inferior (bottom-bar) */
         min-height: 100vh; /* Asegura que la página cubra toda la ventana */
     }
@@ -72,3 +72,32 @@
     font-size: 0.9rem;
 }
 
+/* RESPONSIVE DESIGN: Lo mismo, pero para diferentes tamaños de ventana. */
+
+/* Pantallas medianas (tablets) */ /*esta un poco fea, la comento por ahora*/
+/* @media (max-width: 1024px)
+
+/* Pantallas pequeñas (móviles) 
+TO DO: Ajustar esto un poco mejor!!*/
+@media (max-width: 768px) {
+    .layout {
+        grid-template-areas:
+            "navbar"
+            "main-content"
+            "bottom-bar";
+        grid-template-columns: 1fr; /* Una sola columna */
+    }
+
+    .left-sidebar, .right-sidebar {
+        display: none; /* Oculta los sidebars */
+    }
+
+    .navbar ul {
+        flex-direction: column; /* Coloca los elementos de navegación verticalmente */
+        text-align: center;
+    }
+
+    .navbar ul li {
+        margin: 5px 0; /* Ajusta el espaciado vertical */
+    }
+}
