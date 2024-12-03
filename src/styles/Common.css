@@ -2,8 +2,10 @@
 Se compartiran en toda la pagina. Se colocaran aqui por limpieza y coherencia.*/
 
 html, body {
+    min-height: 100vh; /*da todo el tamaño de la ventana como minimo*/
     margin: 0;
     padding: 0;
     height: 100%;
+    font-family: Arial, sans-serif; /*Tipo de letra predeterminado*/
 }
 

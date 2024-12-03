@@ -1,7 +1,7 @@
 // Layout.jsx
 import React from "react";
 import { Link } from "react-router-dom";
-import '../styles/Layout.css'; 
+import '../styles/Layout.css';
 import '../styles/Common.css';
 
 const Layout = ({ children }) => {
@@ -36,7 +36,15 @@ const Layout = ({ children }) => {
                 <h2>Recomendaciones</h2>
                 <p>Juego destacado del mes</p>
             </aside>
+
+
+            {/* Zona inferior */}
+            <footer className="bottom-bar">
+                <p>© 2024 Game Save Database. Universidad Complutense de Madrid. Jorge Bello Martín - Eva Lucas Leiro.</p>
+            </footer>
         </div>
+
+
     );
 };
 

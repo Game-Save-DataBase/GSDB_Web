@@ -7,10 +7,12 @@
     /*  */
     grid-template-areas:
         "navbar         navbar      navbar"
-        "left-sidebar main-content right-sidebar";
-    grid-template-columns: 1fr 3fr 1fr; /* divide en tres secciones la pagina*/
-    /* grid-template-rows: auto 1fr; La fila superior es para la barra de navegaci�n */
-}
+        "left-sidebar main-content right-sidebar"
+        "bottom-bar     bottom-bar     bottom-bar";
+        grid-template-columns: 1fr 3fr 1fr; /* Tres columnas */
+        grid-template-rows: auto 1fr auto; /* Fila superior (navbar), contenido, y fila inferior (bottom-bar) */
+        min-height: 100vh; /* Asegura que la página cubra toda la ventana */
+    }
 
 /* Barra de navegacion (zona superior) */
 .navbar {
@@ -58,5 +60,15 @@
     background-color: #f4f4f4;
     padding: 20px;
     border-left: 1px solid #ccc;
+}
+/* Barra inferior */
+.bottom-bar {
+    grid-area: bottom-bar;
+    background-color: #f4f4f4;
+    color: #555;
+    padding: 10px;
+    text-align: center;
+    border-top: 2px solid #ccc;
+    font-size: 0.9rem;
 }
 
