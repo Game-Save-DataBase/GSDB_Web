@@ -30,3 +30,39 @@ body {
     @extend .breadcrumb-item; // Extiende la clase breadcrumb-item de Bootstrap
   }
 }
+
+//cheatsheet: esto son las tabs de bootstrap. Ver: componets-navs & tabs - tabs
+//usan javascript para cambiar entre tabs
+//mas cosas que añadir por ejemplo: <a>, usar disabled y tabindex=-1 para desactivar 
+.tabs-container {
+  //usamos ul para definir el grupo de tabs y cada li es una tab
+  ul {
+    @extend .nav;
+    @extend .nav-tabs;
+    //elemento horizontal del grupo de tabs
+    li {
+      @extend .nav-item;
+    
+      a{
+        @extend .nav-link;
+      }
+      button{
+        @extend .nav-link;
+      }
+    }
+  }
+}
+.tabs-content{
+  @extend .tab-content;
+  .gsdbtab{
+    @extend .tab-pane;
+    @extend .fade;
+  }
+}
+
+
+//para crear mas botones, ver documentacion del cheatsheet de bootstrap sobre botones. Hay mas tipos de colores
+.gsdb-btn-default {
+  @extend .btn;
+  @extend .btn-primary;
+}

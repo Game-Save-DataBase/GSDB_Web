@@ -69,62 +69,90 @@ function ShowSaveDetails(props) {
 
       {/* .................AQUI EMPIEZA LA PAGINA */}
       <div className="container">
-        {/* Encabezado con detalles del archivo guardado */}
-        <section className="info-section">
-          <div className="row">
-            {/* Columna izquierda: imagen del juego y boton de descarga */}
-            <div className="row-element">
-              {relatedGame && (
-                <img
-                  src={relatedGame.image || 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Celeste_box_art_full.png/220px-Celeste_box_art_full.png'}
-                  alt={relatedGame.name}
-                />
-              )}
+        {/* ...................................DATA SECTION */}
+        <section className="data-section">
+          <div className='table-data'>
+            <div className="row">
+              {/* Columna izquierda: imagen del juego y boton de descarga */}
+              <div className="row-element text-center">
+                {relatedGame && (
+                  <img
+                    src={relatedGame.image || 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Celeste_box_art_full.png/220px-Celeste_box_art_full.png'}
+                    alt={relatedGame.name}
+                  />
+                )}
+              </div>
 
-              <a href={saveData.downloadLink || '#'} className="btn btn-primary" download>
-                Download
-              </a>
+              {/* Columna derecha: información del archivo */}
+              <div className='row-element text-muted'>
+                <p>
+                  <strong>Platform:</strong> {saveData.platform || 'Plataforma desconocida'}
+                </p>
+                <p>
+                  <strong>File size:</strong> {saveData.filseSize || 'Tamaño sin determinar'}
+                </p>
+                <p>
+                  <strong>Submitted By:</strong> {saveData.submittedBy || 'Desconocido'}
+                </p>
+                <p>
+                  <strong>Date added:</strong> {new Date(saveData.postedDate).toLocaleDateString() || 'N/A'}
+                </p>
+                <p>
+                  <strong>Downloads:</strong> {saveData.downloads || 'Numero de descargas desconocido'}
+                </p>
+                {/* <br></br> */}
+                <p>
+                  <strong>Descripción:</strong> {saveData.description || 'Sin descripción disponible'}
+                </p>
+              </div>
             </div>
 
-            {/* Columna derecha: información del archivo */}
-            <div className="col-md-8">
-              <p className="text-muted">
-                <strong>Platform:</strong> {saveData.platform || 'Plataforma desconocida'}
-              </p>
-              <p className="text-muted">
-                <strong>File size:</strong> {saveData.filseSize || 'Tamaño sin determinar'}
-              </p>
-              <p className="text-muted">
-                <strong>Submitted By:</strong> {saveData.submittedBy || 'Desconocido'}
-              </p>
-              <p className="text-muted">
-                <strong>Date added:</strong> {new Date(saveData.postedDate).toLocaleDateString() || 'N/A'}
-              </p>
-              <p className="text-muted">
-                <strong>Downloads:</strong> {saveData.downloads || 'Numero de descargas desconocido'}
-              </p>
-              <br></br>
-              <p className="text-muted">
-                <strong>Descripción:</strong> {saveData.description || 'Sin descripción disponible'}
-              </p>
-
+            <div className='row'>
+              <div className='row-element text-center'>
+                <button type="button" class="gsdb-btn-default">Download</button>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Comentarios o detalles adicionales */}
-        <section className="comments-section">
-          <h2>Comentarios</h2>
-          {saveData.comments && saveData.comments.length > 0 ? (
-            saveData.comments.map((comment, index) => (
-              <div key={index} className="comment">
-                <p><strong>{comment.user}</strong>: {comment.text}</p>
-              </div>
-            ))
-          ) : (
-            <p className="text-muted">No hay comentarios disponibles para este archivo.</p>
-          )}
+        {/* ...................................INFO SECTION */}
+        <section className="info-section">
+
+          {/* pestañas de las tabs */}
+          <div className='tabs-container'>
+            <ul role="tablist">
+              <li role="presentation">
+                <button class="active" data-bs-toggle="tab" data-bs-target="#comments">Comments</button>
+              </li>
+              <li role="presentation">
+                <button data-bs-toggle="tab" data-bs-target="#screenshots">Screenshots</button>
+              </li>
+            </ul>
+          </div>
+
+          {/* contenido de las tabs */}
+          {/* COMENTARIOS */}
+          <div class="tabs-content" >
+            <div class="gsdbtab show active" id="comments">
+
+              {saveData.comments && saveData.comments.length > 0 ? (
+                saveData.comments.map((comment, index) => (
+                  <div key={index} className="comment">
+                    <p><strong>{comment.user}</strong>: {comment.text}</p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-muted">No hay comentarios disponibles para este archivo.</p>
+              )}
+
+            </div>
+
+            {/* SCREENSHOTS */}
+            <div class="gsdbtab" id="screenshots">
+              aqui los screenshots pls</div>
+          </div>
         </section>
+
       </div>
 
     </div>

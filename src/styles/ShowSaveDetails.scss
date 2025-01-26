@@ -11,134 +11,60 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del sav
 
 /*........................................ Sección de información */
 /* tiene que haber menos espacio para la imagen y mas espacio para el resto de info */
-
-.info-section {
+.data-section {
   margin-bottom: 30px;
   background-color: #f9f9f9;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  .table-data{
+    padding: 1%;
+    background-color: #f9f9f9;
+    //la parte de texto centrado, muted etc la añado en el jsx porque crear mas clases para eso me parece innecesario
+    .row {
+      display: flex;
+      padding: 5px;
+      // align-items: center;
+      .row-element {
+        @extend .col-md-4;
+      }
+    }
+  
+    /* Imagen del juego */
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+  }  
 }
 
-.info-section .row {
-  display: flex;
-  align-items: center;
-}
-
-.info-section .row .row-element {
-  @extend .col-md-4;
-  @extend .text-center;
-}
-
-.info-section .row .row-element img {
-  @extend .img-fluid;
-  @extend .rounded;
-}
 
 
-/* Imagen del juego */
-.info-section img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.info-section h1 {
-  font-size: 2rem;
-  margin-bottom: 15px;
-  color: #333;
-}
-
-.info-section p {
-  font-size: 1rem;
-  margin-bottom: 10px;
-  color: #555;
-}
-
-.info-section .btn {
-  margin-top: 15px;
-  background-color: #6c63ff;
-  color: #fff;
-  font-weight: bold;
-  border: none;
-  transition: background-color 0.3s ease;
-}
-
-.info-section .btn:hover {
-  background-color: #574fdf;
-}
 
 /* .......................................Sección de comentarios y screenshots */
-.comments-section {
-  margin-top: 40px;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+.info-section {
+  margin-bottom: 30px;
+  padding: 1%;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
-.comments-section h2 {
-  font-size: 1.5rem;
-  margin-bottom: 15px;
-  color: #333;
-}
-
-.comments-section .comment {
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
-}
-
-.comments-section .comment:last-child {
-  border-bottom: none;
-}
-
-.comments-section .comment p {
-  font-size: 1rem;
-  color: #555;
-}
-
-.comments-section .comment strong {
-  color: #6c63ff;
-}
-
-/* Sección de juego relacionado */
-.related-game-section {
-  margin-top: 40px;
-}
-
-.related-game-section h2 {
-  font-size: 1.5rem;
-  margin-bottom: 15px;
-  color: #333;
-}
-
-.related-game-section .card {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-}
-
-.related-game-section .card-title {
-  font-size: 1.2rem;
-  color: #333;
-  margin-bottom: 10px;
-}
-
-.related-game-section .card-text {
-  font-size: 1rem;
-  color: #555;
-}
-
-.related-game-section .btn {
-  margin-top: 15px;
-  background-color: #6c63ff;
-  color: #fff;
-  font-weight: bold;
-  border: none;
-  transition: background-color 0.3s ease;
-}
-
-.related-game-section .btn:hover {
-  background-color: #574fdf;
+  .comment {
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    :last-child {
+      border-bottom: none;
+    }
+    
+    p {
+      font-size: 1rem;
+      color: #555;
+    }
+    
+    strong {
+      color: #6c63ff;
+    }
+  }
 }
