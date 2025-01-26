@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import GameCard from './GameCard';
-import '../styles/Common.css';
+import '../styles/Common.scss';
 
 
 function ShowGameList() {

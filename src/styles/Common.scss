@@ -1,0 +1,32 @@
+/*Common.scss. In development. Incluira todos los estilos comunes, como los h1,h2, botones, a, colores de fondo, etc.
+Se compartiran en toda la pagina. Se colocaran aqui por limpieza y coherencia.*/
+@import 'node_modules/bootstrap/scss/bootstrap';
+
+html,
+body {
+  min-height: 100vh;
+  /*da todo el tamaño de la ventana como minimo*/
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: Arial, sans-serif;
+  /*Tipo de letra predeterminado*/
+}
+
+// /* .......................................Seccion de la navegacion */
+// /* cheatseet: los breadcrumbs de bootstrap sirven para dejar bonita la info de navegacion */
+
+.nav-section {
+  nav {
+    --bs-breadcrumb-divider: ">"; // Personalización del separador de breadcrumb
+  }
+
+  // Aplicamos las clases de Bootstrap directamente a los elementos internos
+  ol {
+    @extend .breadcrumb; // Extiende la clase breadcrumb de Bootstrap
+  }
+
+  li {
+    @extend .breadcrumb-item; // Extiende la clase breadcrumb-item de Bootstrap
+  }
+}

@@ -1,8 +1,8 @@
 // Layout.jsx
 import React from "react";
 import { Link } from "react-router-dom";
-import '../styles/Layout.css';
-import '../styles/Common.css';
+import '../styles/Layout.scss';
+import '../styles/Common.scss';
 
 const Layout = ({ children }) => {
     return (

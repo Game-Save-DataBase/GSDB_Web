@@ -1,28 +1,39 @@
-/* ShowSaveDetails.css 
+/* ShowSaveDetails.scss 
 Estilos para esta pagina. Tiene dos secciones principales: la de la info del save, y debajo un grid con comentarios e imagenes.
 */
-
-
-/* generado sin retocar e unificar aun */
+@import 'node_modules/bootstrap/scss/bootstrap';
 
 /* Estilo general del contenedor */
 .container {
   margin-top: 20px;
   padding: 20px;
+}
+
+/*........................................ Sección de información */
+/* tiene que haber menos espacio para la imagen y mas espacio para el resto de info */
+
+.info-section {
+  margin-bottom: 30px;
   background-color: #f9f9f9;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-/* Sección de información */
-.info-section {
-  margin-bottom: 30px;
 }
 
 .info-section .row {
   display: flex;
   align-items: center;
 }
+
+.info-section .row .row-element {
+  @extend .col-md-4;
+  @extend .text-center;
+}
+
+.info-section .row .row-element img {
+  @extend .img-fluid;
+  @extend .rounded;
+}
+
 
 /* Imagen del juego */
 .info-section img {
@@ -32,7 +43,6 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del sav
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Texto de información del archivo */
 .info-section h1 {
   font-size: 2rem;
   margin-bottom: 15px;
@@ -58,7 +68,7 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del sav
   background-color: #574fdf;
 }
 
-/* Sección de comentarios */
+/* .......................................Sección de comentarios y screenshots */
 .comments-section {
   margin-top: 40px;
   padding: 20px;

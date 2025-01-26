@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import '../styles/Common.css';
+import '../styles/Common.scss';
 
 
 const GameCard = ({ game }) => {

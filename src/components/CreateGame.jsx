@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import '../styles/Common.css';
+import '../styles/Common.scss';
 
 const CreateGame = (props) => {
   const navigate = useNavigate();
