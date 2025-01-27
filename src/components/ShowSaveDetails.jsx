@@ -38,10 +38,10 @@ function ShowSaveDetails(props) {
           commentsData.map(async (comment) => {
             try {
               const userResponse = await axios.get(`http://localhost:8082/api/users/${comment.userID}`);
-              return { ...comment, username: userResponse.data.name, handlename: userResponse.data.handleName };
+              return { ...comment, userName: userResponse.data.name, handleName: userResponse.data.handleName, userAvatar: userResponse.data.avatar };
             } catch (err) {
               console.log(`Error fetching user for comment ${comment._id}:`, err);
-              return { ...comment, username: 'Usuario desconocido' };
+              return { ...comment, userName: 'Usuario desconocido' };
             }
           })
         );
@@ -168,8 +168,12 @@ function ShowSaveDetails(props) {
               {comments && comments.length > 0 ? (
                 comments.map((comment, index) => (
                   <div key={index} className="comment">
+                    <img
+                      src={comment.userAvatar}
+                      alt={comment.handleName || comment.userName}
+                    />
                     <p>
-                      <strong>{comment.handlename || comment.username}</strong>: {comment.text}
+                      <strong>{comment.handleName || comment.userName}</strong>: {comment.text}
                     </p>
                   </div>
                 ))
