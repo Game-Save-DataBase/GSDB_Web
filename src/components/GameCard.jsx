@@ -8,8 +8,8 @@ const GameCard = ({ game }) => {
   return (
     <div>
       <img
-        src='https://i0.wp.com/bossrush.net/wp-content/uploads/2022/07/retro-1.jpg?resize=1200%2C1080&ssl=1'
-        alt='Games'
+        src={game.imagePath}
+        alt={game.name}
         height={200}
       />
       <h2>

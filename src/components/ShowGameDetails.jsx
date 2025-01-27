@@ -47,8 +47,8 @@ function ShowGameDetails(props) {
           {/* Columna de la izquierda: Imagen */}
           <div className="col-md-4 text-center">
             <img
-              src={"https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Celeste_box_art_full.png/220px-Celeste_box_art_full.png"}
-              alt={game.title}
+              src={game.imagePath}
+              alt={game.name}
               className="img-fluid rounded"
             />
           </div>
@@ -84,7 +84,7 @@ function ShowGameDetails(props) {
               <div key={saveFile._id} className="col-md-4 mb-3">
                 <div className="card">
                   <div className="card-body">
-                    <h5 className="card-title">Archivo {index + 1}</h5>
+                    <h5 className="card-title">{saveFile.title}</h5>
                     <p className="card-text">
                       <strong>Descripción:</strong> {saveFile.description || "Sin descripción"}
                     </p>

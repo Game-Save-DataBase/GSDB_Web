@@ -7,6 +7,7 @@ import '../styles/ShowSaveDetails.scss';
 function ShowSaveDetails(props) {
   const [saveData, setSaveData] = useState({});
   const [relatedGame, setRelatedGame] = useState(null);
+  const [comments, setComments] = useState([]);
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -24,6 +25,36 @@ function ShowSaveDetails(props) {
     fetchSaveData();
   }, [id]);
 
+
+  useEffect(() => {
+    // Obtener comentarios y añadir usernames
+    const fetchCommentsWithUsernames = async () => {
+      try {
+        const commentsResponse = await axios.get(`http://localhost:8082/api/comments/entry/${id}`);
+        const commentsData = commentsResponse.data;
+
+        // Obtener los usernames para cada comentario
+        const updatedComments = await Promise.all(
+          commentsData.map(async (comment) => {
+            try {
+              const userResponse = await axios.get(`http://localhost:8082/api/users/${comment.userID}`);
+              return { ...comment, username: userResponse.data.name, handlename: userResponse.data.handleName };
+            } catch (err) {
+              console.log(`Error fetching user for comment ${comment._id}:`, err);
+              return { ...comment, username: 'Usuario desconocido' };
+            }
+          })
+        );
+
+        setComments(updatedComments);
+      } catch (err) {
+        console.log('Error fetching comments:', err);
+      }
+    };
+
+    fetchCommentsWithUsernames();
+  }, [id]);
+
   useEffect(() => {
     // Solo ejecutar si gameID está disponible
     if (saveData.gameID) {
@@ -39,7 +70,6 @@ function ShowSaveDetails(props) {
       fetchGameData();
     }
   }, [saveData.gameID]); // Este useEffect se activa cuando saveData.gameID cambia
-
 
 
   return (
@@ -77,7 +107,7 @@ function ShowSaveDetails(props) {
               <div className="row-element text-center">
                 {relatedGame && (
                   <img
-                    src={relatedGame.image || 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Celeste_box_art_full.png/220px-Celeste_box_art_full.png'}
+                    src={relatedGame.imagePath}
                     alt={relatedGame.name}
                   />
                 )}
@@ -122,7 +152,7 @@ function ShowSaveDetails(props) {
           <div className='tabs-container'>
             <ul role="tablist">
               <li role="presentation">
-                <button class="active" data-bs-toggle="tab" data-bs-target="#comments">Comments</button>
+                <button className="active" data-bs-toggle="tab" data-bs-target="#comments">Comments</button>
               </li>
               <li role="presentation">
                 <button data-bs-toggle="tab" data-bs-target="#screenshots">Screenshots</button>
@@ -132,23 +162,24 @@ function ShowSaveDetails(props) {
 
           {/* contenido de las tabs */}
           {/* COMENTARIOS */}
-          <div class="tabs-content" >
-            <div class="gsdbtab show active" id="comments">
+          <div className="tabs-content" >
+            <div className="gsdbtab show active" id="comments">
 
-              {saveData.comments && saveData.comments.length > 0 ? (
-                saveData.comments.map((comment, index) => (
+              {comments && comments.length > 0 ? (
+                comments.map((comment, index) => (
                   <div key={index} className="comment">
-                    <p><strong>{comment.user}</strong>: {comment.text}</p>
+                    <p>
+                      <strong>{comment.handlename || comment.username}</strong>: {comment.text}
+                    </p>
                   </div>
                 ))
               ) : (
                 <p className="text-muted">No hay comentarios disponibles para este archivo.</p>
               )}
-
             </div>
 
             {/* SCREENSHOTS */}
-            <div class="gsdbtab" id="screenshots">
+            <div className="gsdbtab" id="screenshots">
               aqui los screenshots pls</div>
           </div>
         </section>
