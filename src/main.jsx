@@ -14,6 +14,7 @@ import CreateGame from "./components/CreateGame.jsx"; //esta de aqui no deberia 
 import ShowGameList from "./components/ShowGameList.jsx";
 import ShowGameDetails from "./components/ShowGameDetails.jsx";
 import ShowSaveDetails from "./components/ShowSaveDetails.jsx";
+import Prueba from "./components/test.jsx";
 
 
 
@@ -23,6 +24,8 @@ const router = createBrowserRouter([
     {path: "/create-Game", element: (<Layout><CreateGame /></Layout>),}, //esta de aqui no deberia existir. borrarla cuando se integre del todo la web
     {path: "/game/:id",element: (<Layout><ShowGameDetails /></Layout>),},
     {path: "/save/:id",element: (<Layout><ShowSaveDetails /></Layout>),},
+    {path: "/prueba",element: (<Layout><Prueba /></Layout>),},
+
 ]);
 
 
