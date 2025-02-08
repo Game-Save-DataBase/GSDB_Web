@@ -3,11 +3,14 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/Common.scss';
 import '../styles/ShowGameDetails.scss';
+import Form from 'react-bootstrap/Form';
+
 
 function ShowGameDetails(props) {
   const [game, setGame] = useState({});
   const [saveFiles, setSaveFiles] = useState([]);
-  const [checkboxesEnabled, setcheckboxesEnabled] = useState({});  // Estado de los checkboxes
+  const [checkboxesEnabled, setCheckboxesEnabled] = useState({});
+  const [filteredSaveFiles, setFilteredSaveFiles] = useState([]);
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -55,6 +58,7 @@ function ShowGameDetails(props) {
           })
         );
         setSaveFiles(updatedSaveFiles);
+        setFilteredSaveFiles(updatedSaveFiles);
       } catch (err) {
         console.log('Error fetching game items');
       }
@@ -76,9 +80,19 @@ function ShowGameDetails(props) {
     for (let i = 0; i < game.platformsID.length; i++) {
       newcheckboxesEnabled[i] = availablePlatforms.includes(i);
     }
+    setCheckboxesEnabled(newcheckboxesEnabled);
 
-    setcheckboxesEnabled(newcheckboxesEnabled);
   }, [game, saveFiles]);  // Se ejecuta cada vez que `saveFiles` o "game" cambie
+
+  useEffect(() => {
+    const activePlatforms = Object.keys(checkboxesEnabled)
+      .filter(index => checkboxesEnabled[index])
+      .map(index => game.platformsID[index]);
+    
+    const filtered = saveFiles.filter(sf => activePlatforms.includes(sf.platformName));
+    setFilteredSaveFiles(filtered);
+  }, [checkboxesEnabled, saveFiles]);
+
 
 
   return (
@@ -125,27 +139,30 @@ function ShowGameDetails(props) {
 
         {/* ...................................SAVES SECTION */}
         <section className="saves-section">
-          {game && game.platformsID && game.platformsID.map((platform, index) => {
-            const isDisabled = !checkboxesEnabled[index]; // Si no está habilitado en `checkboxesEnabled`, deshabilitar
-            return (
-              < div key={platform} className="form-check" >
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  value={platform}
-                  id={`flexCheck${platform}`}
-                  disabled={isDisabled}
-                  checked={!isDisabled}
-                />
-                <label className="form-check-label" htmlFor={`flexCheck${platform}`}>
-                  {platform}
-                </label>
-              </div>
-            );
-          })}
+          <Form>
+            {game.platformsID && game.platformsID.map((platform, index) => (
+              <Form.Check
+                key={index}
+                type="switch"
+                id={`switch-${index}`}
+                label={platform}
+                checked={checkboxesEnabled[index] || false}
+                disabled={!checkboxesEnabled[index]}
+                onChange={() => {
+                  setCheckboxesEnabled(prev => ({
+                    ...prev,
+                    [index]: !prev[index]
+                  }));
+                }}
+              />
+            ))}
+          </Form>
 
-          {saveFiles.length > 0 ? (
-            saveFiles.map((saveFile) => (
+
+
+
+          {filteredSaveFiles.length > 0 ? (
+            filteredSaveFiles.map((saveFile) => (
               <div key={saveFile._id} className="save">
                 <Link to={`/save/${saveFile._id}`}><strong>{saveFile.title}</strong></Link>
                 <p>
