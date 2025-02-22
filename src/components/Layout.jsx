@@ -1,10 +1,12 @@
 // Layout.jsx
 import React from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import '../styles/Layout.scss';
 import '../styles/Common.scss';
 
 const Layout = ({ children }) => {
+    
     return (
         <div className="layout">
             {/* Zona superior: Barra de navegacion */}
@@ -13,8 +15,10 @@ const Layout = ({ children }) => {
                     <ul>
                         <li><Link to="/">Inicio</Link></li>
                         <li><Link to="/create-game">Crear Juego</Link></li>
+                        <li><Link to="/upload-save">Añadir Save</Link></li>
                     </ul>
                 </nav>
+
             </header>
 
             {/* Zona izquierda */}
@@ -29,6 +33,7 @@ const Layout = ({ children }) => {
             {/* Zona central (contenedor para las paginas) */}
             <main className="main-content">
                 {children} {/* Aqui renderizaremos el contenido de la pagina actual */}
+                
             </main>
 
             {/* Zona derecha */}

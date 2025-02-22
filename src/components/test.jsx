@@ -7,15 +7,17 @@ const prueba = (props) => {
   const navigate = useNavigate();
 
   const [saveFile, setSaveFile] = useState({
-    name: "",
+    title: "",
     gameID: "",
     platformID: "",
     description: "",
-    newGameName: "",
+    file: "",
+    userID: "67973534fd1deec06097cc2d"
   });
+  
   const [gameExists, setGameExists] = useState(null);
   const [games, setGames] = useState([]);
-  const [isNewGame, setIsNewGame] = useState(false);
+  const [platforms, setPlatforms] = useState([]);
 
   useEffect(() => {
     axios.get("http://localhost:8082/api/games")
@@ -37,73 +39,74 @@ const prueba = (props) => {
 
   const onGameChange = (e) => {
     const value = e.target.value;
-    setIsNewGame(value === "new");
-    setSaveFile({ ...saveFile, gameID: value, newGameName: "" });
+    setSaveFile({ ...saveFile, gameID: value, platformID: "" });
+    
+      const selectedGame = games.find(game => game._id === value);
+      if (selectedGame) {
+        setPlatforms(selectedGame.platformsID || []);
+      } else {
+        setPlatforms([]);
+      }
+    };
+
+  //Ahora mismo el file no se guarda (no tenemos nada implementado para ello) y guarda un string para que no se quede vacío
+  const onFileChange = (e) => {
+    setSaveFile({ ...saveFile, file: "fileTest" });
   };
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (!isNewGame && gameExists === false) {
-      alert("Game does not exist! Please create it first.");
-      return;
-    }
+    
     try {
       const payload = { ...saveFile };
-      if (isNewGame) {
-        const newGame = await axios.post("http://localhost:8082/api/games", { name: saveFile.newGameName });
-        payload.gameID = newGame.data.id;
-      }
-      await axios.post("http://localhost:8082/api/savefiles", payload);
+      console.log(saveFile);
+      await axios.post("http://localhost:8082/api/savedatas", payload);
       setSaveFile({
-        name: "",
+        title: "",
         gameID: "",
         platformID: "",
         description: "",
-        newGameName: "",
+        file: null,
+        userID: "67973534fd1deec06097cc2d"
       });
       navigate("/");
     } catch (err) {
       console.log("Error in CreateSaveFile!", err);
     }
-  };
+  };  
 
   return (
     <div>
       <h2>Add Save File to Database</h2>
-      <br></br>
       <form noValidate onSubmit={onSubmit}>
+        <input type="file" onChange={onFileChange} />
+        <br />
         <input
           type="text"
           placeholder="Save File Name"
-          name="name"
-          value={saveFile.name}
+          name="title"
+          value={saveFile.title}
           onChange={onChange}
         />
         <br />
         <select name="gameID" value={saveFile.gameID} onChange={onGameChange}>
           <option value="">Select a Game</option>
           {games.map(game => (
-            <option key={game.id} value={game.id}>{game.name}</option>
+            <option key={game._id} value={game._id}>{game.name}</option>
           ))}
-          <option value="new">New Game</option>
         </select>
-        {isNewGame && (
-          <input
-            type="text"
-            placeholder="New Game Name"
-            name="newGameName"
-            value={saveFile.newGameName}
-            onChange={onChange}
-          />
-        )}
         <br />
-        <input
-          type="text"
-          placeholder="Platform"
+        <select
           name="platformID"
           value={saveFile.platformID}
           onChange={onChange}
-        />
+          disabled={!saveFile.gameID}
+        >
+          <option value="">Select a Platform</option>
+          {platforms.map((platform, index) => (
+            <option key={platform} value={index}>{platform}</option>
+          ))}
+        </select>
         <br />
         <textarea
           placeholder="Description"
