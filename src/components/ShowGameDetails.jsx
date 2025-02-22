@@ -7,10 +7,11 @@ import Form from 'react-bootstrap/Form';
 
 
 function ShowGameDetails(props) {
-  const [game, setGame] = useState({});
-  const [saveFiles, setSaveFiles] = useState([]);
-  const [checkboxesEnabled, setCheckboxesEnabled] = useState({});
-  const [filteredSaveFiles, setFilteredSaveFiles] = useState([]);
+  const [game, setGame] = useState({}); //objeto con el juego
+  const [saveFiles, setSaveFiles] = useState([]); //array que almacena todos los savefiles del juego 
+  const [activeCheckboxes, setActiveCheckboxes] = useState({}); //array para almacenar los checkboxes activos
+  const [enabledCheckboxes, setCheckboxesEnabled] = useState({}); //array para determinar los checkboxes que se pueden usar (habilitado = hay savedatas para esa plataforma)
+  const [filteredSaveFiles, setFilteredSaveFiles] = useState([]); //array que almacena los savefiles a mostrar (filtrados)
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -21,7 +22,6 @@ function ShowGameDetails(props) {
       try {
         const gameResponse = await axios.get(`http://localhost:8082/api/games/${id}`);
         setGame(gameResponse.data);
-        setGameLoaded(true); // Marcar que el juego se ha cargado correctamente
       } catch (err) {
         console.log('Error from ShowGameDetails');
       }
@@ -39,8 +39,9 @@ function ShowGameDetails(props) {
       }
 
       try {
+        //obtenemos los archivos de guardado
         const saveFilesResponse = await axios.get(`http://localhost:8082/api/savedatas/game/${id}`);
-
+        //les añadimos más datos que salen de la base de datos de usuarios
         const updatedSaveFiles = await Promise.all(
           saveFilesResponse.data.map(async (sf) => {
             try {
@@ -51,14 +52,20 @@ function ShowGameDetails(props) {
                 userName: userResponse.data.handleName || userResponse.data.name || "Desconocido",
                 userAvatar: userResponse.data.avatar
               };
+
             } catch (err) {
               console.log(`Error fetching user for savefile ${sf._id}:`, err);
               return { ...sf, userName: 'Usuario desconocido' };
             }
           })
         );
-        setSaveFiles(updatedSaveFiles);
-        setFilteredSaveFiles(updatedSaveFiles);
+        //ademas ordenamos por fecha de subida. to do cambiar a fecha de ultima actualizacion
+        const sortedSaveFiles = [...updatedSaveFiles].sort(
+          (a, b) => new Date(b.postedDate) - new Date(a.postedDate)
+        );
+        //inicializamos los dos arrays
+        setSaveFiles(sortedSaveFiles);
+        setFilteredSaveFiles(sortedSaveFiles);
       } catch (err) {
         console.log('Error fetching game items');
       }
@@ -68,32 +75,36 @@ function ShowGameDetails(props) {
 
   }, [game, id]); // Dependencia en `game` para que se ejecute cuando `game` cambie
 
-
+  //effect para los checkboxes
   useEffect(() => {
     if (!game || !game.platformsID || !saveFiles) {
       return;
     }
     // Obtener plataformas únicas de los archivos de guardado    
-    //las checkboxes se inicializan a n plataformas segun el juego y todas a false
+    //las checkboxes se inicializan a n plataformas segun el juego. Pone a true las que existan en los savefiles.
     const availablePlatforms = [...new Set(saveFiles.map(sf => sf.platformID))]
-    const newcheckboxesEnabled = {};
+    const newCheckboxesEnabled = {};
     for (let i = 0; i < game.platformsID.length; i++) {
-      newcheckboxesEnabled[i] = availablePlatforms.includes(i);
+      newCheckboxesEnabled[i] = availablePlatforms.includes(i);
     }
-    setCheckboxesEnabled(newcheckboxesEnabled);
+    //inicializa los arrays
+    setCheckboxesEnabled(newCheckboxesEnabled);
+    setActiveCheckboxes(newCheckboxesEnabled);
 
   }, [game, saveFiles]);  // Se ejecuta cada vez que `saveFiles` o "game" cambie
 
+  //effect para filtrar las plataformas mediante las plataformas activas en los checkboxes
   useEffect(() => {
-    const activePlatforms = Object.keys(checkboxesEnabled)
-      .filter(index => checkboxesEnabled[index])
+    const activePlatforms = Object.keys(activeCheckboxes)
+      .filter(index => activeCheckboxes[index])
       .map(index => game.platformsID[index]);
     
     const filtered = saveFiles.filter(sf => activePlatforms.includes(sf.platformName));
     setFilteredSaveFiles(filtered);
-  }, [checkboxesEnabled, saveFiles]);
+  }, [activeCheckboxes, saveFiles]);
 
-
+  //Nos guardamos ademas la ultima actualizacion de todos los saves
+  const lastUpdate = saveFiles.length > 0 ? new Date(saveFiles[0].postedDate).toLocaleDateString() : "No updates";
 
   return (
     <div>
@@ -130,7 +141,8 @@ function ShowGameDetails(props) {
 
               {/* Columna derecha: información del juego */}
               <div className='row-element text-muted'>
-
+                <p><strong>Available saves:</strong> {saveFiles.length}</p>
+                <p><strong>Last update: </strong>{lastUpdate} </p>
                 <button type="button" className="gsdb-btn-default">Install instructions</button>
               </div>
             </div>
@@ -146,10 +158,10 @@ function ShowGameDetails(props) {
                 type="switch"
                 id={`switch-${index}`}
                 label={platform}
-                checked={checkboxesEnabled[index] || false}
-                disabled={!checkboxesEnabled[index]}
+                checked={activeCheckboxes[index] || false}
+                disabled={!enabledCheckboxes[index]}
                 onChange={() => {
-                  setCheckboxesEnabled(prev => ({
+                  setActiveCheckboxes(prev => ({
                     ...prev,
                     [index]: !prev[index]
                   }));
