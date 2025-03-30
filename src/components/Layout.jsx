@@ -1,16 +1,16 @@
 // Layout.jsx
 import React, {useState, useEffect} from "react";
-import { Link } from "react-router-dom";
+import { Link , useNavigate} from "react-router-dom";
 import axios from "axios";
 import '../styles/Layout.scss';
 import '../styles/Common.scss';
 
 const Layout = ({ children }) => {
-    
+    const navigate = useNavigate();
+
     const [searchType, setSearchType] = useState("games");
-    const [searchQuery, setSearchQuery] = useState("");
-    const [searchResults, setSearchResults] = useState([]);
-    const [data, setData] = useState([]);
+    const [searchQuery, setSearchQuery] = useState("");  
+    const [errorMessage, setErrorMessage] = useState("");
 
     useEffect(() => {
         const fetchData = async () => {
@@ -32,19 +32,20 @@ const Layout = ({ children }) => {
     const handleSearch = (e) => {
         e.preventDefault();
         
-        if (!searchQuery.trim()) {
-            setSearchResults([]);
+        // if (!searchQuery.trim()) {
+        //     setSearchResults([]);
+        //     return;
+        // }
+
+        if (searchQuery.trim().length < 3) {
+            setErrorMessage("La búsqueda debe tener al menos 3 caracteres.");
+            setTimeout(() => setErrorMessage(""), 3000); // Borra el mensaje tras 3s
             return;
         }
 
-        const filteredResults = data.filter(item => 
-            searchType === "games"
-                ? item.name.toLowerCase().includes(searchQuery.toLowerCase())
-                : item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  item.description.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-        
-        setSearchResults(filteredResults);
+
+        // Redirigir a la nueva página de búsqueda con los parámetros en la URL
+        navigate(`/search?query=${searchQuery}&type=${searchType}`);
     };
     return (
         <div className="layout">
@@ -69,6 +70,9 @@ const Layout = ({ children }) => {
                             />
                             <button type="submit">Buscar</button>
                         </form>
+                        {/* Mensaje de error si la búsqueda es muy corta */}
+                        {errorMessage && <p style={{ color: "red", marginTop: "5px" }}>{errorMessage}</p>}
+
                     </ul>
 
                 </nav>
@@ -87,16 +91,6 @@ const Layout = ({ children }) => {
             {/* Zona central (contenedor para las paginas) */}
             <main className="main-content">
                 {children} {/* Aqui renderizaremos el contenido de la pagina actual */}
-                {searchResults.length > 0 && (
-                    <div className="search-results">
-                        <h3>Resultados de búsqueda:</h3>
-                        <ul>
-                            {searchResults.map((result, index) => (
-                                <li key={index}>{searchType === "games" ? result.name : result.title}</li>
-                            ))}
-                        </ul>
-                    </div>
-                )}                
             </main>
 
             {/* Zona derecha */}

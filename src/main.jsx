@@ -15,6 +15,7 @@ import ShowGameList from "./components/ShowGameList.jsx";
 import ShowGameDetails from "./components/ShowGameDetails.jsx";
 import ShowSaveDetails from "./components/ShowSaveDetails.jsx";
 import UploadSave from "./components/UploadSave.jsx";
+import SearchResults from "./components/SearchResults.jsx";
 
 import Test from "./components/test.jsx";
 
@@ -25,6 +26,7 @@ const router = createBrowserRouter([
     {path: "/game/:id",element: (<Layout><ShowGameDetails /></Layout>),},
     {path: "/save/:id",element: (<Layout><ShowSaveDetails /></Layout>),},
     {path: "/upload-save",element: (<Layout><UploadSave /></Layout>),},
+    {path: "/search",element: (<Layout><SearchResults /></Layout>),},
 
     {path: "/test",element: (<Layout><Test /></Layout>),},
 ]);
