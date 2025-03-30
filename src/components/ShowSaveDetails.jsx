@@ -14,7 +14,7 @@ function ShowSaveDetails(props) {
   const navigate = useNavigate();
 
   // Función para obtener las imágenes desde el servidor
-  const fetchImages = async (saveId) => {
+  const fetchImages = async (id) => {
     try {
       const response = await axios.get(`http://localhost:8082/api/savedatas/${id}/images`); setImagePaths(response.data);  // Aquí se actualizan las rutas de las imágenes
       setImagePaths(response.data.images);
@@ -226,8 +226,7 @@ function ShowSaveDetails(props) {
               {imagePaths.length > 0 ? (
                 imagePaths.map((imagePath, index) => (
                   <img key={index}
-                    // src={`http://localhost:8082${imagePath}`} 
-                    src={`/src/${imagePath}`} //DEBERIA COGER ESTO DE BASE DE DATOS, PERO AUN NO SE HACERLO BIEN. HASTA QUE SE ARREGLE LO COGEMOS DE LA WEB PARA EVITAR ERRORES EN CONSOLA
+                    src={`http://localhost:8082${imagePath}`} 
                     alt={`Screenshot ${index + 1}`} className="screenshot" />
 
                 ))
