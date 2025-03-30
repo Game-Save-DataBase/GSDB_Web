@@ -51,7 +51,7 @@ function ShowSaveDetails(props) {
           commentsData.map(async (comment) => {
             try {
               const userResponse = await axios.get(`http://localhost:8082/api/users/${comment.userID}`);
-              return { ...comment, userName: userResponse.data.name, handleName: userResponse.data.handleName, userAvatar: userResponse.data.avatar };
+              return { ...comment, userName: userResponse.data.userName, alias: userResponse.data.alias, pfp: userResponse.data.pfp };
             } catch (err) {
               console.log(`Error fetching user for comment ${comment._id}:`, err);
               return { ...comment, userName: 'Usuario desconocido' };
@@ -157,7 +157,7 @@ function ShowSaveDetails(props) {
                 <p>
                   <strong>Submitted By:</strong> {' '}
                   {relatedUser
-                    ? relatedUser.handleName || relatedUser.name || 'Desconocido'
+                    ? relatedUser.alias || relatedUser.name || 'Desconocido'
                     : 'Desconocido'}
                 </p>
                 <p>
@@ -208,11 +208,11 @@ function ShowSaveDetails(props) {
                       <small>{comment.postedDate}</small>
                     </p>
                     <img
-                      src={comment.userAvatar}
-                      alt={comment.handleName || comment.userName}
+                      src={comment.pfp}
+                      alt={comment.alias || comment.userName}
                     />
                     <p>
-                      <strong>{comment.handleName || comment.userName}</strong>: {comment.text}
+                      <strong>{comment.alias || comment.userName}</strong>: {comment.text}
                     </p>
                   </div>
                 ))

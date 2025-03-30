@@ -49,13 +49,13 @@ function ShowGameDetails(props) {
               return {
                 ...sf,
                 platformName: game.platformsID[sf.platformID], //datos añadidos para tener un savedata con esteroides
-                userName: userResponse.data.handleName || userResponse.data.name || "Desconocido",
-                userAvatar: userResponse.data.avatar
+                alias: userResponse.data.alias || userResponse.data.userName || "Desconocido",
+                pfp: userResponse.data.pfp
               };
 
             } catch (err) {
               console.log(`Error fetching user for savefile ${sf._id}:`, err);
-              return { ...sf, userName: 'Usuario desconocido' };
+              return { ...sf, alias: 'Usuario desconocido' };
             }
           })
         );
@@ -178,7 +178,7 @@ function ShowGameDetails(props) {
               <div key={saveFile._id} className="save">
                 <Link to={`/save/${saveFile._id}`}><strong>{saveFile.title}</strong></Link>
                 <p>
-                  <small>Uploaded by: {saveFile.userName}</small> - Plataforma: {saveFile.platformName}
+                  <small>Uploaded by: {saveFile.alias}</small> - Plataforma: {saveFile.platformName}
                 </p>
               </div>
             ))
