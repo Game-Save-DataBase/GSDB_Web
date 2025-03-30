@@ -2,15 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/Common.scss';
+import { PLATFORMS } from '../components/constants.jsx'
 import Form from 'react-bootstrap/Form';
-
-const PLATFORMS = [
-  { id: 0, name: "windows" },
-  { id: 1, name: "PlayStation 4" },
-  { id: 2, name: "Xbox 360" },
-  { id: 3, name: "switch" },
-  { id: 4, name: "mac" }
-];
 
 function ShowGameList() {
   const [games, setGames] = useState([]);
@@ -45,8 +38,8 @@ function ShowGameList() {
     const newActiveCheckboxes = {};
 
     PLATFORMS.forEach(platform => {
-      newEnabledCheckboxes[platform.name] = platformsWithGames.has(platform.name);
-      newActiveCheckboxes[platform.name] = platformsWithGames.has(platform.name); // Se activan solo si hay juegos con esa plataforma
+      newEnabledCheckboxes[platform.id] = platformsWithGames.has(platform.id);
+      newActiveCheckboxes[platform.id] = platformsWithGames.has(platform.id); // Se activan solo si hay juegos con esa plataforma
     });
 
     setCheckboxesEnabled(newEnabledCheckboxes);
@@ -81,9 +74,9 @@ function ShowGameList() {
             type="switch"
             id={`switch-${platform.id}`}
             label={platform.name}
-            checked={activeCheckboxes[platform.name] || false}
-            disabled={!enabledCheckboxes[platform.name]}
-            onChange={() => handleCheckboxChange(platform.name)}
+            checked={activeCheckboxes[platform.id] || false}
+            disabled={!enabledCheckboxes[platform.id]}
+            onChange={() => handleCheckboxChange(platform.id)}
           />
         ))}
       </Form>
@@ -93,7 +86,7 @@ function ShowGameList() {
         {filteredGames.length > 0 ? (
           filteredGames.map((game) => (
             <li key={game._id}>
-              <Link to={`/game/${game._id}`}>{game.name}</Link>
+              <Link to={`/game/${game._id}`}>{game.title}</Link>
             </li>
           ))
         ) : (

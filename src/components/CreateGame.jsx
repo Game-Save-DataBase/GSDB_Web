@@ -9,12 +9,11 @@ const CreateGame = (props) => {
   const [game, setGame] = useState({
     name: "",
     platformsID: "",
-    savePathID: "",
   });
 
   /*funcion para realizar cuando cambia el valor de los inputs */
   const onChange = (e) => {
-    setGame({ ...game, [e.target.name]: e.target.value });
+    setGame({ ...game, [e.target.title]: e.target.value });
   };
 /*funcion a realizar para cuando se pulsa el boton de añadir juego */
   const onSubmit = (e) => {
@@ -25,7 +24,6 @@ const CreateGame = (props) => {
         setGame({
           name: "",
           platformsID: "",
-          savePathID: "",
         });
         // Push to /
         navigate("/");
@@ -48,7 +46,7 @@ const CreateGame = (props) => {
           type="text"
           placeholder="Title of the Game"
           name="name"
-          value={game.name}
+          value={game.title}
           onChange={onChange}
         />
         <br />
@@ -57,14 +55,6 @@ const CreateGame = (props) => {
           placeholder="Platform"
           name="platformsID"
           value={game.platformsID}
-          onChange={onChange}
-        />
-        <br />
-        <input
-          type="text"
-          placeholder="Save path"
-          name="savePathID"
-          value={game.savePathID}
           onChange={onChange}
         />
         <br />

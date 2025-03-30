@@ -92,7 +92,7 @@ const UploadSave = (props) => {
         <select name="gameID" value={saveFile.gameID} onChange={onGameChange}>
           <option value="">Select a Game</option>
           {games.map(game => (
-            <option key={game._id} value={game._id}>{game.name}</option>
+            <option key={game._id} value={game._id}>{game.title}</option>
           ))}
         </select>
         <br />

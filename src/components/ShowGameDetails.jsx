@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/Common.scss';
 import '../styles/ShowGameDetails.scss';
+import { PLATFORMS } from '../components/constants.jsx'
 import Form from 'react-bootstrap/Form';
 
 
@@ -17,7 +18,7 @@ function ShowGameDetails(props) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    /*funcion que carga el juego, su imagen y sus datos del modelo de games */
+    /*funcion que carga el juego, su caratula y sus datos del modelo de games */
     const fetchGameDetails = async () => {
       try {
         const gameResponse = await axios.get(`http://localhost:8082/api/games/${id}`);
@@ -48,7 +49,7 @@ function ShowGameDetails(props) {
               const userResponse = await axios.get(`http://localhost:8082/api/users/${sf.userID}`);
               return {
                 ...sf,
-                platformName: game.platformsID[sf.platformID], //datos añadidos para tener un savedata con esteroides
+                platformName: getPlatformName(sf.platformID), //datos añadidos para tener un savedata con esteroides
                 alias: userResponse.data.alias || userResponse.data.userName || "Desconocido",
                 pfp: userResponse.data.pfp
               };
@@ -117,7 +118,7 @@ function ShowGameDetails(props) {
             </li>
             <li>
               {game &&
-                game.name || 'Juego sin título'}
+                game.title || 'Juego sin título'}
             </li>
           </ol>
         </nav>
@@ -129,12 +130,12 @@ function ShowGameDetails(props) {
         <section className="game-section">
           <div className='table-data'>
             <div className="row">
-              {/* Columna izquierda: imagen del juego */}
+              {/* Columna izquierda: caratula del juego */}
               <div className="row-element text-center">
                 {game && (
                   <img
-                    src={game.imagePath}
-                    alt={game.name}
+                    src={`http://localhost:8082${game.cover}`} 
+                    alt={game.title}
                   />
                 )}
               </div>

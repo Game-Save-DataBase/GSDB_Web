@@ -9,18 +9,18 @@ function ShowSaveDetails(props) {
   const [relatedGame, setRelatedGame] = useState(null);
   const [relatedUser, setRelatedUser] = useState(null);
   const [comments, setComments] = useState([]);
-  const [imagePaths, setImagePaths] = useState([]);
+  const [screenshots, setscreenshots] = useState([]);
   const { id } = useParams();
   const navigate = useNavigate();
 
   // Función para obtener las imágenes desde el servidor
-  const fetchImages = async (saveId) => {
+  const fetchscreenshots = async (saveId) => {
     try {
-      const response = await axios.get(`http://localhost:8082/api/savedatas/${id}/images`); setImagePaths(response.data);  // Aquí se actualizan las rutas de las imágenes
-      setImagePaths(response.data.images);
-      // console.log(response.data.images)
+      const response = await axios.get(`http://localhost:8082/api/savedatas/${id}/screenshots`); setscreenshots(response.data);  // Aquí se actualizan las rutas de las imágenes
+      setscreenshots(response.data.screenshots);
+      // console.log(response.data.screenshots)
     } catch (err) {
-      console.log('Error fetching images:', err);
+      console.log('Error fetching screenshots:', err);
     }
   };
 
@@ -30,7 +30,7 @@ function ShowSaveDetails(props) {
       try {
         const saveResponse = await axios.get(`http://localhost:8082/api/savedatas/${id}`);
         setSaveData(saveResponse.data);
-        fetchImages(id)
+        fetchscreenshots(id)
       } catch (err) {
         console.log('Error fetching save data:', err);
       }
@@ -114,7 +114,7 @@ function ShowSaveDetails(props) {
             <li>
               {relatedGame && (
                 <Link to={`/game/${saveData.gameID}`}>
-                  {`${relatedGame.name}` || 'Juego'}
+                  {`${relatedGame.title}` || 'Juego'}
                 </Link>
               )}
             </li>
@@ -133,12 +133,12 @@ function ShowSaveDetails(props) {
         <section className="data-section">
           <div className='table-data'>
             <div className="row">
-              {/* Columna izquierda: imagen del juego y boton de descarga */}
+              {/* Columna izquierda: screenshotn del juego y boton de descarga */}
               <div className="row-element text-center">
                 {relatedGame && (
                   <img
-                    src={relatedGame.imagePath}
-                    alt={relatedGame.name}
+                    src={relatedGame.cover}
+                    alt={relatedGame.title}
                   />
                 )}
               </div>
@@ -157,7 +157,7 @@ function ShowSaveDetails(props) {
                 <p>
                   <strong>Submitted By:</strong> {' '}
                   {relatedUser
-                    ? relatedUser.alias || relatedUser.name || 'Desconocido'
+                    ? relatedUser.alias || relatedUser.userName || 'Desconocido'
                     : 'Desconocido'}
                 </p>
                 <p>
@@ -191,7 +191,7 @@ function ShowSaveDetails(props) {
                 <button className="active" data-bs-toggle="tab" data-bs-target="#comments">Comments</button>
               </li>
               <li role="presentation">
-                <button className={`${imagePaths.length <= 0 ? 'disabled' : ''}`} data-bs-toggle="tab" data-bs-target="#screenshots">Screenshots</button>
+                <button className={`${screenshots.length <= 0 ? 'disabled' : ''}`} data-bs-toggle="tab" data-bs-target="#screenshots">Screenshots</button>
               </li>
             </ul>
           </div>
@@ -223,11 +223,11 @@ function ShowSaveDetails(props) {
 
             {/* SCREENSHOTS */}
             <div className="gsdbtab" id="screenshots">
-              {imagePaths.length > 0 ? (
-                imagePaths.map((imagePath, index) => (
+              {screenshots.length > 0 ? (
+                screenshots.map((screenshot, index) => (
                   <img key={index}
-                    // src={`http://localhost:8082${imagePath}`} 
-                    src={`/src/${imagePath}`} //DEBERIA COGER ESTO DE BASE DE DATOS, PERO AUN NO SE HACERLO BIEN. HASTA QUE SE ARREGLE LO COGEMOS DE LA WEB PARA EVITAR ERRORES EN CONSOLA
+                    src={`http://localhost:8082${screenshot}`} 
+                    //src={`/src/${screenshot}`} //DEBERIA COGER ESTO DE BASE DE DATOS, PERO AUN NO SE HACERLO BIEN. HASTA QUE SE ARREGLE LO COGEMOS DE LA WEB PARA EVITAR ERRORES EN CONSOLA
                     alt={`Screenshot ${index + 1}`} className="screenshot" />
 
                 ))

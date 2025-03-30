@@ -21,7 +21,7 @@ const SearchResults = () => {
               const response = await axios.get(url);
               const filteredResults = response.data.filter(item =>
                   type === "games"
-                      ? item.name.toLowerCase().includes(query.toLowerCase())
+                      ? item.title.toLowerCase().includes(query.toLowerCase())
                       : item.title.toLowerCase().includes(query.toLowerCase()) ||
                         item.description.toLowerCase().includes(query.toLowerCase())
               );
@@ -41,7 +41,7 @@ const SearchResults = () => {
           {results.length > 0 ? (
               <ul>
                   {results.map((result, index) => (
-                      <li key={index}>{type === "games" ? result.name : result.title}</li>
+                      <li key={index}>{result.title}</li>
                   ))}
               </ul>
           ) : (
