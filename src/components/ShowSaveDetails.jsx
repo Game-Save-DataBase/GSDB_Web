@@ -43,7 +43,7 @@ function ShowSaveDetails(props) {
     // Obtener comentarios y añadir usernames
     const fetchComments = async () => {
       try {
-        const commentsResponse = await axios.get(`http://localhost:8082/api/comments/entry/${id}`);
+        const commentsResponse = await axios.get(`http://localhost:8082/api/comments/save/${id}`);
         const commentsData = commentsResponse.data;
 
         // Obtener los usernames para cada comentario
@@ -54,7 +54,7 @@ function ShowSaveDetails(props) {
               return { ...comment, userName: userResponse.data.userName, alias: userResponse.data.alias, pfp: userResponse.data.pfp };
             } catch (err) {
               console.log(`Error fetching user for comment ${comment._id}:`, err);
-              return { ...comment, userName: 'Usuario desconocido' };
+              return { ...comment, userName: 'Usuario desconocido', pfp:' ' };
             }
           })
         );
