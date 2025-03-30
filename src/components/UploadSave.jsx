@@ -15,7 +15,7 @@ const UploadSave = (props) => {
     userID: "67973534fd1deec06097cc2d"
   });
   
-  const [gameExists, setGameExists] = useState(null);
+  // const [gameExists, setGameExists] = useState(null);
   const [games, setGames] = useState([]);
   const [platforms, setPlatforms] = useState([]);
 
@@ -25,13 +25,13 @@ const UploadSave = (props) => {
       .catch(error => console.log("Error fetching games", error));
   }, []);
 
-  useEffect(() => {
-    if (saveFile.gameID && saveFile.gameID !== "new") {
-      axios.get(`http://localhost:8082/api/games/${saveFile.gameID}`)
-        .then(response => setGameExists(true))
-        .catch(error => setGameExists(false));
-    }
-  }, [saveFile.gameID]);
+  // useEffect(() => {
+  //   if (saveFile.gameID && saveFile.gameID !== "new") {
+  //     axios.get(`http://localhost:8082/api/games/${saveFile.gameID}`)
+  //       .then(response => setGameExists(true))
+  //       .catch(error => setGameExists(false));
+  //   }
+  // }, [saveFile.gameID]);
 
   const onChange = (e) => {
     setSaveFile({ ...saveFile, [e.target.name]: e.target.value });
@@ -41,12 +41,8 @@ const UploadSave = (props) => {
     const value = e.target.value;
     setSaveFile({ ...saveFile, gameID: value, platformID: "" });
     
-      const selectedGame = games.find(game => game._id === value);
-      if (selectedGame) {
-        setPlatforms(selectedGame.platformsID || []);
-      } else {
-        setPlatforms([]);
-      }
+    const selectedGame = games.find(game => game._id === value);
+    setPlatforms(selectedGame ? selectedGame.platformsID || [] : []);
     };
 
   //Ahora mismo el file no se guarda (no tenemos nada implementado para ello) y guarda un string para que no se quede vacío
