@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/Common.scss';
 import '../styles/ShowGameDetails.scss';
-import { PLATFORMS } from '../components/constants.jsx'
+import { getPlatformName } from '../components/constants.jsx'
 import Form from 'react-bootstrap/Form';
 
 
@@ -94,13 +94,13 @@ function ShowGameDetails(props) {
 
   }, [game, saveFiles]);  // Se ejecuta cada vez que `saveFiles` o "game" cambie
 
-  //effect para filtrar las plataformas mediante las plataformas activas en los checkboxes
+  // Filtrar juegos cuando cambian los checkboxes activos
   useEffect(() => {
-    const activePlatforms = Object.keys(activeCheckboxes)
-      .filter(index => activeCheckboxes[index])
-      .map(index => game.platformsID[index]);
-    
-    const filtered = saveFiles.filter(sf => activePlatforms.includes(sf.platformName));
+    const activePlatforms = Object.keys(activeCheckboxes).filter(platform => activeCheckboxes[platform]).map(Number); //map para convertir de string a numero
+
+    const filtered = saveFiles.filter(sf =>
+      activePlatforms.includes(sf.platformID) // Compara si la plataforma está activa
+    );
     setFilteredSaveFiles(filtered);
   }, [activeCheckboxes, saveFiles]);
 

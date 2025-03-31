@@ -48,8 +48,7 @@ function ShowGameList() {
 
   // Filtrar juegos cuando cambian los checkboxes activos
   useEffect(() => {
-    const activePlatforms = Object.keys(activeCheckboxes).filter(platform => activeCheckboxes[platform]);
-
+    const activePlatforms = Object.keys(activeCheckboxes).filter(platform => activeCheckboxes[platform]).map(Number); //map para convertir de string a numero
     const filtered = games.filter(game =>
       game.platformsID.some(platform => activePlatforms.includes(platform))
     );

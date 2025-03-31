@@ -54,7 +54,7 @@ function ShowSaveDetails(props) {
               return { ...comment, userName: userResponse.data.userName, alias: userResponse.data.alias, pfp: userResponse.data.pfp };
             } catch (err) {
               console.log(`Error fetching user for comment ${comment._id}:`, err);
-              return { ...comment, userName: 'Usuario desconocido', pfp:' ' };
+              return { ...comment, userName: 'Usuario desconocido', pfp: ' ' };
             }
           })
         );
@@ -137,7 +137,7 @@ function ShowSaveDetails(props) {
               <div className="row-element text-center">
                 {relatedGame && (
                   <img
-                    src={relatedGame.cover}
+                    src={`http://localhost:8082${relatedGame.cover}`}
                     alt={relatedGame.title}
                   />
                 )}
@@ -226,7 +226,7 @@ function ShowSaveDetails(props) {
               {screenshots.length > 0 ? (
                 screenshots.map((screenshot, index) => (
                   <img key={index}
-                    src={`http://localhost:8082${screenshot}`} 
+                    src={`http://localhost:8082${screenshot}`}
                     //src={`/src/${screenshot}`} //DEBERIA COGER ESTO DE BASE DE DATOS, PERO AUN NO SE HACERLO BIEN. HASTA QUE SE ARREGLE LO COGEMOS DE LA WEB PARA EVITAR ERRORES EN CONSOLA
                     alt={`Screenshot ${index + 1}`} className="screenshot" />
 

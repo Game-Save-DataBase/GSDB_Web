@@ -8,7 +8,7 @@ import '../styles/Common.scss';
 const Layout = ({ children }) => {
     const navigate = useNavigate();
 
-    const [searchType, setSearchType] = useState("games");
+    const [searchType, setSearchType] = useState("");
     const [searchQuery, setSearchQuery] = useState("");  
     const [errorMessage, setErrorMessage] = useState("");
 
@@ -20,7 +20,7 @@ const Layout = ({ children }) => {
                     : "http://localhost:8082/api/savedatas";
                 
                 const response = await axios.get(url);
-                setData(response.data);
+                setSearchType(response.data);
             } catch (error) {
                 console.error("Error fetching data", error);
             }

@@ -6,10 +6,8 @@ export const PLATFORMS = [
   { id: 4, name: "Mac" }
 ];
 
-export function getPlatformName(id){
-    if(id> PLATFORMS.length-1 || id< PLATFORMS.length-1){
-        return "null"
-    }
-    return PLATFORMS[id].name
+export function getPlatformName(id) {
+  const platform = PLATFORMS.find(p => p.id === id);
+  return platform ? platform.name : "null";
 }
 
