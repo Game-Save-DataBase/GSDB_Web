@@ -47,29 +47,66 @@ const UploadSave = (props) => {
 
   //Ahora mismo el file no se guarda (no tenemos nada implementado para ello) y guarda un string para que no se quede vacío
   const onFileChange = (e) => {
-    setSaveFile({ ...saveFile, file: "fileTest" });
+    const file = e.target.files[0];
+    setSaveFile({ ...saveFile, file: file });
   };
+
+  // const onSubmit = async (e) => {
+  //   e.preventDefault();
+    
+  //   try {
+  //     const payload = { ...saveFile };
+  //     console.log(saveFile);
+  //     await axios.post("http://localhost:8082/api/savedatas", payload);
+  //     setSaveFile({
+  //       title: "",
+  //       gameID: "",
+  //       platformID: "",
+  //       description: "",
+  //       file: null,
+  //       userID: "67973534fd1deec06097cc2d"
+  //     });
+  //     navigate("/");
+  //   } catch (err) {
+  //     console.log("Error in CreateSaveFile!", err);
+  //   }
+  // };  
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    
+  
     try {
-      const payload = { ...saveFile };
-      console.log(saveFile);
-      await axios.post("http://localhost:8082/api/savedatas", payload);
+      const formData = new FormData();
+      formData.append("title", saveFile.title);
+      formData.append("gameID", saveFile.gameID);
+      formData.append("platformID", saveFile.platformID);
+      formData.append("description", saveFile.description);
+      formData.append("userID", saveFile.userID);
+      formData.append("file", saveFile.file);  // Asegúrate de que 'file' se esté enviando correctamente
+  
+      // Realizar el POST al backend
+      await axios.post("http://localhost:8082/api/savedatas", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+  
+      // Resetear el formulario
       setSaveFile({
         title: "",
         gameID: "",
         platformID: "",
         description: "",
         file: null,
-        userID: "67973534fd1deec06097cc2d"
+        userID: "67973534fd1deec06097cc2d",
       });
-      navigate("/");
+      navigate("/"); // Redirigir después de que se haya creado el savedata
     } catch (err) {
       console.log("Error in CreateSaveFile!", err);
     }
-  };  
+  };
+  
+  
 
   return (
     <div>
