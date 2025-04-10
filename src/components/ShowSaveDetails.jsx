@@ -100,8 +100,18 @@ function ShowSaveDetails(props) {
     }
   }, [saveData.userID]); // Este useEffect se activa cuando saveData.gameID cambia
 
-
-
+  const handleDownload = () => {
+    const downloadUrl = `http://localhost:8082/api/savedatas/${id}/download`;
+  
+    // Creamos un enlace oculto y simulamos un clic
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.setAttribute('download', ''); // Esto ayuda a forzar la descarga
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  
   return (
     <div>
       {/* Seccion previa al encabezado con el enlace y titulo. La dejo fuera del div container de la pagina a proposito.*/}
@@ -175,7 +185,7 @@ function ShowSaveDetails(props) {
 
             <div className='row'>
               <div className='row-element text-center'>
-                <button type="button" className="gsdb-btn-default">Download</button>
+                <button type="button" className="gsdb-btn-default" onClick={handleDownload}>Download</button>
               </div>
             </div>
           </div>
