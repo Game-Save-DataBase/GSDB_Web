@@ -1,6 +1,6 @@
 import config from "../utils/config";
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../utils/interceptor";
 import { useNavigate, useLocation } from "react-router-dom";
 import '../styles/Common.scss';
 
@@ -19,7 +19,7 @@ const SearchResults = () => {
                     ? `${config.api.games}`
                     : `${config.api.savedatas}`;
 
-                const response = await axios.get(url);
+                const response = await api.get(url);
                 const filteredResults = response.data.filter(item =>
                     type === "games"
                         ? item.title.toLowerCase().includes(query.toLowerCase())

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../utils/interceptor";
 import { useNavigate } from "react-router-dom";
 import '../styles/Common.scss';
 
@@ -20,14 +20,14 @@ const prueba = (props) => {
   const [platforms, setPlatforms] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:8082/api/games")
+    api.get("http://localhost:8082/api/games")
       .then(response => setGames(response.data))
       .catch(error => console.log("Error fetching games", error));
   }, []);
 
   useEffect(() => {
     if (saveFile.gameID && saveFile.gameID !== "new") {
-      axios.get(`http://localhost:8082/api/games/${saveFile.gameID}`)
+      api.get(`http://localhost:8082/api/games/${saveFile.gameID}`)
         .then(response => setGameExists(true))
         .catch(error => setGameExists(false));
     }
@@ -60,7 +60,7 @@ const prueba = (props) => {
     try {
       const payload = { ...saveFile };
       console.log(saveFile);
-      await axios.post("http://localhost:8082/api/savedatas", payload);
+      await api.post("http://localhost:8082/api/savedatas", payload);
       setSaveFile({
         title: "",
         gameID: "",

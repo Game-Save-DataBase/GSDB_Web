@@ -1,7 +1,7 @@
 import config from '../utils/config';
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/interceptor';
 import '../styles/Common.scss';
 import '../styles/ShowSaveDetails.scss';
 
@@ -17,7 +17,7 @@ function ShowSaveDetails(props) {
   // Función para obtener las imágenes desde el servidor
   const fetchscreenshots = async (saveId) => {
     try {
-      const response = await axios.get(`${config.api.savedatas}/${id}/screenshots`); setscreenshots(response.data);  // Aquí se actualizan las rutas de las imágenes
+      const response = await api.get(`${config.api.savedatas}/${id}/screenshots`); setscreenshots(response.data);  // Aquí se actualizan las rutas de las imágenes
       setscreenshots(response.data.screenshots);
       // console.log(response.data.screenshots)
     } catch (err) {
@@ -29,7 +29,7 @@ function ShowSaveDetails(props) {
     // Función para obtener los detalles del archivo de guardado
     const fetchSaveData = async () => {
       try {
-        const saveResponse = await axios.get(`${config.api.savedatas}/${id}`);
+        const saveResponse = await api.get(`${config.api.savedatas}/${id}`);
         setSaveData(saveResponse.data);
         fetchscreenshots(id)
       } catch (err) {
@@ -44,14 +44,14 @@ function ShowSaveDetails(props) {
     // Obtener comentarios y añadir usernames
     const fetchComments = async () => {
       try {
-        const commentsResponse = await axios.get(`${config.api.comments}/save/${id}`);
+        const commentsResponse = await api.get(`${config.api.comments}/save/${id}`);
         const commentsData = commentsResponse.data;
 
         // Obtener los usernames para cada comentario
         const updatedComments = await Promise.all(
           commentsData.map(async (comment) => {
             try {
-              const userResponse = await axios.get(`${config.api.users}/${comment.userID}`);
+              const userResponse = await api.get(`${config.api.users}/${comment.userID}`);
               return { ...comment, userName: userResponse.data.userName, alias: userResponse.data.alias, pfp: userResponse.data.pfp };
             } catch (err) {
               console.log(`Error fetching user for comment ${comment._id}:`, err);
@@ -74,7 +74,7 @@ function ShowSaveDetails(props) {
     if (saveData.gameID) {
       const fetchGameData = async () => {
         try {
-          const gameResponse = await axios.get(`${config.api.games}/${saveData.gameID}`);
+          const gameResponse = await api.get(`${config.api.games}/${saveData.gameID}`);
           setRelatedGame(gameResponse.data);
         } catch (err) {
           console.log('Error fetching game data:', err);
@@ -90,7 +90,7 @@ function ShowSaveDetails(props) {
     if (saveData.userID) {
       const fetchUserData = async () => {
         try {
-          const userResponse = await axios.get(`${config.api.users}/${saveData.userID}`);
+          const userResponse = await api.get(`${config.api.users}/${saveData.userID}`);
           setRelatedUser(userResponse.data);
         } catch (err) {
           console.log('Error fetching user:', err);
@@ -101,17 +101,31 @@ function ShowSaveDetails(props) {
     }
   }, [saveData.userID]); // Este useEffect se activa cuando saveData.gameID cambia
 
-  const handleDownload = () => {
-    const downloadUrl = `${config.api.savedatas}/${id}/download`;
+  const handleDownload = async () => {
+    try {
+      const response = await api.get(`${config.api.savedatas}/${id}/download`, {
+        responseType: 'blob' // importante para recibir archivos binarios
+      });
+      console.log(response)
+      // Creamos un blob URL a partir de la respuesta
+      const url = window.URL.createObjectURL(new Blob([response.data]));
   
-    // Creamos un enlace oculto y simulamos un clic
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.setAttribute('download', ''); // Esto ayuda a forzar la descarga
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      // Creamos y lanzamos un enlace de descarga
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'savefile.sav'); // puedes personalizar el nombre aquí
+      document.body.appendChild(link);
+      link.click();
+  
+      // Limpiar
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+  
+    } catch (error) {
+      console.error('Error descargando el archivo:', error);
+    }
   };
+  
   
   return (
     <div>

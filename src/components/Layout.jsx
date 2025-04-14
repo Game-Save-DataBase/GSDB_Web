@@ -2,7 +2,7 @@
 import config from "../utils/config";
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../utils/interceptor";
 import '../styles/Layout.scss';
 import '../styles/Common.scss';
 
@@ -20,7 +20,7 @@ const Layout = ({ children }) => {
                     ? `${config.api.games}`
                     : `${config.api.savedatas}`;
 
-                const response = await axios.get(url);
+                const response = await api.get(url);
                 setSearchType(response.data);
             } catch (error) {
                 console.error("Error fetching data", error);

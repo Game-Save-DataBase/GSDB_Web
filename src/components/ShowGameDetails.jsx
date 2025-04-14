@@ -1,7 +1,7 @@
 import config from '../utils/config.js';
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/interceptor.js';
 import '../styles/Common.scss';
 import '../styles/ShowGameDetails.scss';
 import { getPlatformName } from '../utils/constants.jsx'
@@ -21,7 +21,7 @@ function ShowGameDetails(props) {
     /*funcion que carga el juego, su caratula y sus datos del modelo de games */
     const fetchGameDetails = async () => {
       try {
-        const gameResponse = await axios.get(`${config.api.games}/${id}`);
+        const gameResponse = await api.get(`${config.api.games}/${id}`);
         setGame(gameResponse.data);
       } catch (err) {
         console.log('Error from ShowGameDetails');
@@ -41,12 +41,12 @@ function ShowGameDetails(props) {
 
       try {
         //obtenemos los archivos de guardado
-        const saveFilesResponse = await axios.get(`${config.api.savedatas}/game/${id}`);
+        const saveFilesResponse = await api.get(`${config.api.savedatas}/game/${id}`);
         //les añadimos más datos que salen de la base de datos de usuarios
         const updatedSaveFiles = await Promise.all(
           saveFilesResponse.data.map(async (sf) => {
             try {
-              const userResponse = await axios.get(`${config.api.users}/${sf.userID}`);
+              const userResponse = await api.get(`${config.api.users}/${sf.userID}`);
               return {
                 ...sf,
                 platformName: getPlatformName(sf.platformID), //datos añadidos para tener un savedata con esteroides

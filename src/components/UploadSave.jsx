@@ -1,6 +1,6 @@
 import config from "../utils/config";
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../utils/interceptor";
 import { useNavigate } from "react-router-dom";
 import '../styles/Common.scss';
 
@@ -21,7 +21,7 @@ const UploadSave = (props) => {
   const [platforms, setPlatforms] = useState([]);
 
   useEffect(() => {
-    axios.get(`${config.api.games}`)
+    api.get(`${config.api.games}`)
       .then(response => setGames(response.data))
       .catch(error => console.log("Error fetching games", error));
   }, []);
@@ -57,7 +57,7 @@ const UploadSave = (props) => {
       formData.append("file", saveFile.file);  // Asegúrate de que 'file' se esté enviando correctamente
   
       // Realizar el POST al backend
-      await axios.post(`${config.api.savedatas}`, formData, {
+      await api.post(`${config.api.savedatas}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

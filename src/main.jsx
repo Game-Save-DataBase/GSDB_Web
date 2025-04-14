@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {Route, Routes, unstable_HistoryRouter as HistoryRouter } from 'react-router-dom';
+import history from './utils/history.js';
 
 // Bootstrap CSS
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -16,24 +17,23 @@ import ShowGameDetails from "./components/ShowGameDetails.jsx";
 import ShowSaveDetails from "./components/ShowSaveDetails.jsx";
 import UploadSave from "./components/UploadSave.jsx";
 import SearchResults from "./components/SearchResults.jsx";
-
+import Login from "./components/Login.jsx";
 import Test from "./components/test.jsx";
 
 // Routes
-const router = createBrowserRouter([
-    {path: "/",element: (<Layout><ShowGameList /></Layout>),},
-    {path: "/create-Game", element: (<Layout><CreateGame /></Layout>),}, //esta de aqui no deberia existir. borrarla cuando se integre del todo la web
-    {path: "/game/:id",element: (<Layout><ShowGameDetails /></Layout>),},
-    {path: "/save/:id",element: (<Layout><ShowSaveDetails /></Layout>),},
-    {path: "/upload-save",element: (<Layout><UploadSave /></Layout>),},
-    {path: "/search",element: (<Layout><SearchResults /></Layout>),},
-
-    {path: "/test",element: (<Layout><Test /></Layout>),},
-]);
-
-
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <HistoryRouter history={history}>
+      <Routes>
+        <Route path="/" element={<Layout><ShowGameList /></Layout>} />
+        <Route path="/create-Game" element={<Layout><CreateGame /></Layout>} />
+        <Route path="/game/:id" element={<Layout><ShowGameDetails /></Layout>} />
+        <Route path="/save/:id" element={<Layout><ShowSaveDetails /></Layout>} />
+        <Route path="/upload-save" element={<Layout><UploadSave /></Layout>} />
+        <Route path="/search" element={<Layout><SearchResults /></Layout>} />
+        <Route path="/login" element={<Login />} />
+        {/* <Route path="/test" element={<Layout><Test /></Layout>} /> */}
+      </Routes>
+    </HistoryRouter>
   </React.StrictMode>,
 )

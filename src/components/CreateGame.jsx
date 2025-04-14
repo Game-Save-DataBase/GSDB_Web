@@ -1,6 +1,6 @@
 import config from "../utils/config";
+import api from "../utils/interceptor";
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import '../styles/Common.scss';
 
@@ -19,7 +19,7 @@ const CreateGame = (props) => {
 /*funcion a realizar para cuando se pulsa el boton de añadir juego */
   const onSubmit = (e) => {
     e.preventDefault();
-    axios
+    api
       .post(`${config.api.games}`, game)
       .then((res) => {
         setGame({
