@@ -4,7 +4,6 @@ import axios from 'axios';
 import '../styles/Common.scss';
 import '../styles/ShowGameDetails.scss';
 import { getPlatformName } from '../components/constants.jsx'
-import Form from 'react-bootstrap/Form';
 
 
 function ShowGameDetails(props) {
@@ -152,24 +151,29 @@ function ShowGameDetails(props) {
 
         {/* ...................................SAVES SECTION */}
         <section className="saves-section">
-          <Form>
+        <form>
             {game.platformsID && game.platformsID.map((platform, index) => (
-              <Form.Check
-                key={index}
-                type="switch"
-                id={`switch-${index}`}
-                label={platform}
-                checked={activeCheckboxes[index] || false}
-                disabled={!enabledCheckboxes[index]}
-                onChange={() => {
-                  setActiveCheckboxes(prev => ({
-                    ...prev,
-                    [index]: !prev[index]
-                  }));
-                }}
-              />
+              <div className="form-check form-switch" key={index}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id={`switch-${index}`}
+                  checked={activeCheckboxes[index] || false}
+                  disabled={!enabledCheckboxes[index]}
+                  onChange={() => {
+                    setActiveCheckboxes(prev => ({
+                      ...prev,
+                      [index]: !prev[index]
+                    }));
+                  }}
+                />
+                <label className="form-check-label" htmlFor={`switch-${index}`}>
+                  {platform}
+                </label>
+              </div>
             ))}
-          </Form>
+          </form>
+
 
 
 

@@ -3,7 +3,6 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/Common.scss';
 import { PLATFORMS } from '../components/constants.jsx'
-import Form from 'react-bootstrap/Form';
 
 function ShowGameList() {
   const [games, setGames] = useState([]);
@@ -66,19 +65,23 @@ function ShowGameList() {
   return (
     <div>
       <h3>Filtrar por Plataforma</h3>
-      <Form>
+      <form>
         {PLATFORMS.map((platform) => (
-          <Form.Check
-            key={platform.id}
-            type="switch"
-            id={`switch-${platform.id}`}
-            label={platform.name}
-            checked={activeCheckboxes[platform.id] || false}
-            disabled={!enabledCheckboxes[platform.id]}
-            onChange={() => handleCheckboxChange(platform.id)}
-          />
+          <div className="form-check form-switch" key={platform.id}>
+            <input
+              className="form-check-input"
+              type="checkbox"
+              id={`switch-${platform.id}`}
+              checked={activeCheckboxes[platform.id] || false}
+              disabled={!enabledCheckboxes[platform.id]}
+              onChange={() => handleCheckboxChange(platform.id)}
+            />
+            <label className="form-check-label" htmlFor={`switch-${platform.id}`}>
+              {platform.name}
+            </label>
+          </div>
         ))}
-      </Form>
+      </form>
 
       <h3>Juegos Disponibles</h3>
       <ul>
