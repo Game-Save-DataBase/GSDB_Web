@@ -1,6 +1,6 @@
 /*Common.scss. In development. Incluira todos los estilos comunes, como los h1,h2, botones, a, colores de fondo, etc.
 Se compartiran en toda la pagina. Se colocaran aqui por limpieza y coherencia.*/
-@import 'node_modules/bootstrap/scss/bootstrap';
+@use './core/bootstrap.scss';
 
 html,
 body {

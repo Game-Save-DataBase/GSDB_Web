@@ -1,7 +1,7 @@
 /* ShowGameDetails.scss 
 Estilos para esta pagina. Tiene dos secciones principales: la de la info del juego, y debajo un grid con todos los savedata.
 */
-@import 'node_modules/bootstrap/scss/bootstrap';
+@use './core/bootstrap.scss';
 
 
 /* Estilo general del contenedor */
