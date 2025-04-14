@@ -1,3 +1,4 @@
+import config from '../utils/config';
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -16,7 +17,7 @@ function ShowSaveDetails(props) {
   // Función para obtener las imágenes desde el servidor
   const fetchscreenshots = async (saveId) => {
     try {
-      const response = await axios.get(`http://localhost:8082/api/savedatas/${id}/screenshots`); setscreenshots(response.data);  // Aquí se actualizan las rutas de las imágenes
+      const response = await axios.get(`${config.api.savedatas}/${id}/screenshots`); setscreenshots(response.data);  // Aquí se actualizan las rutas de las imágenes
       setscreenshots(response.data.screenshots);
       // console.log(response.data.screenshots)
     } catch (err) {
@@ -28,7 +29,7 @@ function ShowSaveDetails(props) {
     // Función para obtener los detalles del archivo de guardado
     const fetchSaveData = async () => {
       try {
-        const saveResponse = await axios.get(`http://localhost:8082/api/savedatas/${id}`);
+        const saveResponse = await axios.get(`${config.api.savedatas}/${id}`);
         setSaveData(saveResponse.data);
         fetchscreenshots(id)
       } catch (err) {
@@ -43,14 +44,14 @@ function ShowSaveDetails(props) {
     // Obtener comentarios y añadir usernames
     const fetchComments = async () => {
       try {
-        const commentsResponse = await axios.get(`http://localhost:8082/api/comments/save/${id}`);
+        const commentsResponse = await axios.get(`${config.api.comments}/save/${id}`);
         const commentsData = commentsResponse.data;
 
         // Obtener los usernames para cada comentario
         const updatedComments = await Promise.all(
           commentsData.map(async (comment) => {
             try {
-              const userResponse = await axios.get(`http://localhost:8082/api/users/${comment.userID}`);
+              const userResponse = await axios.get(`${config.api.users}/${comment.userID}`);
               return { ...comment, userName: userResponse.data.userName, alias: userResponse.data.alias, pfp: userResponse.data.pfp };
             } catch (err) {
               console.log(`Error fetching user for comment ${comment._id}:`, err);
@@ -73,7 +74,7 @@ function ShowSaveDetails(props) {
     if (saveData.gameID) {
       const fetchGameData = async () => {
         try {
-          const gameResponse = await axios.get(`http://localhost:8082/api/games/${saveData.gameID}`);
+          const gameResponse = await axios.get(`${config.api.games}/${saveData.gameID}`);
           setRelatedGame(gameResponse.data);
         } catch (err) {
           console.log('Error fetching game data:', err);
@@ -89,7 +90,7 @@ function ShowSaveDetails(props) {
     if (saveData.userID) {
       const fetchUserData = async () => {
         try {
-          const userResponse = await axios.get(`http://localhost:8082/api/users/${saveData.userID}`);
+          const userResponse = await axios.get(`${config.api.users}/${saveData.userID}`);
           setRelatedUser(userResponse.data);
         } catch (err) {
           console.log('Error fetching user:', err);
@@ -101,7 +102,7 @@ function ShowSaveDetails(props) {
   }, [saveData.userID]); // Este useEffect se activa cuando saveData.gameID cambia
 
   const handleDownload = () => {
-    const downloadUrl = `http://localhost:8082/api/savedatas/${id}/download`;
+    const downloadUrl = `${config.api.savedatas}/${id}/download`;
   
     // Creamos un enlace oculto y simulamos un clic
     const link = document.createElement('a');
@@ -147,7 +148,7 @@ function ShowSaveDetails(props) {
               <div className="row-element text-center">
                 {relatedGame && (
                   <img
-                    src={`http://localhost:8082${relatedGame.cover}`}
+                    src={`${config.connection}${relatedGame.cover}`}
                     alt={relatedGame.title}
                   />
                 )}
@@ -236,7 +237,7 @@ function ShowSaveDetails(props) {
               {screenshots.length > 0 ? (
                 screenshots.map((screenshot, index) => (
                   <img key={index}
-                    src={`http://localhost:8082${screenshot}`}
+                    src={`${config.connection}${screenshot}`}
                     //src={`/src/${screenshot}`} //DEBERIA COGER ESTO DE BASE DE DATOS, PERO AUN NO SE HACERLO BIEN. HASTA QUE SE ARREGLE LO COGEMOS DE LA WEB PARA EVITAR ERRORES EN CONSOLA
                     alt={`Screenshot ${index + 1}`} className="screenshot" />
 

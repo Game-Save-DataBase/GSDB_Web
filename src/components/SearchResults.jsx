@@ -1,53 +1,54 @@
+import config from "../utils/config";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import '../styles/Common.scss';
 
 const SearchResults = () => {
-  const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  const query = params.get("query") || "";
-  const type = params.get("type") || "games";
+    const location = useLocation();
+    const params = new URLSearchParams(location.search);
+    const query = params.get("query") || "";
+    const type = params.get("type") || "games";
 
-  const [results, setResults] = useState([]);
+    const [results, setResults] = useState([]);
 
-  useEffect(() => {
-      const fetchData = async () => {
-          try {
-              const url = type === "games"
-                  ? "http://localhost:8082/api/games"
-                  : "http://localhost:8082/api/savedatas";
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const url = type === "games"
+                    ? `${config.api.games}`
+                    : `${config.api.savedatas}`;
 
-              const response = await axios.get(url);
-              const filteredResults = response.data.filter(item =>
-                  type === "games"
-                      ? item.title.toLowerCase().includes(query.toLowerCase())
-                      : item.title.toLowerCase().includes(query.toLowerCase()) ||
+                const response = await axios.get(url);
+                const filteredResults = response.data.filter(item =>
+                    type === "games"
+                        ? item.title.toLowerCase().includes(query.toLowerCase())
+                        : item.title.toLowerCase().includes(query.toLowerCase()) ||
                         item.description.toLowerCase().includes(query.toLowerCase())
-              );
+                );
 
-              setResults(filteredResults);
-          } catch (error) {
-              console.error("Error fetching data", error);
-          }
-      };
+                setResults(filteredResults);
+            } catch (error) {
+                console.error("Error fetching data", error);
+            }
+        };
 
-      if (query) fetchData();
-  }, [query, type]);
+        if (query) fetchData();
+    }, [query, type]);
 
-  return (
-      <div className="search-results">
-          <h2>Resultados de búsqueda para "{query}"</h2>
-          {results.length > 0 ? (
-              <ul>
-                  {results.map((result, index) => (
-                      <li key={index}>{result.title}</li>
-                  ))}
-              </ul>
-          ) : (
-              <p>No se encontraron resultados.</p>
-          )}
-      </div>
-  );
+    return (
+        <div className="search-results">
+            <h2>Resultados de búsqueda para "{query}"</h2>
+            {results.length > 0 ? (
+                <ul>
+                    {results.map((result, index) => (
+                        <li key={index}>{result.title}</li>
+                    ))}
+                </ul>
+            ) : (
+                <p>No se encontraron resultados.</p>
+            )}
+        </div>
+    );
 };
 export default SearchResults;

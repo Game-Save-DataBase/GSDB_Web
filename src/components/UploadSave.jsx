@@ -1,3 +1,4 @@
+import config from "../utils/config";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -20,18 +21,10 @@ const UploadSave = (props) => {
   const [platforms, setPlatforms] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:8082/api/games")
+    axios.get(`${config.api.games}`)
       .then(response => setGames(response.data))
       .catch(error => console.log("Error fetching games", error));
   }, []);
-
-  // useEffect(() => {
-  //   if (saveFile.gameID && saveFile.gameID !== "new") {
-  //     axios.get(`http://localhost:8082/api/games/${saveFile.gameID}`)
-  //       .then(response => setGameExists(true))
-  //       .catch(error => setGameExists(false));
-  //   }
-  // }, [saveFile.gameID]);
 
   const onChange = (e) => {
     setSaveFile({ ...saveFile, [e.target.name]: e.target.value });
@@ -51,27 +44,6 @@ const UploadSave = (props) => {
     setSaveFile({ ...saveFile, file: file });
   };
 
-  // const onSubmit = async (e) => {
-  //   e.preventDefault();
-    
-  //   try {
-  //     const payload = { ...saveFile };
-  //     console.log(saveFile);
-  //     await axios.post("http://localhost:8082/api/savedatas", payload);
-  //     setSaveFile({
-  //       title: "",
-  //       gameID: "",
-  //       platformID: "",
-  //       description: "",
-  //       file: null,
-  //       userID: "67973534fd1deec06097cc2d"
-  //     });
-  //     navigate("/");
-  //   } catch (err) {
-  //     console.log("Error in CreateSaveFile!", err);
-  //   }
-  // };  
-
   const onSubmit = async (e) => {
     e.preventDefault();
   
@@ -85,7 +57,7 @@ const UploadSave = (props) => {
       formData.append("file", saveFile.file);  // Asegúrate de que 'file' se esté enviando correctamente
   
       // Realizar el POST al backend
-      await axios.post("http://localhost:8082/api/savedatas", formData, {
+      await axios.post(`${config.api.savedatas}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -107,7 +79,6 @@ const UploadSave = (props) => {
   };
   
   
-
   return (
     <div>
       <h2>Add Save File to Database</h2>

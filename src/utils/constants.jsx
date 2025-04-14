@@ -10,4 +10,3 @@ export function getPlatformName(id) {
   const platform = PLATFORMS.find(p => p.id === id);
   return platform ? platform.name : "null";
 }
-

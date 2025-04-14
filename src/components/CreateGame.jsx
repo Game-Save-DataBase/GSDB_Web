@@ -1,3 +1,4 @@
+import config from "../utils/config";
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -19,7 +20,7 @@ const CreateGame = (props) => {
   const onSubmit = (e) => {
     e.preventDefault();
     axios
-      .post("http://localhost:8082/api/games", game)
+      .post(`${config.api.games}`, game)
       .then((res) => {
         setGame({
           name: "",

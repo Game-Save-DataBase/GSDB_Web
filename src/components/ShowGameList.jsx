@@ -1,8 +1,9 @@
+import config from '../utils/config.js';
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/Common.scss';
-import { PLATFORMS } from '../components/constants.jsx'
+import { PLATFORMS } from '../utils/constants.jsx'
 
 function ShowGameList() {
   const [games, setGames] = useState([]);
@@ -13,7 +14,7 @@ function ShowGameList() {
   // Obtener la lista de juegos desde la API
   useEffect(() => {
     axios
-      .get('http://localhost:8082/api/games')
+      .get(`${config.api.games}`)
       .then((res) => {
         setGames(res.data);
         setFilteredGames(res.data);

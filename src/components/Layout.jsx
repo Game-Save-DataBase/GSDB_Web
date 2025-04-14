@@ -1,6 +1,7 @@
 // Layout.jsx
-import React, {useState, useEffect} from "react";
-import { Link , useNavigate} from "react-router-dom";
+import config from "../utils/config";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import '../styles/Layout.scss';
 import '../styles/Common.scss';
@@ -9,33 +10,28 @@ const Layout = ({ children }) => {
     const navigate = useNavigate();
 
     const [searchType, setSearchType] = useState("");
-    const [searchQuery, setSearchQuery] = useState("");  
+    const [searchQuery, setSearchQuery] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const url = searchType === "games" 
-                    ? "http://localhost:8082/api/games"
-                    : "http://localhost:8082/api/savedatas";
-                
+                const url = searchType === "games"
+                    ? `${config.api.games}`
+                    : `${config.api.savedatas}`;
+
                 const response = await axios.get(url);
                 setSearchType(response.data);
             } catch (error) {
                 console.error("Error fetching data", error);
             }
         };
-        
+
         fetchData();
     }, [searchType]);
 
     const handleSearch = (e) => {
         e.preventDefault();
-        
-        // if (!searchQuery.trim()) {
-        //     setSearchResults([]);
-        //     return;
-        // }
 
         if (searchQuery.trim().length < 3) {
             setErrorMessage("La búsqueda debe tener al menos 3 caracteres.");
@@ -81,11 +77,11 @@ const Layout = ({ children }) => {
 
             {/* Zona izquierda */}
             <aside className="left-sidebar">
-                <h2>Categorias</h2>
+                {/* <h2>Categorias</h2>
                 <ul>
                     <li><a href="#">Categoria 1</a></li>
                     <li><a href="#">Categoria 2</a></li>
-                </ul>
+                </ul> */}
             </aside>
 
             {/* Zona central (contenedor para las paginas) */}
@@ -95,8 +91,8 @@ const Layout = ({ children }) => {
 
             {/* Zona derecha */}
             <aside className="right-sidebar">
-                <h2>Recomendaciones</h2>
-                <p>Juego destacado del mes</p>
+                {/* <h2>Recomendaciones</h2>
+                <p>Juego destacado del mes</p> */}
             </aside>
 
 
