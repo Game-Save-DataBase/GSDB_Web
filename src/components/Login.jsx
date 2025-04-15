@@ -3,6 +3,8 @@ import api from '../utils/interceptor'
 import { useState, useContext } from 'react';
 import { UserContext } from "./UserContext";
 import history from '../utils/history'
+import zxcvbn from 'zxcvbn';
+
 
 const Login = () => {
   const { setUser } = useContext(UserContext);
@@ -13,17 +15,27 @@ const Login = () => {
     password: ''
   });
   const [message, setMessage] = useState('');
+  //gestion de contraseña segura
+  const [passwordStrength, setPasswordStrength] = useState(0);
+
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+    if (e.target.name === 'password') {
+      const result = zxcvbn(e.target.value);
+      setPasswordStrength(result.score);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    if (passwordStrength < 3) {
+      setMessage('La contraseña es demasiado débil. Usa una combinación más segura.');
+      return;
+    }
     try {
 
       //.......................LOGIN
@@ -63,7 +75,6 @@ const Login = () => {
         }, 2000)
       }
     } catch (err) {
-      console.error(err)
       if (err.response && err.response.data && err.response.data.msg) {
         setMessage(err.response.data.msg)
       } else {
@@ -75,7 +86,7 @@ const Login = () => {
   return (
     <div>
       <h2>{inLogin ? 'Inicia sesión en GSDB' : 'Regístrate en GSDB'}</h2>
-      
+
       <form onSubmit={handleSubmit}>
         {!inLogin && (
           <>
@@ -125,6 +136,14 @@ const Login = () => {
             required
           />
         </div>
+        {!inLogin && <div className="mb-4">
+          <div className={`h-2 rounded ${passwordStrength >= 3 ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${(passwordStrength / 4) * 100}%` }}></div>
+          <p className="text-sm mt-1">
+            Seguridad: {
+              ['Muy débil', 'Débil', 'Aceptable', 'Buena', 'Muy buena'][passwordStrength]
+            }
+          </p>
+        </div>}
 
         <button type="submit">
           {inLogin ? 'Entrar' : 'Registrarse'}
