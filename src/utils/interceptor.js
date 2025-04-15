@@ -8,7 +8,7 @@ const api = axios.create({
     baseURL: config.connection, // URL base de la API
     timeout: 5000,  // Configura un timeout si lo necesitas
 });
-
+api.defaults.withCredentials = true; //para las cookies de sesion
 api.interceptors.response.use(
     (response) => {
         //respuesta correcta

@@ -47,6 +47,14 @@ function ShowGameDetails(props) {
           saveFilesResponse.data.map(async (sf) => {
             try {
               const userResponse = await api.get(`${config.api.users}/${sf.userID}`);
+              if(!userResponse.data){
+                return{
+                  ...sf,
+                  platformName: getPlatformName(sf.platformID),
+                  alias:"Desconocido",
+                  pfp: `${config.paths.pfp_default}`
+                }
+              }
               return {
                 ...sf,
                 platformName: getPlatformName(sf.platformID), //datos añadidos para tener un savedata con esteroides
