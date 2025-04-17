@@ -1,22 +1,24 @@
 import config from "../utils/config";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import api from "../utils/interceptor";
 import { useNavigate } from "react-router-dom";
+import { UserContext } from "../contexts/UserContext";
 import '../styles/Common.scss';
+import { PLATFORMS, getPlatformName } from '../utils/constants'
 
 const UploadSave = (props) => {
   const navigate = useNavigate();
+  const { user } = useContext(UserContext); // ← obtenemos el usuario del contexto
+  const [message, setMessage] = useState('');
 
   const [saveFile, setSaveFile] = useState({
     title: "",
     gameID: "",
     platformID: "",
     description: "",
-    file: "",
-    userID: "67973534fd1deec06097cc2d"
+    file: ""
   });
-  
-  // const [gameExists, setGameExists] = useState(null);
+
   const [games, setGames] = useState([]);
   const [platforms, setPlatforms] = useState([]);
 
@@ -33,10 +35,10 @@ const UploadSave = (props) => {
   const onGameChange = (e) => {
     const value = e.target.value;
     setSaveFile({ ...saveFile, gameID: value, platformID: "" });
-    
+
     const selectedGame = games.find(game => game._id === value);
     setPlatforms(selectedGame ? selectedGame.platformsID || [] : []);
-    };
+  };
 
   //Ahora mismo el file no se guarda (no tenemos nada implementado para ello) y guarda un string para que no se quede vacío
   const onFileChange = (e) => {
@@ -46,39 +48,49 @@ const UploadSave = (props) => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-  
+
     try {
       const formData = new FormData();
+      const messages = [];
+
+      if (saveFile.title === "") messages.push("Debes poner un título al archivo de guardado.");
+      if (saveFile.gameID === "") messages.push("Debes elegir un juego.");
+      if (saveFile.platformID === "") messages.push("Debes seleccionar la plataforma a la que corresponde tu archivo de guardado.");
+      if (saveFile.file === "") messages.push("Debes subir un archivo de guardado.");
+
+      if (messages.length > 0) {
+        throw new Error(messages.join(" "));
+      }
+
       formData.append("title", saveFile.title);
       formData.append("gameID", saveFile.gameID);
       formData.append("platformID", saveFile.platformID);
       formData.append("description", saveFile.description);
-      formData.append("userID", saveFile.userID);
-      formData.append("file", saveFile.file);  // Asegúrate de que 'file' se esté enviando correctamente
-  
+      formData.append("userID", user.user._id);
+      formData.append("file", saveFile.file);
       // Realizar el POST al backend
       await api.post(`${config.api.savedatas}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-  
+
       // Resetear el formulario
       setSaveFile({
         title: "",
         gameID: "",
         platformID: "",
         description: "",
-        file: null,
-        userID: "67973534fd1deec06097cc2d",
+        file: null
       });
       navigate("/"); // Redirigir después de que se haya creado el savedata
     } catch (err) {
       console.log("Error in CreateSaveFile!", err);
+      setMessage(err.message || "Ha ocurrido un error.");
     }
   };
-  
-  
+
+
   return (
     <div>
       <h2>Add Save File to Database</h2>
@@ -107,8 +119,10 @@ const UploadSave = (props) => {
           disabled={!saveFile.gameID}
         >
           <option value="">Select a Platform</option>
-          {platforms.map((platform, index) => (
-            <option key={platform} value={index}>{platform}</option>
+          {platforms.map((platformID) => (
+            <option key={platformID} value={platformID}>
+              {getPlatformName(platformID) || `Unknown Platform (${platformID})`}
+            </option>
           ))}
         </select>
         <br />
@@ -121,6 +135,8 @@ const UploadSave = (props) => {
         <br />
         <button type="submit">Submit</button>
       </form>
+      {message && <p>{message}</p>}
+
     </div>
   );
 };

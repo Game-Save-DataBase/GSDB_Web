@@ -65,7 +65,7 @@ function ShowGameDetails(props) {
               };
 
             } catch (err) {
-              console.log(`Error fetching user for savefile ${sf._id}:`, err);
+              //console.log(`Error fetching user for savefile ${sf._id}:`, err);
               return {
                 ...sf,
                 platformName: getPlatformName(sf.platformID),

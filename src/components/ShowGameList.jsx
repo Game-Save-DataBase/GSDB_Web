@@ -1,11 +1,14 @@
 import config from '../utils/config.js';
 import api from "../utils/interceptor";
 import { PLATFORMS } from '../utils/constants.jsx'
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext} from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import '../styles/Common.scss';
+import { LoadingContext } from "../contexts/LoadContext.jsx";
 
 function ShowGameList() {
+  const { startLoading, stopLoading } = useContext(LoadingContext);
+
   const [games, setGames] = useState([]);
   const [filteredGames, setFilteredGames] = useState([]);
   const [activeCheckboxes, setActiveCheckboxes] = useState({});
@@ -13,18 +16,23 @@ function ShowGameList() {
 
   // Obtener la lista de juegos desde la API
   useEffect(() => {
-    api
-      .get(`${config.api.games}`)
-      .then((res) => {
+    const fetchGames = async () => {
+      startLoading();
+      try {
+        const res = await api.get(`${config.api.games}`);
         setGames(res.data);
         setFilteredGames(res.data);
-        //funcion para inicializar las checkboxes con la info obtenida
         initializeCheckboxes(res.data);
-      })
-      .catch((err) => {
-        console.error('Error fetching games:', err);
-      });
+      } catch (err) {
+        console.error("Error fetching games:", err);
+      } finally {
+        stopLoading();
+      }
+    };
+
+    fetchGames();
   }, []);
+
 
   // Inicializar checkboxes basados en los juegos obtenidos
   const initializeCheckboxes = (gamesData) => {

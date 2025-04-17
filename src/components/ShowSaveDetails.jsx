@@ -106,6 +106,7 @@ function ShowSaveDetails(props) {
       const fetchUserData = async () => {
         try {
           const userResponse = await api.get(`${config.api.users}/${saveData.userID}`);
+          console.log(userResponse.data)
           setRelatedUser(userResponse.data);
         } catch (err) {
           console.log('Error fetching user:', err);

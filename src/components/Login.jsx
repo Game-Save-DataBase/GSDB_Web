@@ -1,7 +1,7 @@
 import config from '../utils/config'
 import api from '../utils/interceptor'
 import { useState, useContext } from 'react';
-import { UserContext } from "./UserContext";
+import { UserContext } from "../contexts/UserContext";
 import history from '../utils/history'
 import zxcvbn from 'zxcvbn';
 
@@ -32,7 +32,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (passwordStrength < 3) {
+    if (!inLogin && passwordStrength < 3) {
       setMessage('La contraseña es demasiado débil. Usa una combinación más segura.');
       return;
     }

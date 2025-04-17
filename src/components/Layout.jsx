@@ -2,13 +2,15 @@ import config from "../utils/config";
 import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../utils/interceptor";
-import { UserContext } from "./UserContext"; 
+import { UserContext } from "../contexts/UserContext";
+import { LoadingContext } from "../contexts/LoadContext";
 import '../styles/Layout.scss';
 import '../styles/Common.scss';
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
-  const { user, setUser } = useContext(UserContext); 
+  const { user, setUser } = useContext(UserContext);
+  const { loading, stopLoading } = useContext(LoadingContext);
 
   const [searchType, setSearchType] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -42,12 +44,16 @@ const Layout = ({ children }) => {
   const handleLogout = async () => {
     try {
       await api.get(`${config.api.auth}/logout`);
-      setUser(null); 
+      setUser(null);
       navigate('/');
     } catch (error) {
       console.error("Error cerrando sesión", error);
     }
   };
+
+  useEffect(() => {
+    stopLoading();
+  }, []);
 
   return (
     <div className="layout">
@@ -92,7 +98,11 @@ const Layout = ({ children }) => {
       </aside>
 
       {/* Zona central */}
-      <main className="main-content">
+      <main className="main-content"
+        style={{
+          visibility: loading ? 'hidden': 'visible',
+          pointerEvents: loading ? 'none' : 'auto'
+        }}>
         {children}
       </main>
 
@@ -105,7 +115,7 @@ const Layout = ({ children }) => {
       <footer className="bottom-bar">
         <p>© 2024 Game Save Database. Universidad Complutense de Madrid. Jorge Bello Martín - Eva Lucas Leiro.</p>
       </footer>
-    </div>
+    </div >
   );
 };
 
