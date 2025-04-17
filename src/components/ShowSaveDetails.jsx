@@ -19,7 +19,6 @@ function ShowSaveDetails(props) {
     try {
       const response = await api.get(`${config.api.savedatas}/${id}/screenshots`); setscreenshots(response.data);  // Aquí se actualizan las rutas de las imágenes
       setscreenshots(response.data.screenshots);
-      // console.log(response.data.screenshots)
     } catch (err) {
       console.log('Error fetching screenshots:', err);
     }
@@ -52,10 +51,26 @@ function ShowSaveDetails(props) {
           commentsData.map(async (comment) => {
             try {
               const userResponse = await api.get(`${config.api.users}/${comment.userID}`);
-              return { ...comment, userName: userResponse.data.userName, alias: userResponse.data.alias, pfp: userResponse.data.pfp };
+              if (!userResponse.data) {
+                return {
+                  ...comment,
+                  userName: 'Usuario desconocido',
+                  pfp: `${config.paths.pfp_default}`
+                };
+              }
+              return {
+                ...comment,
+                userName: userResponse.data.userName,
+                alias: userResponse.data.alias,
+                pfp: userResponse.data.pfp
+              };
             } catch (err) {
               console.log(`Error fetching user for comment ${comment._id}:`, err);
-              return { ...comment, userName: 'Usuario desconocido', pfp: ' ' };
+              return {
+                ...comment,
+                userName: 'Usuario desconocido',
+                pfp: `${config.paths.pfp_default}`
+              };
             }
           })
         );
@@ -109,24 +124,24 @@ function ShowSaveDetails(props) {
       console.log(response)
       // Creamos un blob URL a partir de la respuesta
       const url = window.URL.createObjectURL(new Blob([response.data]));
-  
+
       // Creamos y lanzamos un enlace de descarga
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', 'savefile.sav'); // puedes personalizar el nombre aquí
       document.body.appendChild(link);
       link.click();
-  
+
       // Limpiar
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-  
+
     } catch (error) {
       console.error('Error descargando el archivo:', error);
     }
   };
-  
-  
+
+
   return (
     <div>
       {/* Seccion previa al encabezado con el enlace y titulo. La dejo fuera del div container de la pagina a proposito.*/}
@@ -164,6 +179,7 @@ function ShowSaveDetails(props) {
                   <img
                     src={`${config.connection}${relatedGame.cover}`}
                     alt={relatedGame.title}
+                    onError={(e) => { e.target.src = `${config.connection}${config.paths.gameCover_default}`; }}
                   />
                 )}
               </div>
@@ -233,8 +249,9 @@ function ShowSaveDetails(props) {
                       <small>{comment.postedDate}</small>
                     </p>
                     <img
-                      src={comment.pfp}
+                      src= {`${config.connection}${comment.pfp}`}
                       alt={comment.alias || comment.userName}
+                      onError={(e) => { e.target.src = `${config.connection}${config.paths.pfp_default}`; }}
                     />
                     <p>
                       <strong>{comment.alias || comment.userName}</strong>: {comment.text}

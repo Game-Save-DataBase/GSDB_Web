@@ -4,14 +4,16 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/interceptor.js';
 import '../styles/Common.scss';
 import '../styles/ShowGameDetails.scss';
-import { getPlatformName } from '../utils/constants.jsx'
+import { PLATFORMS, getPlatformName } from '../utils/constants.jsx'
 
 
 function ShowGameDetails(props) {
   const [game, setGame] = useState({}); //objeto con el juego
   const [saveFiles, setSaveFiles] = useState([]); //array que almacena todos los savefiles del juego 
-  const [activeCheckboxes, setActiveCheckboxes] = useState({}); //array para almacenar los checkboxes activos
-  const [enabledCheckboxes, setCheckboxesEnabled] = useState({}); //array para determinar los checkboxes que se pueden usar (habilitado = hay savedatas para esa plataforma)
+  //checkboxes: creamos una por plataforma del juego y deshabilitamos las que no tengan saves. Ademas, debemos saber 
+  //cuales se estan usando para filtrar y cuales no
+  const [activePlatforms, setActivePlatforms] = useState([]); // plataformas activas (por id)
+  const [enabledPlatforms, setEnabledPlatforms] = useState([]); //plataformas disponibles (por id)
   const [filteredSaveFiles, setFilteredSaveFiles] = useState([]); //array que almacena los savefiles a mostrar (filtrados)
 
   const { id } = useParams();
@@ -47,11 +49,11 @@ function ShowGameDetails(props) {
           saveFilesResponse.data.map(async (sf) => {
             try {
               const userResponse = await api.get(`${config.api.users}/${sf.userID}`);
-              if(!userResponse.data){
-                return{
+              if (!userResponse.data) {
+                return {
                   ...sf,
                   platformName: getPlatformName(sf.platformID),
-                  alias:"Desconocido",
+                  alias: "Desconocido",
                   pfp: `${config.paths.pfp_default}`
                 }
               }
@@ -64,7 +66,12 @@ function ShowGameDetails(props) {
 
             } catch (err) {
               console.log(`Error fetching user for savefile ${sf._id}:`, err);
-              return { ...sf, alias: 'Usuario desconocido' };
+              return {
+                ...sf,
+                platformName: getPlatformName(sf.platformID),
+                alias: "Desconocido",
+                pfp: `${config.paths.pfp_default}`
+              };
             }
           })
         );
@@ -84,33 +91,18 @@ function ShowGameDetails(props) {
 
   }, [game, id]); // Dependencia en `game` para que se ejecute cuando `game` cambie
 
-  //effect para los checkboxes
   useEffect(() => {
-    if (!game || !game.platformsID || !saveFiles) {
-      return;
-    }
-    // Obtener plataformas únicas de los archivos de guardado    
-    //las checkboxes se inicializan a n plataformas segun el juego. Pone a true las que existan en los savefiles.
-    const availablePlatforms = [...new Set(saveFiles.map(sf => sf.platformID))]
-    const newCheckboxesEnabled = {};
-    for (let i = 0; i < game.platformsID.length; i++) {
-      newCheckboxesEnabled[i] = availablePlatforms.includes(i);
-    }
-    //inicializa los arrays
-    setCheckboxesEnabled(newCheckboxesEnabled);
-    setActiveCheckboxes(newCheckboxesEnabled);
+    if (!game || !game.platformsID || !saveFiles) return;
 
-  }, [game, saveFiles]);  // Se ejecuta cada vez que `saveFiles` o "game" cambie
+    const availablePlatformIDs = [...new Set(saveFiles.map(sf => sf.platformID))];
+    setEnabledPlatforms(availablePlatformIDs);
+    setActivePlatforms(availablePlatformIDs);
+  }, [game, saveFiles]);
 
-  // Filtrar juegos cuando cambian los checkboxes activos
   useEffect(() => {
-    const activePlatforms = Object.keys(activeCheckboxes).filter(platform => activeCheckboxes[platform]).map(Number); //map para convertir de string a numero
-
-    const filtered = saveFiles.filter(sf =>
-      activePlatforms.includes(sf.platformID) // Compara si la plataforma está activa
-    );
+    const filtered = saveFiles.filter(sf => activePlatforms.includes(sf.platformID));
     setFilteredSaveFiles(filtered);
-  }, [activeCheckboxes, saveFiles]);
+  }, [activePlatforms, saveFiles]);
 
   //Nos guardamos ademas la ultima actualizacion de todos los saves
   const lastUpdate = saveFiles.length > 0 ? new Date(saveFiles[0].postedDate).toLocaleDateString() : "No updates";
@@ -144,6 +136,7 @@ function ShowGameDetails(props) {
                   <img
                     src={`${config.connection}${game.cover}`} //guarda la ruta entera en bbdd
                     alt={game.title}
+                    onError={(e) => { e.target.src = `${config.connection}${config.paths.gameCover_default}`; }}
                   />
                 )}
               </div>
@@ -160,32 +153,35 @@ function ShowGameDetails(props) {
 
         {/* ...................................SAVES SECTION */}
         <section className="saves-section">
-        <form>
-            {game.platformsID && game.platformsID.map((platform, index) => (
-              <div className="form-check form-switch" key={index}>
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id={`switch-${index}`}
-                  checked={activeCheckboxes[index] || false}
-                  disabled={!enabledCheckboxes[index]}
-                  onChange={() => {
-                    setActiveCheckboxes(prev => ({
-                      ...prev,
-                      [index]: !prev[index]
-                    }));
-                  }}
-                />
-                <label className="form-check-label" htmlFor={`switch-${index}`}>
-                  {platform}
-                </label>
-              </div>
-            ))}
+          <form>
+            {game.platformsID && game.platformsID.map((platformID) => {
+              const platformName = getPlatformName(platformID);
+              const isEnabled = enabledPlatforms.includes(platformID);
+              const isChecked = activePlatforms.includes(platformID);
+
+              return (
+                <div className="form-check form-switch" key={platformID}>
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id={`switch-${platformID}`}
+                    checked={isChecked}
+                    disabled={!isEnabled}
+                    onChange={() => {
+                      if (isChecked) {
+                        setActivePlatforms(prev => prev.filter(id => id !== platformID));
+                      } else {
+                        setActivePlatforms(prev => [...prev, platformID]);
+                      }
+                    }}
+                  />
+                  <label className="form-check-label" htmlFor={`switch-${platformID}`}>
+                    {platformName}
+                  </label>
+                </div>
+              );
+            })}
           </form>
-
-
-
-
 
           {filteredSaveFiles.length > 0 ? (
             filteredSaveFiles.map((saveFile) => (

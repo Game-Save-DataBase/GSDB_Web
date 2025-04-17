@@ -12,7 +12,6 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 // Components imports
 import { UserProvider } from "./components/UserContext";
 import Layout from "./components/Layout.jsx"; /*contenedor principal */
-import CreateGame from "./components/CreateGame.jsx"; //esta de aqui no deberia existir. borrarla cuando se integre del todo la web
 import ShowGameList from "./components/ShowGameList.jsx";
 import ShowGameDetails from "./components/ShowGameDetails.jsx";
 import ShowSaveDetails from "./components/ShowSaveDetails.jsx";
@@ -29,7 +28,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <UserProvider>
         <Routes>
           <Route path="/" element={<Layout><ShowGameList /></Layout>} />
-          <Route path="/create-Game" element={<Layout><CreateGame /></Layout>} />
           <Route path="/game/:id" element={<Layout><ShowGameDetails /></Layout>} />
           <Route path="/save/:id" element={<Layout><ShowSaveDetails /></Layout>} />
           <Route path="/upload-save" element={<Layout><UploadSave /></Layout>} />

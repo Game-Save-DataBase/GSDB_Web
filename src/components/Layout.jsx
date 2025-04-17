@@ -56,7 +56,6 @@ const Layout = ({ children }) => {
         <nav>
           <ul>
             <li><Link to="/">Inicio</Link></li>
-            <li><Link to="/create-game">Crear Juego</Link></li>
             <li><Link to="/upload-save">Añadir Save</Link></li>
 
             <form className="search-bar" onSubmit={handleSearch}>
