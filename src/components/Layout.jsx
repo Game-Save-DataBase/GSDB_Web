@@ -1,16 +1,15 @@
 import config from "../utils/config";
 import React, { useState, useEffect, useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import api from "../utils/interceptor";
 import { UserContext } from "../contexts/UserContext";
-import { LoadingContext } from "../contexts/LoadContext";
 import '../styles/Layout.scss';
 import '../styles/Common.scss';
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, setUser } = useContext(UserContext);
-  const { loading, stopLoading } = useContext(LoadingContext);
 
   const [searchType, setSearchType] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -20,7 +19,7 @@ const Layout = ({ children }) => {
     const fetchUser = async () => {
       try {
         const response = await api.get(`${config.api.auth}/me`);
-        setUser(response.data); // <-- actualiza el contexto global
+        setUser(response.data);
       } catch (error) {
         setUser(null);
       }
@@ -31,13 +30,11 @@ const Layout = ({ children }) => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-
     if (searchQuery.trim().length < 3) {
       setErrorMessage("La búsqueda debe tener al menos 3 caracteres.");
       setTimeout(() => setErrorMessage(""), 3000);
       return;
     }
-
     navigate(`/search?query=${searchQuery}&type=${searchType}`);
   };
 
@@ -51,13 +48,8 @@ const Layout = ({ children }) => {
     }
   };
 
-  useEffect(() => {
-    stopLoading();
-  }, []);
-
   return (
     <div className="layout">
-      {/* Zona superior: Barra de navegación */}
       <header className="navbar">
         <nav>
           <ul>
@@ -92,30 +84,18 @@ const Layout = ({ children }) => {
         </nav>
       </header>
 
-      {/* Zona izquierda */}
-      <aside className="left-sidebar">
-        {/* ... */}
-      </aside>
+      <aside className="left-sidebar" />
 
-      {/* Zona central */}
-      <main className="main-content"
-        style={{
-          visibility: loading ? 'hidden': 'visible',
-          pointerEvents: loading ? 'none' : 'auto'
-        }}>
+      <main className="main-content">
         {children}
       </main>
 
-      {/* Zona derecha */}
-      <aside className="right-sidebar">
-        {/* ... */}
-      </aside>
+      <aside className="right-sidebar" />
 
-      {/* Zona inferior */}
       <footer className="bottom-bar">
         <p>© 2024 Game Save Database. Universidad Complutense de Madrid. Jorge Bello Martín - Eva Lucas Leiro.</p>
       </footer>
-    </div >
+    </div>
   );
 };
 

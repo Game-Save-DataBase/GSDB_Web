@@ -1,23 +1,19 @@
 import config from '../utils/config.js';
 import api from "../utils/interceptor";
-import { PLATFORMS } from '../utils/constants.jsx'
-import React, { useState, useEffect, useContext} from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { PLATFORMS } from '../utils/constants.jsx';
+import React, { useState, useEffect, useContext } from 'react';
+import { Link } from 'react-router-dom';
 import '../styles/Common.scss';
-import { LoadingContext } from "../contexts/LoadContext.jsx";
 
 function ShowGameList() {
-  const { startLoading, stopLoading } = useContext(LoadingContext);
 
   const [games, setGames] = useState([]);
   const [filteredGames, setFilteredGames] = useState([]);
   const [activeCheckboxes, setActiveCheckboxes] = useState({});
   const [enabledCheckboxes, setCheckboxesEnabled] = useState({});
 
-  // Obtener la lista de juegos desde la API
   useEffect(() => {
     const fetchGames = async () => {
-      startLoading();
       try {
         const res = await api.get(`${config.api.games}`);
         setGames(res.data);
@@ -25,38 +21,31 @@ function ShowGameList() {
         initializeCheckboxes(res.data);
       } catch (err) {
         console.error("Error fetching games:", err);
-      } finally {
-        stopLoading();
       }
     };
-
     fetchGames();
   }, []);
 
 
-  // Inicializar checkboxes basados en los juegos obtenidos
   const initializeCheckboxes = (gamesData) => {
-    // Identificar qué plataformas están presentes en los juegos
     const platformsWithGames = new Set(
       gamesData.flatMap(game => game.platformsID || [])
     );
 
-    // Crear estado inicial para checkboxes habilitados y activos
     const newEnabledCheckboxes = {};
     const newActiveCheckboxes = {};
 
     PLATFORMS.forEach(platform => {
       newEnabledCheckboxes[platform.id] = platformsWithGames.has(platform.id);
-      newActiveCheckboxes[platform.id] = platformsWithGames.has(platform.id); // Se activan solo si hay juegos con esa plataforma
+      newActiveCheckboxes[platform.id] = platformsWithGames.has(platform.id);
     });
 
     setCheckboxesEnabled(newEnabledCheckboxes);
     setActiveCheckboxes(newActiveCheckboxes);
   };
 
-  // Filtrar juegos cuando cambian los checkboxes activos
   useEffect(() => {
-    const activePlatforms = Object.keys(activeCheckboxes).filter(platform => activeCheckboxes[platform]).map(Number); //map para convertir de string a numero
+    const activePlatforms = Object.keys(activeCheckboxes).filter(platform => activeCheckboxes[platform]).map(Number);
     const filtered = games.filter(game =>
       game.platformsID.some(platform => activePlatforms.includes(platform))
     );
@@ -64,13 +53,13 @@ function ShowGameList() {
     setFilteredGames(filtered);
   }, [activeCheckboxes, games]);
 
-  // Manejar cambio en los checkboxes
   const handleCheckboxChange = (platform) => {
     setActiveCheckboxes(prev => ({
       ...prev,
       [platform]: !prev[platform]
     }));
   };
+
   return (
     <div>
       <h3>Filtrar por Plataforma</h3>

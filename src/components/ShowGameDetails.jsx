@@ -1,5 +1,5 @@
 import config from '../utils/config.js';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext} from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/interceptor.js';
 import '../styles/Common.scss';
@@ -8,6 +8,7 @@ import { PLATFORMS, getPlatformName } from '../utils/constants.jsx'
 
 
 function ShowGameDetails(props) {
+
   const [game, setGame] = useState({}); //objeto con el juego
   const [saveFiles, setSaveFiles] = useState([]); //array que almacena todos los savefiles del juego 
   //checkboxes: creamos una por plataforma del juego y deshabilitamos las que no tengan saves. Ademas, debemos saber 
@@ -40,7 +41,6 @@ function ShowGameDetails(props) {
       if (!game || !game.platformsID) {
         return;
       }
-
       try {
         //obtenemos los archivos de guardado
         const saveFilesResponse = await api.get(`${config.api.savedatas}/game/${id}`);
@@ -93,7 +93,6 @@ function ShowGameDetails(props) {
 
   useEffect(() => {
     if (!game || !game.platformsID || !saveFiles) return;
-
     const availablePlatformIDs = [...new Set(saveFiles.map(sf => sf.platformID))];
     setEnabledPlatforms(availablePlatformIDs);
     setActivePlatforms(availablePlatformIDs);
