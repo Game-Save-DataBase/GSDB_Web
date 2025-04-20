@@ -3,12 +3,14 @@ import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import api from "../utils/interceptor";
 import { UserContext } from "../contexts/UserContext";
+import { LoadingContext } from "../contexts/LoadContext";
 import '../styles/Layout.scss';
 import '../styles/Common.scss';
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { clearPagesLoaded } = useContext(LoadingContext);
   const { user, setUser } = useContext(UserContext);
 
   const [searchType, setSearchType] = useState("");
@@ -47,6 +49,12 @@ const Layout = ({ children }) => {
       console.error("Error cerrando sesión", error);
     }
   };
+
+
+  //location: al cambiar de pagina
+  useEffect(() => {
+    clearPagesLoaded();
+  }, [location]);
 
   return (
     <div className="layout">
@@ -87,7 +95,7 @@ const Layout = ({ children }) => {
       <aside className="left-sidebar" />
 
       <main className="main-content">
-        {children}
+          {children}
       </main>
 
       <aside className="right-sidebar" />
