@@ -4,18 +4,15 @@ import { PLATFORMS } from '../utils/constants.jsx';
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/Common.scss';
-import { LoadingContext } from '../contexts/LoadContext.jsx';
 
 function ShowGameList() {
+
   const [games, setGames] = useState([]);
   const [filteredGames, setFilteredGames] = useState([]);
   const [activeCheckboxes, setActiveCheckboxes] = useState({});
   const [enabledCheckboxes, setCheckboxesEnabled] = useState({});
-  
-  const { startLoading, stopLoading, markPageLoaded, isPageLoaded } = useContext(LoadingContext);
 
   useEffect(() => {
-    startLoading();
     const fetchGames = async () => {
       try {
         const res = await api.get(`${config.api.games}`);
@@ -24,13 +21,11 @@ function ShowGameList() {
         initializeCheckboxes(res.data);
       } catch (err) {
         console.error("Error fetching games:", err);
-      } finally {
-        stopLoading();
-        markPageLoaded("ShowGameList");
       }
     };
     fetchGames();
   }, []);
+
 
   const initializeCheckboxes = (gamesData) => {
     const platformsWithGames = new Set(
@@ -50,10 +45,7 @@ function ShowGameList() {
   };
 
   useEffect(() => {
-    const activePlatforms = Object.keys(activeCheckboxes)
-      .filter(platform => activeCheckboxes[platform])
-      .map(Number);
-
+    const activePlatforms = Object.keys(activeCheckboxes).filter(platform => activeCheckboxes[platform]).map(Number);
     const filtered = games.filter(game =>
       game.platformsID.some(platform => activePlatforms.includes(platform))
     );
@@ -67,10 +59,6 @@ function ShowGameList() {
       [platform]: !prev[platform]
     }));
   };
-
-  if (!isPageLoaded("ShowGameList")) {
-    return null; // Invisible hasta cargado
-  }
 
   return (
     <div>
