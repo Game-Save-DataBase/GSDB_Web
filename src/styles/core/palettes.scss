@@ -1,0 +1,54 @@
+/*
+PALETAS DE COLORES
+desde cualquier scss lo que se hara será usar --color-primary, --color-secondary, etc, y entonces
+escogerá la variable según la clase que tenga asignada. Siempre usará root, pero si se cambia la clase
+usará alguna de las otras
+*/
+//variante de tema por defecto
+:root {
+    --color-text: #000000; //color para texto estandar
+    --color-h1: #4B164C; //color para titulos
+    --color-h2: #DD88CF; //color para texto destacado secundario
+    --color-foreground: #F8E7F6; //color que se usa para background pero que no es el principal (quedaría por encima de background)
+    --color-background: #F5F5F5; //color para background
+}
+//paletas de ejemplo
+.theme-dark {
+    --color-text: #FFFFFF;
+    --color-h1: #BB86FC;
+    --color-h2: #03DAC6;
+    --color-foreground: #333333;
+    --color-background: #121212;
+}
+
+.theme-pastel {
+    --color-text: #4A4A4A;
+    --color-h1: #FFB3BA;
+    --color-h2: #FFDFBA;
+    --color-foreground: #FFFFBA;
+    --color-background: #BAE1FF;
+}
+
+.theme-solarized {
+    --color-text: #586E75;
+    --color-h1: #268BD2;
+    --color-h2: #2AA198;
+    --color-foreground: #EEE8D5;
+    --color-background: #FDF6E3;
+}
+
+.theme-gray {
+    --color-text: #333333;
+    --color-h1: #555555;
+    --color-h2: #777777;
+    --color-foreground: #DDDDDD;
+    --color-background: #F5F5F5;
+}
+
+.theme-vibrant {
+    --color-text: #1A1A1A;
+    --color-h1: #E63946;
+    --color-h2: #F1FA8C;
+    --color-foreground: #A8DADC;
+    --color-background: #F1FAEE;
+}

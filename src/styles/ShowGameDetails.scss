@@ -1,7 +1,8 @@
 /* ShowGameDetails.scss 
 Estilos para esta pagina. Tiene dos secciones principales: la de la info del juego, y debajo un grid con todos los savedata.
 */
-@use './core/bootstrap.scss';
+
+@use './common' as *;
 
 
 /* Estilo general del contenedor */
@@ -14,13 +15,13 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del jue
 /* tiene que haber menos espacio para la imagen y mas espacio para el resto de info */
 .game-section {
   margin-bottom: 30px;
-  background-color: #f9f9f9;
+  // background-color: #f9f9f9;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
   .table-data{
     padding: 1%;
-    background-color: #f9f9f9;
+    // background-color: #f9f9f9;
     //la parte de texto centrado, muted etc la añado en el jsx porque crear mas clases para eso me parece innecesario
     .row {
       display: flex;
@@ -46,7 +47,7 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del jue
 .saves-section {
   margin-bottom: 30px;
   padding: 1%;
-  background-color: #f9f9f9;
+  // background-color: #f9f9f9;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
@@ -59,12 +60,12 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del jue
     
     p {
       font-size: 1rem;
-      color: #555;
+      // color: #555;
     }
     
-    strong {
-      color: #6c63ff;
-    }
+    // strong {
+    //   color: #6c63ff;
+    // }
   }
 }
 

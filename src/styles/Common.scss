@@ -1,6 +1,7 @@
 /*Common.scss. In development. Incluira todos los estilos comunes, como los h1,h2, botones, a, colores de fondo, etc.
 Se compartiran en toda la pagina. Se colocaran aqui por limpieza y coherencia.*/
 @use './core/bootstrap.scss';
+@use './core/palettes.scss';
 
 html,
 body {
@@ -10,8 +11,27 @@ body {
   padding: 0;
   height: 100%;
   font-family: Arial, sans-serif;
-  /*Tipo de letra predeterminado*/
+  color: var(--color-text); 
+  background-color: var(--color-background);
 }
+h1 {
+  color: var(--color-h1);
+}
+
+h2 {
+  color: var(--color-h2);
+}
+p,
+span,
+a,
+li,
+blockquote {
+  color: var(--color-h2);
+}
+
+
+
+
 
 // /* .......................................Seccion de la navegacion */
 // /* cheatseet: los breadcrumbs de bootstrap sirven para dejar bonita la info de navegacion */
@@ -66,3 +86,4 @@ body {
   @extend .btn;
   @extend .btn-primary;
 }
+

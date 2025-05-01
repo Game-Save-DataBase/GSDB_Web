@@ -62,7 +62,7 @@ function ShowGameList() {
 
   return (
     <div>
-      <h3>Filtrar por Plataforma</h3>
+      <h1>Filtrar por Plataforma</h1>
       <form>
         {PLATFORMS.map((platform) => (
           <div className="form-check form-switch" key={platform.id}>
