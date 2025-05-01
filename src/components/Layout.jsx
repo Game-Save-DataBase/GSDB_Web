@@ -49,6 +49,7 @@ const Layout = ({ children }) => {
   };
 
   return (
+    // to do añadir a la classname layout dinamicamente un tema segun la configuracion escogida por el usuario
     <div className="layout">
       <header className="navbar">
         <nav>

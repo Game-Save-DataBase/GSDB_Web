@@ -18,7 +18,7 @@
 /* Barra de navegacion (zona superior) */
 .navbar {
     grid-area: navbar;
-    // background-color: #f4f4f4;
+    background-color: var(--color-foreground);
     padding: 20px;
     text-align: center;
     border-bottom: 2px solid #ccc; 
@@ -43,7 +43,7 @@
 /* Zona izquierda */
 .left-sidebar {
     grid-area: left-sidebar;
-    // background-color: #f4f4f4;
+    background-color: var(--color-foreground);
     padding: 20px;
     border-right: 1px solid #ccc;
 }
@@ -52,20 +52,19 @@
 .main-content {
     grid-area: main-content;
     padding: 20px;
-    // background-color: #fff;
 }
 
 /* Zona derecha */
 .right-sidebar {
     grid-area: right-sidebar;
-    // background-color: #f4f4f4;
+    background-color: var(--color-foreground);
     padding: 20px;
     border-left: 1px solid #ccc;
 }
 /* Barra inferior */
 .bottom-bar {
     grid-area: bottom-bar;
-    // background-color: #f4f4f4;
+    //background-color: var(--color-foreground);
     color: #555;
     padding: 10px;
     text-align: center;
