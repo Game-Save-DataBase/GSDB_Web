@@ -5,50 +5,65 @@ escogerá la variable según la clase que tenga asignada. Siempre usará root, p
 usará alguna de las otras
 */
 //variante de tema por defecto
+
+//la basica será la paleta Indigo. Sacado de los colores usados en figma
 :root {
-    --color-text: #000000; //color para texto estandar
-    --color-h1: #4B164C; //color para titulos
-    --color-h2: #DD88CF; //color para texto destacado secundario
-    --color-foreground: #F8E7F6; //color que se usa para background pero que no es el principal (quedaría por encima de background)
-    --color-background: #F5F5F5; //color para background
+    --color-text-primary: #000000; //color para texto estandar
+    --color-text-secondary: #8540F5;
+    --color-text-alt: #D63384;
+    --color-links: #A370F7; //color para el texto que sea un enlace
+    --color-h1: #290661; //color para titulos
+    --color-h2: #520DC2;
+    --color-h3: #6610F2;
+    //IMPORTANTE: los colores de fondo y color basico(usados con color y background-color) no son heredables.
+    //por lo tanto, todos los .scss que hereden de common NO usaran el color de fondo
+    //hay que re-definirlo. los colores de letras sin embargo SI lo son
+    --color-foreground: #F3F3FF; //color que se usa para background pero que no es el principal (quedaría por encima de background)
+    --color-background: #FFFFFF; //color para background
+
+    --font-family: Arial, sans-serif;
+
 }
-//paletas de ejemplo
+
+//paletas de ejemplo. sin trabajar especialmente
+.theme-smooth {
+    --color-text-primary: #2C2C2C;
+    --color-text-secondary: #5A5A89;
+    --color-text-alt: #A67C8C;
+    --color-links: #6C63FF;
+    --color-h1: #333366;
+    --color-h2: #4C4C99;
+    --color-h3: #6666CC;
+    --color-foreground: #FAFAFC;
+    --color-background: #FFFFFF;
+    --font-family: Arial, sans-serif;
+}
+
 .theme-dark {
-    --color-text: #FFFFFF;
-    --color-h1: #BB86FC;
-    --color-h2: #03DAC6;
-    --color-foreground: #333333;
-    --color-background: #121212;
-}
+    --color-text-primary: #E0E0E0;
+    --color-text-secondary: #BB86FC;
+    --color-text-alt: #F48FB1;
+    --color-links: #A48CFF;
+    --color-h1: #D0BCFF;
+    --color-h2: #B69DF8;
+    --color-h3: #9E79EE;
+    --color-foreground: #121212;
+    --color-background: #2A2A2E;
+    --font-family: Arial, sans-serif;
 
-.theme-pastel {
-    --color-text: #4A4A4A;
-    --color-h1: #FFB3BA;
-    --color-h2: #FFDFBA;
-    --color-foreground: #FFFFBA;
-    --color-background: #BAE1FF;
-}
-
-.theme-solarized {
-    --color-text: #586E75;
-    --color-h1: #268BD2;
-    --color-h2: #2AA198;
-    --color-foreground: #EEE8D5;
-    --color-background: #FDF6E3;
-}
-
-.theme-gray {
-    --color-text: #333333;
-    --color-h1: #555555;
-    --color-h2: #777777;
-    --color-foreground: #DDDDDD;
-    --color-background: #F5F5F5;
 }
 
 .theme-vibrant {
-    --color-text: #1A1A1A;
-    --color-h1: #E63946;
-    --color-h2: #F1FA8C;
-    --color-foreground: #A8DADC;
-    --color-background: #F1FAEE;
+    --color-text-primary: #1C1C1C;
+    --color-text-secondary: #FF6F61;
+    --color-text-alt: #FFB400;
+    --color-links: #1E90FF;
+    --color-h1: #FF3B3F;
+    --color-h2: #FF6F61;
+    --color-h3: #FFB400;
+    --color-foreground: #FFF0E0;
+    --color-background: #FFFFFF;
+    --font-family: Arial, sans-serif;
+
+
 }

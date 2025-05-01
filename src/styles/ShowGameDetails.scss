@@ -10,12 +10,16 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del jue
   margin-top: 20px;
   padding: 20px;
 }
-
+//para aplicar el color de fondo
+.container > * {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+}
 /*........................................ Sección de información */
 /* tiene que haber menos espacio para la imagen y mas espacio para el resto de info */
 .game-section {
   margin-bottom: 30px;
-  // background-color: #f9f9f9;
+  background-color: var(--color-foreground);
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
@@ -42,30 +46,20 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del jue
   }  
 }
 
-
 /* .......................................Sección de datos de guardado disponibles */
 .saves-section {
   margin-bottom: 30px;
   padding: 1%;
-  // background-color: #f9f9f9;
-  border-radius: 10px;
+  background-color: var(--color-foreground);
+    border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
   .save {
     padding: 10px 0;
     border-bottom: 1px solid #eee;
-    :last-child {
-      border-bottom: none;
-    }
     
     p {
       font-size: 1rem;
-      // color: #555;
     }
-    
-    // strong {
-    //   color: #6c63ff;
-    // }
   }
 }
-

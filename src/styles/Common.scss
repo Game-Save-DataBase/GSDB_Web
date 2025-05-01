@@ -10,9 +10,9 @@ body {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family: Arial, sans-serif;
-  color: var(--color-text); 
-  background-color: var(--color-background);
+  font-family: var(--font-family);
+  color: var(--color-text-primary); //no heredará
+  background-color: var(--color-foreground); //no heredará
 }
 h1 {
   color: var(--color-h1);
@@ -21,15 +21,20 @@ h1 {
 h2 {
   color: var(--color-h2);
 }
+h3 {
+  color: var(--color-h3);
+}
+//estas por ahora usaran el color de texto normal. habrá que ir añadiendo
+//segun vayamos usando otros tipos
+li,
 p,
 span,
-a,
-li,
-blockquote {
-  color: var(--color-h2);
+blockquote{
+  color: var(--color-text-primary);
 }
-
-
+a {
+  color: var(--color-links);
+}
 
 
 

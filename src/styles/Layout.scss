@@ -3,6 +3,7 @@
 
 
 /* estilo principal para hacer un grid con cada seccion */
+
 .layout {
     display: grid;
     /*  */
@@ -10,35 +11,45 @@
         "navbar         navbar      navbar"
         "left-sidebar main-content right-sidebar"
         "bottom-bar     bottom-bar     bottom-bar";
-        grid-template-columns: 1fr 6fr 1fr; /* Tres columnas */
-        grid-template-rows: auto 1fr auto; /* Fila superior (navbar), contenido, y fila inferior (bottom-bar) */
-        min-height: 100vh; /* Asegura que la página cubra toda la ventana */
-    }
-
+    grid-template-columns: 1fr 6fr 1fr;
+    /* Tres columnas */
+    grid-template-rows: auto 1fr auto;
+    /* Fila superior (navbar), contenido, y fila inferior (bottom-bar) */
+    min-height: 100vh;
+    /* Asegura que la página cubra toda la ventana */
+}
+//para aplicar el color de fondo
+.layout > * {
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+}
 /* Barra de navegacion (zona superior) */
 .navbar {
     grid-area: navbar;
     background-color: var(--color-foreground);
     padding: 20px;
     text-align: center;
-    border-bottom: 2px solid #ccc; 
+    border-bottom: 2px solid #ccc;
 }
+
 /* para generar listas que esten en horizontal y sin puntitos */
-    .navbar ul {
-        list-style: none;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-    }
-    /* le añade separacion a cada elemento */
-        .navbar ul li {
-            margin: 0 15px;
-        }
-        /* le quita la decoracion a los enlaces*/
-            .navbar ul li a {
-                text-decoration: none;
-                /* color: black */
-            }
+.navbar ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+}
+
+/* le añade separacion a cada elemento */
+.navbar ul li {
+    margin: 0 15px;
+}
+
+/* le quita la decoracion a los enlaces*/
+.navbar ul li a {
+    text-decoration: none;
+    /* color: black */
+}
 
 /* Zona izquierda */
 .left-sidebar {
@@ -61,6 +72,7 @@
     padding: 20px;
     border-left: 1px solid #ccc;
 }
+
 /* Barra inferior */
 .bottom-bar {
     grid-area: bottom-bar;
@@ -74,7 +86,8 @@
 
 /* RESPONSIVE DESIGN: Lo mismo, pero para diferentes tamaños de ventana. */
 
-/* Pantallas medianas (tablets) */ /*esta un poco fea, la comento por ahora*/
+/* Pantallas medianas (tablets) */
+/*esta un poco fea, la comento por ahora*/
 /* @media (max-width: 1024px)
 
 /* Pantallas pequeñas (móviles) 
@@ -85,19 +98,24 @@ TO DO: Ajustar esto un poco mejor!!*/
             "navbar"
             "main-content"
             "bottom-bar";
-        grid-template-columns: 1fr; /* Una sola columna */
+        grid-template-columns: 1fr;
+        /* Una sola columna */
     }
 
-    .left-sidebar, .right-sidebar {
-        display: none; /* Oculta los sidebars */
+    .left-sidebar,
+    .right-sidebar {
+        display: none;
+        /* Oculta los sidebars */
     }
 
     .navbar ul {
-        flex-direction: column; /* Coloca los elementos de navegación verticalmente */
+        flex-direction: column;
+        /* Coloca los elementos de navegación verticalmente */
         text-align: center;
     }
 
     .navbar ul li {
-        margin: 5px 0; /* Ajusta el espaciado vertical */
+        margin: 5px 0;
+        /* Ajusta el espaciado vertical */
     }
 }

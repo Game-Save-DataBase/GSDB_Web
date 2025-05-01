@@ -8,6 +8,10 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del sav
   margin-top: 20px;
   padding: 20px;
 }
+.container > * {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+}
 
 /*........................................ Sección de información */
 /* tiene que haber menos espacio para la imagen y mas espacio para el resto de info */
@@ -19,7 +23,7 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del sav
 
   .table-data{
     padding: 1%;
-    // background-color: #f9f9f9;
+    background-color: var(--color-foreground);
     //la parte de texto centrado, muted etc la añado en el jsx porque crear mas clases para eso me parece innecesario
     .row {
       display: flex;
@@ -47,7 +51,7 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del sav
 .info-section {
   margin-bottom: 30px;
   padding: 1%;
-  // background-color: #f9f9f9;
+  background-color: var(--color-foreground);
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
@@ -60,12 +64,7 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del sav
     
     p {
       font-size: 1rem;
-      // color: #555;
     }
-    
-    // strong {
-    //   color: #6c63ff;
-    // }
   }
 
 
