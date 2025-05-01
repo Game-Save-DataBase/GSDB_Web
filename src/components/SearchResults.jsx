@@ -1,7 +1,7 @@
 import config from "../utils/config";
 import React, { useState, useEffect } from "react";
 import api from "../utils/interceptor";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import '../styles/Common.scss';
 
 const SearchResults = () => {
@@ -11,24 +11,50 @@ const SearchResults = () => {
     const type = params.get("type") || "games";
 
     const [results, setResults] = useState([]);
+    const [gamesMap, setGamesMap] = useState({});
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const url = type === "games"
-                    ? `${config.api.games}`
-                    : `${config.api.savedatas}`;
+                let data = [];
 
-                const response = await api.get(url);
-                const filteredResults = response.data.filter(item =>
-                    type === "games"
-                        ? item.title.toLowerCase().includes(query.toLowerCase())
-                        : item.title.toLowerCase().includes(query.toLowerCase()) ||
+                if (type === "games") {
+                    const response = await api.get(config.api.games);
+                    data = response.data;
+                } else {
+                    const response = await api.get(config.api.savedatas);
+                    data = response.data;
+
+                    const filtered = data.filter(item =>
+                        item.title.toLowerCase().includes(query.toLowerCase()) ||
                         item.description.toLowerCase().includes(query.toLowerCase())
-                );
+                    );
+                    setResults(filtered);
 
-                setResults(filteredResults);
-            } catch (error) {
+                    const uniqueGameIDs = [...new Set(filtered.map(item => item.gameID))];
+
+                    
+                    if (uniqueGameIDs.length > 0) {
+                        const gamesResponse = await api.get(`${config.api.games}?ids=${uniqueGameIDs.join(",")}`);
+                        const gamesArray = gamesResponse.data;
+
+                        const map = {};
+                        for (const game of gamesArray) {
+                            map[game._id] = game;
+                        }
+                        setGamesMap(map);
+                    }
+
+                    return;
+                }
+
+                const filtered = data.filter(item =>
+                    item.title.toLowerCase().includes(query.toLowerCase())
+                );
+                setResults(filtered);
+
+            }
+            catch (error) {
                 console.error("Error fetching data", error);
             }
         };
@@ -41,9 +67,30 @@ const SearchResults = () => {
             <h2>Resultados de búsqueda para "{query}"</h2>
             {results.length > 0 ? (
                 <ul>
-                    {results.map((result, index) => (
-                        <li key={index}>{result.title}</li>
-                    ))}
+                    {results.map((result, index) =>
+                    {
+                        let url = "#";
+
+                        if (type === "games") {
+                            url = `/game/${result._id}`;
+                            return (
+                                <li key={index}>
+                                    <Link to={url}>{result.title}</Link>
+                                </li>
+                            );
+                        } else {
+                            url = `/save/${result._id}`;
+                            const game = gamesMap[result.gameID];
+                            const gameTitle = game?.title || "Juego desconocido";
+                            const gameLink = game ? `/game/${game._id}` : "#";
+
+                            return (
+                                <li key={index}>
+                                    <Link to={url}>{result.title}</Link> - <Link to={gameLink}><strong>{gameTitle}</strong></Link>
+                                </li>
+                            );
+                        }
+                    })}
                 </ul>
             ) : (
                 <p>No se encontraron resultados.</p>
