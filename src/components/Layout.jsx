@@ -52,10 +52,12 @@ const Layout = ({ children }) => {
     // to do añadir a la classname layout dinamicamente un tema segun la configuracion escogida por el usuario
     <div className="layout">
       <header className="navbar">
-        <nav>
-          <ul>
-            <li><Link to="/upload-save">Añadir Save</Link></li>
+        <nav className="nav-content">
+          <div className="left">
+            <img src="/logo.png" alt="Logo" className="logo" />
+          </div>
 
+          <div className="center">
             <form className="search-bar" onSubmit={handleSearch}>
               <select value={searchType} onChange={(e) => setSearchType(e.target.value)}>
                 <option value="games">Juegos</option>
@@ -68,18 +70,19 @@ const Layout = ({ children }) => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </form>
+            {errorMessage && <p className="error">{errorMessage}</p>}
+          </div>
 
-            {errorMessage && <p style={{ color: "red", marginTop: "5px" }}>{errorMessage}</p>}
-
+          <div className="right">
             {user ? (
               <>
-                <li><Link to="/user-area">Área de usuario</Link></li>
-                <li><button className="logout-btn" onClick={handleLogout}>Cerrar sesión</button></li>
+                <Link to="/user-area">Área de usuario</Link>
+                <button className="logout-btn" onClick={handleLogout}>Cerrar sesión</button>
               </>
             ) : (
-              <li><Link to="/login">Identifícate</Link></li>
+              <Link to="/login">Identifícate</Link>
             )}
-          </ul>
+          </div>
         </nav>
       </header>
 

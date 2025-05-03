@@ -14,9 +14,9 @@ import { UserProvider } from "./contexts/UserContext";
 import Layout from "./components/Layout.jsx"; /*contenedor principal */
 import Test from "./components/test.jsx";
 //contenido principal
-import ShowGameDetails from "./components/content/ShowGameDetails.jsx";
-import ShowSaveDetails from "./components/content/ShowSaveDetails.jsx";
-import SearchResults from "./components/content/SearchResults.jsx";
+import ShowGameDetails from "./components/main/ShowGameDetails.jsx";
+import ShowSaveDetails from "./components/main/ShowSaveDetails.jsx";
+import SearchResults from "./components/main/SearchResults.jsx";
 //user related
 import UploadSave from "./components/user/UploadSave.jsx";
 import Login from "./components/user/Login.jsx";

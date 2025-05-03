@@ -19,42 +19,114 @@
     /* Asegura que la página cubra toda la ventana */
     background-color: var(--color-background);
     color: var(--color-text-primary);
+
+    /* listas sin puntitos y ajuste de margenes*/
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    li {
+        margin: 0 15px;
+
+        &:hover {
+            font-weight: bold;
+        }
+    }
 }
+
+
 
 /* Barra de navegacion (zona superior) */
 .navbar {
     grid-area: navbar;
     background-color: var(--color-foreground);
-    padding: 20px;
-    text-align: center;
+    padding: 0 40px; // margen lateral
     border-bottom: 2px solid #ccc;
-}
+    width: 100%; // fuerza ancho de pantalla completa
+    box-sizing: border-box;
 
-/* para generar listas que esten en horizontal y sin puntitos */
-.navbar ul {
-    list-style: none;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-}
+    .nav-content {
 
-/* le añade separacion a cada elemento */
-.navbar ul li {
-    margin: 0 15px;
-}
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        margin: 0 auto; // centra el contenido completo dentro de navbar   
+        width: 100%;
 
-/* le quita la decoracion a los enlaces*/
-.navbar ul li a {
-    text-decoration: none;
-    /* color: black */
+        .left,
+        .center,
+        .right {
+            display: flex;
+            align-items: center;
+        }
+
+        .left {
+            margin-left: 30px;
+        }
+
+        .center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+
+            .search-bar {
+                display: flex;
+                gap: 10px;
+
+                select,
+                input {
+                    padding: 5px;
+                }
+
+                .error {
+                    color: red;
+                    font-size: 0.8rem;
+                    margin-top: 5px;
+                }
+            }
+        }
+
+        .right {
+            gap: 15px;
+            margin-right: 30px;
+
+            a,
+            button {
+                text-decoration: none;
+                background: none;
+                border: none;
+                color: var(--color-links);
+                cursor: pointer;
+
+                &:hover {
+                    font-weight: bold;
+                    text-decoration: underline;
+                }
+            }
+
+            button.logout-btn {
+                color: red;
+            }
+        }
+    }
 }
 
 /* Zona izquierda */
 .left-sidebar {
     grid-area: left-sidebar;
     background-color: var(--color-foreground);
-    padding: 20px;
     border-right: 1px solid #ccc;
+    padding: 10px;
+
+    ul {
+        list-style: none;
+        padding: 0px;
+    }
 }
 
 /* Zona central (contenedor principal) */

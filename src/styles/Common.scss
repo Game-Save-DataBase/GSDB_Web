@@ -14,6 +14,7 @@ body {
   color: var(--color-text-primary); //no heredará
   background-color: var(--color-foreground); //no heredará
 }
+
 h1 {
   color: var(--color-h1);
 }
@@ -21,21 +22,30 @@ h1 {
 h2 {
   color: var(--color-h2);
 }
+
 h3 {
   color: var(--color-h3);
 }
+
 //estas por ahora usaran el color de texto normal. habrá que ir añadiendo
 //segun vayamos usando otros tipos
 li,
 p,
 span,
-blockquote{
+blockquote {
   color: var(--color-text-primary);
 }
-a {
-  color: var(--color-links);
-}
 
+//para los enlaces dentro de estas listas de manera predeterminada
+a {
+  text-decoration: none;
+  color: var(--color-links); // se le indica de nuevo el color para que funcione la transición
+  transition: all 0.2s ease;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
 
 
 // /* .......................................Seccion de la navegacion */
@@ -52,7 +62,17 @@ a {
   }
 
   li {
+    margin: 0px;
     @extend .breadcrumb-item; // Extiende la clase breadcrumb-item de Bootstrap
+
+    &:hover {
+      font-weight: normal;
+    }
+    a{
+      &:hover {
+        font-weight: bold;
+      }
+    }
   }
 }
 
@@ -60,26 +80,31 @@ a {
 //usan javascript para cambiar entre tabs
 //mas cosas que añadir por ejemplo: <a>, usar disabled y tabindex=-1 para desactivar 
 .tabs-container {
+
   //usamos ul para definir el grupo de tabs y cada li es una tab
   ul {
     @extend .nav;
     @extend .nav-tabs;
+
     //elemento horizontal del grupo de tabs
     li {
       @extend .nav-item;
-    
-      a{
+
+      a {
         @extend .nav-link;
       }
-      button{
+
+      button {
         @extend .nav-link;
       }
     }
   }
 }
-.tabs-content{
+
+.tabs-content {
   @extend .tab-content;
-  .gsdbtab{
+
+  .gsdbtab {
     @extend .tab-pane;
     @extend .fade;
   }
@@ -91,4 +116,3 @@ a {
   @extend .btn;
   @extend .btn-primary;
 }
-

@@ -3,7 +3,7 @@ import React, { useState, useEffect, useContext} from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import api from '../../utils/interceptor.js';
 import '../../styles/Common.scss';
-import '../../styles/ShowGameDetails.scss';
+import '../../styles/main/ShowGameDetails.scss';
 import { PLATFORMS, getPlatformName } from '../../utils/constants.jsx'
 
 
