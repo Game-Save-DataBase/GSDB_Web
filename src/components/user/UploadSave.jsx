@@ -1,10 +1,10 @@
-import config from "../utils/config";
+import config from "../../utils/config";
 import React, { useState, useEffect, useContext } from "react";
-import api from "../utils/interceptor";
+import api from "../../utils/interceptor";
 import { useNavigate } from "react-router-dom";
-import { UserContext } from "../contexts/UserContext";
-import '../styles/Common.scss';
-import { PLATFORMS, getPlatformName } from '../utils/constants'
+import { UserContext } from "../../contexts/UserContext";
+import '../../styles/Common.scss';
+import { PLATFORMS, getPlatformName } from '../../utils/constants'
 
 const UploadSave = (props) => {
   const navigate = useNavigate();

@@ -1,8 +1,8 @@
-import config from "../utils/config";
+import config from "../../utils/config";
 import React, { useState, useEffect } from "react";
-import api from "../utils/interceptor";
+import api from "../../utils/interceptor";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import '../styles/Common.scss';
+import '../../styles/Common.scss';
 
 const SearchResults = () => {
     const location = useLocation();

@@ -1,8 +1,8 @@
-import config from '../utils/config'
-import api from '../utils/interceptor'
+import config from '../../utils/config'
+import api from '../../utils/interceptor'
 import { useState, useContext } from 'react';
-import { UserContext } from "../contexts/UserContext";
-import history from '../utils/history'
+import { UserContext } from "../../contexts/UserContext";
+import history from '../../utils/history'
 import zxcvbn from 'zxcvbn';
 
 

@@ -17,12 +17,10 @@
     /* Fila superior (navbar), contenido, y fila inferior (bottom-bar) */
     min-height: 100vh;
     /* Asegura que la página cubra toda la ventana */
-}
-//para aplicar el color de fondo
-.layout > * {
     background-color: var(--color-background);
     color: var(--color-text-primary);
 }
+
 /* Barra de navegacion (zona superior) */
 .navbar {
     grid-area: navbar;

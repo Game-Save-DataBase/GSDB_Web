@@ -1,7 +1,7 @@
-import config from "../utils/config"
+import config from "../../utils/config"
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../utils/interceptor';
+import api from '../../utils/interceptor';
 
 function UserArea() {
   const [user, setUser] = useState(null);

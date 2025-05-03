@@ -12,14 +12,18 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 // Components imports
 import { UserProvider } from "./contexts/UserContext";
 import Layout from "./components/Layout.jsx"; /*contenedor principal */
-import ShowGameList from "./components/ShowGameList.jsx";
-import ShowGameDetails from "./components/ShowGameDetails.jsx";
-import ShowSaveDetails from "./components/ShowSaveDetails.jsx";
-import UploadSave from "./components/UploadSave.jsx";
-import SearchResults from "./components/SearchResults.jsx";
-import Login from "./components/Login.jsx";
-import UserArea from "./components/UserArea.jsx";
 import Test from "./components/test.jsx";
+//contenido principal
+import ShowGameList from "./components/content/ShowGameList.jsx";
+import ShowGameDetails from "./components/content/ShowGameDetails.jsx";
+import ShowSaveDetails from "./components/content/ShowSaveDetails.jsx";
+import SearchResults from "./components/content/SearchResults.jsx";
+//user related
+import UploadSave from "./components/user/UploadSave.jsx";
+import Login from "./components/user/Login.jsx";
+import UserArea from "./components/user/UserArea.jsx";
+//misc
+
 
 // Routes
 ReactDOM.createRoot(document.getElementById('root')).render(

@@ -9,57 +9,54 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del jue
 .container {
   margin-top: 20px;
   padding: 20px;
-}
-//para aplicar el color de fondo
-.container > * {
-  background-color: var(--color-background);
-  color: var(--color-text-primary);
-}
-/*........................................ Sección de información */
-/* tiene que haber menos espacio para la imagen y mas espacio para el resto de info */
-.game-section {
-  margin-bottom: 30px;
-  background-color: var(--color-foreground);
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
-  .table-data{
-    padding: 1%;
-    // background-color: #f9f9f9;
-    //la parte de texto centrado, muted etc la añado en el jsx porque crear mas clases para eso me parece innecesario
-    .row {
-      display: flex;
-      padding: 5px;
-      // align-items: center;
-      .row-element {
-        @extend .col-md-4;
+  /*........................................ Sección de información */
+  /* tiene que haber menos espacio para la imagen y mas espacio para el resto de info */
+  .game-section {
+    margin-bottom: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: var(--color-foreground);
+
+    .table-data {
+      padding: 1%;
+
+      //la parte de texto centrado, muted etc la añado en el jsx porque crear mas clases para eso me parece innecesario
+      .row {
+        display: flex;
+        padding: 5px;
+
+        // align-items: center;
+        .row-element {
+          @extend .col-md-4;
+        }
+      }
+
+      /* Imagen del juego */
+      img {
+        max-width: 200px;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       }
     }
-  
-    /* Imagen del juego */
-    img {
-      max-width: 200px;
-      height: auto;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-  }  
-}
+  }
 
-/* .......................................Sección de datos de guardado disponibles */
-.saves-section {
-  margin-bottom: 30px;
-  padding: 1%;
-  background-color: var(--color-foreground);
+  /* .......................................Sección de datos de guardado disponibles */
+  .saves-section {
+    margin-bottom: 30px;
+    padding: 1%;
+    background-color: var(--color-foreground);
     border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
-  .save {
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
-    
-    p {
-      font-size: 1rem;
+    .save {
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+
+      p {
+        font-size: 1rem;
+      }
     }
   }
 }

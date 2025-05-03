@@ -1,9 +1,9 @@
-import config from '../utils/config';
+import config from '../../utils/config';
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import api from '../utils/interceptor';
-import '../styles/Common.scss';
-import '../styles/ShowSaveDetails.scss';
+import api from '../../utils/interceptor';
+import '../../styles/Common.scss';
+import '../../styles/ShowSaveDetails.scss';
 
 function ShowSaveDetails(props) {
   const [saveData, setSaveData] = useState({});

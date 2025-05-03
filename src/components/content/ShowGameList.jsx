@@ -1,9 +1,9 @@
-import config from '../utils/config.js';
-import api from "../utils/interceptor";
-import { PLATFORMS } from '../utils/constants.jsx';
+import config from '../../utils/config.js';
+import api from "../../utils/interceptor.js";
+import { PLATFORMS } from '../../utils/constants.jsx';
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import '../styles/Common.scss';
+import '../../styles/Common.scss';
 
 function ShowGameList() {
 

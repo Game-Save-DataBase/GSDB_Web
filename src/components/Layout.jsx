@@ -54,7 +54,6 @@ const Layout = ({ children }) => {
       <header className="navbar">
         <nav>
           <ul>
-            <li><Link to="/">Inicio</Link></li>
             <li><Link to="/upload-save">Añadir Save</Link></li>
 
             <form className="search-bar" onSubmit={handleSearch}>
@@ -68,7 +67,6 @@ const Layout = ({ children }) => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <button type="submit">Buscar</button>
             </form>
 
             {errorMessage && <p style={{ color: "red", marginTop: "5px" }}>{errorMessage}</p>}
@@ -85,7 +83,15 @@ const Layout = ({ children }) => {
         </nav>
       </header>
 
-      <aside className="left-sidebar" />
+      <aside className="left-sidebar">
+        <ul>
+          <li><Link to="/">Home</Link></li>
+          <li><Link to="/">Catalog</Link></li>
+          <li><Link to="/">About Us</Link></li>
+          <li><Link to="/">FAQ</Link></li>
+        </ul>
+
+      </aside>
 
       <main className="main-content">
         {children}
