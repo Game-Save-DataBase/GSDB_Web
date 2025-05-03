@@ -14,7 +14,6 @@ import { UserProvider } from "./contexts/UserContext";
 import Layout from "./components/Layout.jsx"; /*contenedor principal */
 import Test from "./components/test.jsx";
 //contenido principal
-import ShowGameList from "./components/content/ShowGameList.jsx";
 import ShowGameDetails from "./components/content/ShowGameDetails.jsx";
 import ShowSaveDetails from "./components/content/ShowSaveDetails.jsx";
 import SearchResults from "./components/content/SearchResults.jsx";
@@ -23,7 +22,10 @@ import UploadSave from "./components/user/UploadSave.jsx";
 import Login from "./components/user/Login.jsx";
 import UserArea from "./components/user/UserArea.jsx";
 //misc
-
+import Home from "./components/misc/Home.jsx"
+import Catalog from "./components/misc/Catalog.jsx" //<--- showgamelist
+import About from "./components/misc/About.jsx"
+import FAQ from "./components/misc/FAQ.jsx"
 
 // Routes
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -31,7 +33,10 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <HistoryRouter history={history}>
       <UserProvider>
           <Routes>
-            <Route path="/" element={<Layout><ShowGameList /></Layout>} />
+            <Route path="/" element={<Layout><Home /></Layout>} />
+            <Route path="/catalog" element={<Layout><Catalog /></Layout>} />
+            <Route path="/about" element={<Layout><About /></Layout>} />
+            <Route path="/faq" element={<Layout><FAQ /></Layout>} />
             <Route path="/game/:id" element={<Layout><ShowGameDetails /></Layout>} />
             <Route path="/save/:id" element={<Layout><ShowSaveDetails /></Layout>} />
             <Route path="/upload-save" element={<Layout><UploadSave /></Layout>} />
