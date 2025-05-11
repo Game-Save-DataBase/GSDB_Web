@@ -56,8 +56,8 @@ const Login = () => {
       //.......................REGISTER
       else {
         await api.post(`${config.api.auth}/register`, {
-          userName: formData.userName,
-          mail: formData.mail,
+          userName: formData.userName.toLowerCase(),
+          mail: formData.mail.toLowerCase(),
           password: formData.password
         }, { withCredentials: true })
 
@@ -65,7 +65,7 @@ const Login = () => {
 
         // Login automático tras registrarse
         const res = await api.post(`${config.api.auth}/login`, {
-          identifier: formData.userName,
+          identifier: formData.userName.toLocaleLowerCase(),
           password: formData.password
         }, { withCredentials: true })
 
