@@ -2,6 +2,7 @@ import config from "../../utils/config"
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../utils/interceptor';
+import '../../styles/user/UserProfile.scss';
 
 function UserProfile() {
     const navigate = useNavigate();
@@ -41,7 +42,39 @@ function UserProfile() {
     return (
         <div className="user-profile">
             {user ? (
-                <h2>Este es el perfil de, {user.alias || user.userName || 'Usuario'}</h2>
+                <>
+                    <div className="position-relative">
+                        {/* Banner */}
+                        <img
+                            src={`${config.connection}${user.banner}`}
+                            alt="Banner"
+                            className="img-fluid w-100 rounded"
+                            style={{
+                                height: 'auto',
+                                aspectRatio: '5 / 1',
+                                objectFit: 'cover',
+                            }}
+                        />
+
+                        {/* Imagen de perfil */}
+                        <div className="position-absolute top-100 start-0 translate-middle-y ms-3">
+                            <img
+                                src={`${config.connection}${user.pfp}`}
+                                alt="Perfil"
+                                className="rounded-circle border border-3 border-white"
+                                style={{
+                                    width: '120px',
+                                    height: '120px',
+                                    objectFit: 'cover',
+                                }}
+                            />
+                            <div className="ms-3">
+                                <h4 className="mb-0">{user.alias || user.userName}</h4>
+                                <small className="text-muted">@{user.userName.toLowerCase()}</small>
+                            </div>
+                        </div>
+                    </div>
+                </>
             ) : (
                 <p>Cargando usuario...</p>
             )}
