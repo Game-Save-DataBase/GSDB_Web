@@ -21,6 +21,7 @@ import SearchResults from "./components/main/SearchResults.jsx";
 import UploadSave from "./components/user/UploadSave.jsx";
 import Login from "./components/user/Login.jsx";
 import UserArea from "./components/user/UserArea.jsx";
+import UserProfile from "./components/user/UserProfile.jsx";
 //misc
 import Home from "./components/misc/Home.jsx"
 import Catalog from "./components/misc/Catalog.jsx" //<--- showgamelist
@@ -43,6 +44,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <Route path="/search" element={<Layout><SearchResults /></Layout>} />
             <Route path="/login" element={<Layout><Login /></Layout>} />
             <Route path="/user-area" element={<Layout><UserArea /></Layout>} />
+            <Route path="/u/:userNameParam" element={<Layout><UserProfile /></Layout>} />
             <Route path="/test" element={<Layout><Test /></Layout>} />
           </Routes>
       </UserProvider>

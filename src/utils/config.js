@@ -7,7 +7,8 @@ const config = {
     uploads: import.meta.env.VITE_DIR_ASSETS + import.meta.env.VITE_DIR_UPLOADS,
     defaults: import.meta.env.VITE_DIR_ASSETS + import.meta.env.VITE_DIR_DEFAULT,
     gameCover_default: import.meta.env.VITE_DIR_ASSETS + import.meta.env.VITE_DIR_DEFAULT + '/' + import.meta.env.VITE_ASSET_GAMECOVER,
-    pfp_default: import.meta.env.VITE_DIR_ASSETS + import.meta.env.VITE_DIR_DEFAULT + '/' + import.meta.env.VITE_ASSET_PFP
+    pfp_default: import.meta.env.VITE_DIR_ASSETS + import.meta.env.VITE_DIR_DEFAULT + '/' + import.meta.env.VITE_ASSET_PFP,
+    banner_default: import.meta.env.VITE_DIR_ASSETS + import.meta.env.VITE_DIR_DEFAULT + '/' + import.meta.env.VITE_ASSET_BANNER
   },
   api: {
     api: import.meta.env.VITE_DIR_GSDB + import.meta.env.VITE_PORT + import.meta.env.VITE_API,
