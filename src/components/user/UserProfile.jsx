@@ -47,7 +47,7 @@ function UserProfile() {
                         {/* Banner */}
                         <img
                             src={`${config.connection}${user.banner}`}
-                            alt="Banner"
+                            alt={`@${user.userName}'s banner image`}
                             className="img-fluid w-100 rounded"
                             style={{
                                 height: 'auto',
@@ -60,7 +60,7 @@ function UserProfile() {
                         <div className="position-absolute top-100 start-0 translate-middle-y ms-3">
                             <img
                                 src={`${config.connection}${user.pfp}`}
-                                alt="Perfil"
+                                alt={`@${user.userName.toLowerCase()}'s profile picture`}
                                 className="rounded-circle border border-3 border-white"
                                 style={{
                                     width: '120px',
@@ -68,17 +68,57 @@ function UserProfile() {
                                     objectFit: 'cover',
                                 }}
                             />
-                            <div className="ms-3">
-                                <h4 className="mb-0">{user.alias || user.userName}</h4>
+                        {/* Alias, username y botón al lado de la imagen */}
+                        <div className="d-flex align-items-center mt-4 ps-4">
+                            <div className="me-3">
+                                <h4 className="mb-1">{user.alias || user.userName}</h4>
                                 <small className="text-muted">@{user.userName.toLowerCase()}</small>
                             </div>
+                            <button className="btn btn-primary">Seguir</button>
+                            <button className="btn btn-primary">Seguir</button>
+                            <button className="btn btn-primary">Seguir</button>
+                            <button className="btn btn-primary">Seguir</button>
+                        </div>
                         </div>
                     </div>
+
+                    {/* <div className="user-summary">
+                        <div className="stats">
+                            <div className="stat-item">
+                                <div className="value">7</div>
+                                <div className="label">Subidas</div>
+                            </div>
+                            <div className="stat-item">
+                                <div className="value">35</div>
+                                <div className="label">Descargas</div>
+                            </div>
+                            <div className="stat-item">
+                                <div className="value">24</div>
+                                <div className="label">Revisiones</div>
+                            </div>
+                        </div>
+
+                        <div className="rating">
+                            '★'
+                        </div>
+
+                        <div className="followers">
+                            <div className="value">200</div>
+                            <div className="label">Seguidores</div>
+                        </div>
+
+                        <div className="following">
+                            <div className="value">7</div>
+                            <div className="label">Siguiendo</div>
+                        </div>
+                    </div> */}
+
                 </>
             ) : (
                 <p>Cargando usuario...</p>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }
 

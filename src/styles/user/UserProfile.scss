@@ -1,5 +1,52 @@
 @use '../common' as *;
-.user-profile > * {
-    background-color: var(--color-background);
-    color: var(--color-text-primary);
+
+.user-profile {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+
+  .user-summary {
+    display: grid;
+    grid-template-areas:
+      "stats followers"
+      "rating following";
+    grid-template-columns: 3fr 1fr;
+    gap: 1rem;
+    margin-top: 2rem;
+
+    .stats {
+      grid-area: stats;
+      display: flex;
+      justify-content: space-between;
+
+      .stat-item {
+        text-align: center;
+
+        .value {
+          font-size: 1.2rem;
+          font-weight: bold;
+        }
+
+        .label {
+          font-size: 0.85rem;
+          color: var(--color-text-secondary);
+        }
+      }
+    }
+
+    .rating {
+      grid-area: rating;
+      display: flex;
+      align-items: center;
+    }
+
+    .followers {
+      grid-area: followers;
+      text-align: center;
+    }
+
+    .following {
+      grid-area: following;
+      text-align: center;
+    }
   }
+}
