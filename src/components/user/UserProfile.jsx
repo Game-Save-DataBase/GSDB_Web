@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../utils/interceptor';
 import '../../styles/user/UserProfile.scss';
 
+
 function UserProfile() {
     const navigate = useNavigate();
     const [user, setUser] = useState(null); //null porque aun no ha cargado
@@ -68,51 +69,52 @@ function UserProfile() {
                                     objectFit: 'cover',
                                 }}
                             />
-                        {/* Alias, username y botón al lado de la imagen */}
-                        <div className="d-flex align-items-center mt-4 ps-4">
-                            <div className="me-3">
-                                <h4 className="mb-1">{user.alias || user.userName}</h4>
-                                <small className="text-muted">@{user.userName.toLowerCase()}</small>
-                            </div>
-                            <button className="btn btn-primary">Seguir</button>
-                            <button className="btn btn-primary">Seguir</button>
-                            <button className="btn btn-primary">Seguir</button>
-                            <button className="btn btn-primary">Seguir</button>
-                        </div>
                         </div>
                     </div>
+                    {/* ---------------------------------------------------------------------------------------------- */}
+                    <div className="d-flex align-items-center mt-4 ps-4">
 
-                    {/* <div className="user-summary">
-                        <div className="stats">
-                            <div className="stat-item">
+                        <div className="me-3">
+                            <h4 className="mb-1">{user.alias || user.userName}</h4>
+                            <small className="text-muted">@{user.userName.toLowerCase()}</small>
+                        </div>
+                        <button className="btn btn-primary">Seguir</button>
+                        <div className="me-3">
+                            <div>7 </div>
+                        </div>
+
+
+                        {/* <div className="user-summary">
+                            <div className="stats">
+                                <div className="stat-item">
+                                    <div className="value">7</div>
+                                    <div className="label">Subidas</div>
+                                </div>
+                                <div className="stat-item">
+                                    <div className="value">35</div>
+                                    <div className="label">Descargas</div>
+                                </div>
+                                <div className="stat-item">
+                                    <div className="value">24</div>
+                                    <div className="label">Revisiones</div>
+                                </div>
+                            </div>
+
+                            <div className="rating">
+                                ★
+                            </div>
+
+                            <div className="followers">
+                                <div className="value">200</div>
+                                <div className="label">Seguidores</div>
+                            </div>
+
+                            <div className="following">
                                 <div className="value">7</div>
-                                <div className="label">Subidas</div>
+                                <div className="label">Siguiendo</div>
                             </div>
-                            <div className="stat-item">
-                                <div className="value">35</div>
-                                <div className="label">Descargas</div>
-                            </div>
-                            <div className="stat-item">
-                                <div className="value">24</div>
-                                <div className="label">Revisiones</div>
-                            </div>
-                        </div>
-
-                        <div className="rating">
-                            '★'
-                        </div>
-
-                        <div className="followers">
-                            <div className="value">200</div>
-                            <div className="label">Seguidores</div>
-                        </div>
-
-                        <div className="following">
-                            <div className="value">7</div>
-                            <div className="label">Siguiendo</div>
-                        </div>
-                    </div> */}
-
+                        </div> */}
+                    </div>
                 </>
             ) : (
                 <p>Cargando usuario...</p>
