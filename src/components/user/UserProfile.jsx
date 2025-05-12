@@ -4,6 +4,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../utils/interceptor';
 import '../../styles/user/UserProfile.scss';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowUpFromBracket, faDownload, faEye, faStar } from '@fortawesome/free-solid-svg-icons';
 
 function UserProfile() {
     const navigate = useNavigate();
@@ -72,52 +74,45 @@ function UserProfile() {
                         </div>
                     </div>
                     {/* ---------------------------------------------------------------------------------------------- */}
-                    <div className="d-flex align-items-center mt-4 ps-4">
-
-                        <div className="me-3">
-                            <h4 className="mb-1">{user.alias || user.userName}</h4>
-                            <small className="text-muted">@{user.userName.toLowerCase()}</small>
-                        </div>
-                        <button className="btn btn-primary">Seguir</button>
-                        <div className="me-3">
-                            <div>7 </div>
+                    <div className="user-header">
+                        <div className="user-header-handle">
+                            <div>
+                                <h4>{user.alias || user.userName}</h4>
+                                <small>@{user.userName.toLowerCase()}</small>
+                            </div>
+                            <button className="btn btn-primary">Seguir</button>
                         </div>
 
-
-                        {/* <div className="user-summary">
-                            <div className="stats">
-                                <div className="stat-item">
-                                    <div className="value">7</div>
-                                    <div className="label">Subidas</div>
+                        <div className="user-header-stats">
+                            <div>
+                                <div>
+                                    <FontAwesomeIcon icon={faArrowUpFromBracket} />
+                                    <span>27</span>
+                                    <FontAwesomeIcon icon={faDownload} />
+                                    <span>45</span>
+                                    <FontAwesomeIcon icon={faEye} />
+                                    <span>22</span>
                                 </div>
-                                <div className="stat-item">
-                                    <div className="value">35</div>
-                                    <div className="label">Descargas</div>
-                                </div>
-                                <div className="stat-item">
-                                    <div className="value">24</div>
-                                    <div className="label">Revisiones</div>
-                                </div>
+                                <FontAwesomeIcon icon={faStar} />
+                                <FontAwesomeIcon icon={faStar} />
+                                <FontAwesomeIcon icon={faStar} />
+                                <FontAwesomeIcon icon={faStar} />
                             </div>
+                            <div>
+                                <div>263 followers</div>
+                                <div>23 following</div>
+                            </div>
+                        </div>
 
-                            <div className="rating">
-                                ★
-                            </div>
 
-                            <div className="followers">
-                                <div className="value">200</div>
-                                <div className="label">Seguidores</div>
-                            </div>
-
-                            <div className="following">
-                                <div className="value">7</div>
-                                <div className="label">Siguiendo</div>
-                            </div>
-                        </div> */}
                     </div>
+
+
+                    <div>next element here.....</div>
+
                 </>
             ) : (
-                <p>Cargando usuario...</p>
+                <p> </p>
             )
             }
         </div >

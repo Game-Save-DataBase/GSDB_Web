@@ -47,6 +47,10 @@ a {
   }
 }
 
+small{
+  @extend .text-muted;
+  // color: var(--color-text-alt);
+}
 
 // /* .......................................Seccion de la navegacion */
 // /* cheatseet: los breadcrumbs de bootstrap sirven para dejar bonita la info de navegacion */
