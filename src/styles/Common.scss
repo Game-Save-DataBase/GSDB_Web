@@ -47,7 +47,7 @@ a {
   }
 }
 
-small{
+small {
   @extend .text-muted;
   // color: var(--color-text-alt);
 }
@@ -72,7 +72,8 @@ small{
     &:hover {
       font-weight: normal;
     }
-    a{
+
+    a {
       &:hover {
         font-weight: bold;
       }
@@ -120,3 +121,18 @@ small{
   @extend .btn;
   @extend .btn-primary;
 }
+
+
+.horizontal-scroll {
+  @extend .container;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  white-space: nowrap;
+  gap: 1rem;
+  padding-bottom: 1rem;
+}
+
+
+
