@@ -24,7 +24,7 @@ function ShowGameDetails(props) {
     /*funcion que carga el juego, su caratula y sus datos del modelo de games */
     const fetchGameDetails = async () => {
       try {
-        const gameResponse = await api.get(`${config.api.games}/${id}`);
+        const gameResponse = await api.get(`${config.api.games}?_id=${id}`);
         setGame(gameResponse.data);
       } catch (err) {
         console.log('Error from ShowGameDetails');
@@ -43,12 +43,12 @@ function ShowGameDetails(props) {
       }
       try {
         //obtenemos los archivos de guardado
-        const saveFilesResponse = await api.get(`${config.api.savedatas}/game/${id}`);
+        const saveFilesResponse = await api.get(`${config.api.savedatas}?gameID=${id}`);
         //les añadimos más datos que salen de la base de datos de usuarios
         const updatedSaveFiles = await Promise.all(
           saveFilesResponse.data.map(async (sf) => {
             try {
-              const userResponse = await api.get(`${config.api.users}/${sf.userID}`);
+              const userResponse = await api.get(`${config.api.users}?_id=${sf.userID}`);
               if (!userResponse.data) {
                 return {
                   ...sf,

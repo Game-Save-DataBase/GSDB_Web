@@ -28,7 +28,7 @@ function ShowSaveDetails(props) {
     // Función para obtener los detalles del archivo de guardado
     const fetchSaveData = async () => {
       try {
-        const saveResponse = await api.get(`${config.api.savedatas}/${id}`);
+        const saveResponse = await api.get(`${config.api.savedatas}?_id=${id}`);
         setSaveData(saveResponse.data);
         fetchscreenshots(id)
       } catch (err) {
@@ -43,14 +43,14 @@ function ShowSaveDetails(props) {
     // Obtener comentarios y añadir usernames
     const fetchComments = async () => {
       try {
-        const commentsResponse = await api.get(`${config.api.comments}/save/${id}`);
+        const commentsResponse = await api.get(`${config.api.comments}?saveID=${id}`);
         const commentsData = commentsResponse.data;
 
         // Obtener los usernames para cada comentario
         const updatedComments = await Promise.all(
           commentsData.map(async (comment) => {
             try {
-              const userResponse = await api.get(`${config.api.users}/${comment.userID}`);
+              const userResponse = await api.get(`${config.api.users}?_id=${comment.userID}`);
               if (!userResponse.data) {
                 return {
                   ...comment,
@@ -89,7 +89,7 @@ function ShowSaveDetails(props) {
     if (saveData.gameID) {
       const fetchGameData = async () => {
         try {
-          const gameResponse = await api.get(`${config.api.games}/${saveData.gameID}`);
+          const gameResponse = await api.get(`${config.api.games}?_id=${saveData.gameID}`);
           setRelatedGame(gameResponse.data);
         } catch (err) {
           console.log('Error fetching game data:', err);
@@ -105,7 +105,7 @@ function ShowSaveDetails(props) {
     if (saveData.userID) {
       const fetchUserData = async () => {
         try {
-          const userResponse = await api.get(`${config.api.users}/${saveData.userID}`);
+          const userResponse = await api.get(`${config.api.users}?_id=${saveData.userID}`);
           console.log(userResponse.data)
           setRelatedUser(userResponse.data);
         } catch (err) {

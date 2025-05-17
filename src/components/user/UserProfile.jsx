@@ -23,7 +23,7 @@ function UserProfile() {
         //carga el usuario a mostrar
         const fetchUser = async () => {
             try {
-                const userResponse = await api.get(`${config.api.users}/by-username/${userNameParam}`);
+                const userResponse = await api.get(`${config.api.users}?userName=${userNameParam}`);
                 // redirige para tener una pretty url si el nombre esta escrito mal (mayus y minus)
                 if (userResponse.data.userName !== userNameParam) {
                     navigate(`/u/${userResponse.data.userName}`, { replace: true }); //replace se usa para que navigate no añada una nueva url al historial sino que la cambie
@@ -47,13 +47,13 @@ function UserProfile() {
         const fetchSaves = async () => {
             try {
                 //filtramos todos los saves subidos por el usuario                
-                const savesResponse = await api.get(`${config.api.savedatas}/filter?userID=${user._id}`)
+                const savesResponse = await api.get(`${config.api.savedatas}?userID=${user._id}`)
                 const savesResponseData = savesResponse.data;
                 //vitaminamos cada uplaod con su imagen (viene del juego) y nombre de la plataforma
                 const updatedUploads = await Promise.all(
                     savesResponseData.map(async (save) => {
                         try {
-                            const gameResponse = await api.get(`${config.api.games}/${save.gameID}`);
+                            const gameResponse = await api.get(`${config.api.games}?_id=${save.gameID}`);
                             if (!gameResponse.data) {
                                 return {
                                     ...save,
