@@ -9,24 +9,11 @@ import '../styles/Common.scss';
 const Layout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, setUser } = useContext(UserContext);
+  const { user:loggedUser, setUser } = useContext(UserContext);
 
   const [searchType, setSearchType] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await api.get(`${config.api.auth}/me`);
-        setUser(response.data);
-      } catch (error) {
-        setUser(null);
-      }
-    };
-
-    fetchUser();
-  }, [setUser]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -74,7 +61,7 @@ const Layout = ({ children }) => {
           </div>
 
           <div className="right">
-            {user ? (
+            {loggedUser ? (
               <>
                 <Link to="/user-area">Área de usuario</Link>
                 <button className="logout-btn" onClick={handleLogout}>Cerrar sesión</button>

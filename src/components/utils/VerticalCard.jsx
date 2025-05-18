@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import '../../styles/utils/VerticalCard.scss';
 
 // Props: imagen del juego, titulo del save, inicio de la descripcion, nombre de usuario, link usuario, link del save, rating, plataforma
-const VerticalCard = ({ image, title, description, username, saveLink, userLink, rating, platform }) => {
+const VerticalCard = ({ image, title, description, username, cLink, userLink, rating, platform }) => {
   // Usa saveLink si existe; si no, deja el enlace inactivo (fallback a "#")
-  const cardLink = saveLink || "#";
+  const cardLink = cLink || "#";
 
   return (
     <Link to={cardLink} className="card-container">

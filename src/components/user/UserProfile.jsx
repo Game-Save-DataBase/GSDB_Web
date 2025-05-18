@@ -1,10 +1,11 @@
 import config from "../../utils/config"
-import React, { useState, useEffect } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../utils/interceptor';
 import '../../styles/user/UserProfile.scss';
 import VerticalCard from '../utils/VerticalCard.jsx';
-
+import UserFollowButton from '../utils/UserFollowButton.jsx';
+import { UserContext } from '../../contexts/UserContext.jsx';
 
 import { PLATFORMS, getPlatformName } from '../../utils/constants.jsx'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -18,6 +19,7 @@ function UserProfile() {
     const [favGames, setFavGames] = useState([]); //juegos favoritos del usuario
     const [notFound, setNotFound] = useState(false); //el usuario puede ser nulo pero existir ya que aún está cargando, entonces mantenemos una variable bool para cuando NO exista
     const { userNameParam } = useParams();
+    const { user: loggedUser } = useContext(UserContext);
 
     useEffect(() => {
         //carga el usuario a mostrar
@@ -51,7 +53,7 @@ function UserProfile() {
                 const savesResponseData = savesResponse.data;
                 //vitaminamos cada uplaod con su imagen (viene del juego) y nombre de la plataforma
                 const updatedUploads = await Promise.all(
-                    savesResponseData.map(async (save) => {
+                    (savesResponseData || []).map(async (save) => {
                         try {
                             const gameResponse = await api.get(`${config.api.games}?_id=${save.gameID}`);
                             if (!gameResponse.data) {
@@ -82,10 +84,58 @@ function UserProfile() {
         };
 
         const fetchGames = async () => {
+            try {
+                const gameResponse = await api.post(`${config.api.games}/by-id`, {
+                    ids: user.favGames
+                });
+                console.log(gameResponse.data);
+                if (!gameResponse.data) {
+                    setFavGames([]);
+                    return;
+                }
+                setFavGames(gameResponse.data);
+            } catch (err) {
+                console.log(`Error fetching favorite games user ${user._id}:`, err);
+            }
         }
 
 
         const fetchReviews = async () => {
+            try {
+                const saveIds = (user.reviews || []).map(review => review.saveID);
+                const savesResponse = await api.post(`${config.api.savedatas}/by-id`, {
+                    ids: saveIds
+                });
+                //vitaminamos cada review con su imagen (viene del juego), nombre de la plataforma, nombre de usuario de la subida
+                const updatedReviews = await Promise.all(
+                    (savesResponse.data || []).map(async (save) => {
+                        try {
+                            const gameResponse = await api.get(`${config.api.games}?_id=${save.gameID}`);
+                            const userResponse = await api.get(`${config.api.users}?_id=${save.userID}`);
+                            return {
+                                ...save,
+                                platformName: getPlatformName(save.platformID),
+                                save_img: gameResponse.data?.cover || config.paths.gameCover_default,
+                                userName: userResponse.data?.userName || "Unknown",
+                                userPfp: userResponse.data?.pfp || config.paths.pfp_default
+                            };
+                        } catch (err) {
+                            console.log(`Error fetching additional data for save ${save._id}:`, err);
+                            return {
+                                ...save,
+                                platformName: getPlatformName(save.platformID),
+                                save_img: config.paths.gameCover_default,
+                                userName: "Unknown",
+                                userPfp: config.paths.pfp_default
+                            };
+                        }
+                    })
+
+                )
+                setReviewedSaves(updatedReviews);
+            } catch (err) {
+                console.log(`Error fetching reviews from user ${user._id}:`, err);
+            }
         }
 
 
@@ -94,7 +144,6 @@ function UserProfile() {
         if (user) { fetchGames(); }
         if (user) { fetchReviews(); }
     }, [user]);
-
 
     if (notFound) {
         //TO DO: hacer mas bonita la pagina de usuario inexistente
@@ -139,18 +188,23 @@ function UserProfile() {
                                 <h4>{user.alias || user.userName}</h4>
                                 <small>@{user.userName.toLowerCase()}</small>
                             </div>
-                            <button className="btn btn-primary">Seguir</button>
+                            {(!loggedUser || (user && loggedUser && user._id !== loggedUser._id)) && (
+                                // <button className="btn btn-primary" onClick={handleFollow}>Follow</button>
+                                <UserFollowButton
+                                    user={user}
+                                    loggedUser={loggedUser} />
+                            )}
                         </div>
 
                         <div className="user-header-stats">
                             <div>
                                 <div>
                                     <FontAwesomeIcon icon={faArrowUpFromBracket} />
-                                    <span>27</span>
+                                    <span>{`${uploadedSaves.length}`}</span>
                                     <FontAwesomeIcon icon={faDownload} />
-                                    <span>45</span>
+                                    <span>{`${user.downloadHistory.length}`}</span>
                                     <FontAwesomeIcon icon={faEye} />
-                                    <span>22</span>
+                                    <span>{`${reviewedSaves.length}`}</span>
                                 </div>
                                 <FontAwesomeIcon icon={faStar} />
                                 <FontAwesomeIcon icon={faStar} />
@@ -158,19 +212,33 @@ function UserProfile() {
                                 <FontAwesomeIcon icon={faStar} />
                             </div>
                             <div>
-                                <div>263 followers</div>
-                                <div>23 following</div>
+                                <div>{`${user.followers.length} followers`}</div>
+                                <div>{`${user.following.length} following`}</div>
                             </div>
                         </div>
                     </div>
 
                     <div className="user-bio">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras nec ante euismod, lobortis nibh sit amet, scelerisque urna. Integer sit amet est massa. Etiam eget quam quis nunc pretium dignissim sit amet vitae dui. Donec justo lorem, vehicula id turpis vitae, porttitor pulvinar ante. Aenean luctus elit eget ultricies interdum. Vivamus faucibus volutpat lectus, eget placerat odio lobortis id. Vivamus tincidunt sed libero sit amet pellentesque. Phasellus pulvinar diam ut arcu accumsan auctor. Donec a dolor eget augue venenatis feugiat et at neque. Sed et leo finibus, dapibus tellus sed, bibendum massa. Quisque urna elit, vestibulum sit amet magna posuere, interdum consectetur quam. Vivamus imperdiet vel nulla eu finibus. Suspendisse posuere dui et mi suscipit porttitor. Integer ante urna, cursus vitae egestas vel, tempor eu velit. Proin ac velit at diam efficitur ultrices ut at neque.
+                        {`${user.bio}`}
                     </div>
 
                     <hr />
                     <h2>Favorite games</h2>
-                    <p>lista de juegos horizontal...</p>
+                    {favGames.length === 0 ? (
+                        <p>No favorite games!</p>
+                    ) : (
+                        <div className="horizontal-scroll">
+                            {favGames.map(game => (
+                                <div key={game._id}>
+                                    <VerticalCard
+                                        image={`${config.connection}${game.cover}`}
+                                        title={game.title}
+                                        cLink={`/game/${game._id}`}
+                                        platform={`${game.plaformsID}`}
+                                    />
+                                </div>
+                            ))}
+                        </div>)}
                     <h2>Latest uploads</h2>
                     {uploadedSaves.length === 0 ? (
                         <p>No uploaded saves</p>
@@ -182,7 +250,7 @@ function UserProfile() {
                                         image={`${config.connection}${save.save_img}`}
                                         title={save.title}
                                         description={save.description}
-                                        saveLink={`/save/${save._id}`}
+                                        cLink={`/save/${save._id}`}
                                         platform={save.platformName}
                                         rating={save.rating || "0"}
                                     />
@@ -190,9 +258,25 @@ function UserProfile() {
                             ))}
                         </div>)}
                     <h2>Latest reviews</h2>
-                    <p>lista de saves horizontal...</p>
-
-                    <div>next element here.....</div>
+                    {reviewedSaves.length === 0 ? (
+                        <p>No reviews!</p>
+                    ) : (
+                        <div className="horizontal-scroll">
+                            {reviewedSaves.map(save => (
+                                <div key={save._id}>
+                                    <VerticalCard
+                                        image={`${config.connection}${save.save_img}`}
+                                        title={save.title}
+                                        description={save.description}
+                                        cLink={`/save/${save._id}`}
+                                        platform={save.platformName}
+                                        rating={save.rating || "0"}
+                                        username={save.userName}
+                                        userLink={`/u/${save.userName}`}
+                                    />
+                                </div>
+                            ))}
+                        </div>)}
 
                 </>
             ) : (

@@ -10,5 +10,8 @@ export default defineConfig({
         quietDeps: true
       }
     }
+  },
+  server: {
+    port: 3000, // <- cambia aquí
   }
 })
