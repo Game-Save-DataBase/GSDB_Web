@@ -1,0 +1,5 @@
+@use '../common' as *;
+.user-area {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+}

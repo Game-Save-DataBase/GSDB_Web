@@ -1,5 +1,3 @@
-//esto ira por encima del layout, para poder comprobar usuarios
-
 import config from "../utils/config"
 import { createContext, useState, useEffect } from "react";
 import api from "../utils/interceptor";
@@ -7,9 +5,10 @@ import api from "../utils/interceptor";
 export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null); //usuario activo
+  const [user, setUser] = useState(null); // usuario activo
+  const [loading, setLoading] = useState(true); // flag para saber si aún se está comprobando sesión
 
-  // comprobamos la sesion activa al cargar
+  // comprobamos la sesión activa al cargar
   useEffect(() => {
     const checkSession = async () => {
       try {
@@ -17,6 +16,8 @@ export const UserProvider = ({ children }) => {
         setUser(res.data.user);
       } catch {
         setUser(null);
+      } finally {
+        setLoading(false); // terminamos la comprobación
       }
     };
 
@@ -24,8 +25,7 @@ export const UserProvider = ({ children }) => {
   }, []);
 
   return (
-    //devolvemos el provider creado con el usuario que haya activo y todo lo que tenga debajo (el layout)
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ user, setUser, loading }}>
       {children}
     </UserContext.Provider>
   );
