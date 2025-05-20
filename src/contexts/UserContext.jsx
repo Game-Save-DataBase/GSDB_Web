@@ -24,8 +24,20 @@ export const UserProvider = ({ children }) => {
     checkSession();
   }, []);
 
+
+  const updateUser = async () => {
+    try {
+      const res = await api.get(`${config.api.auth}/me`);
+      setUser(res.data.user);
+    } catch {
+      setUser(null);
+    } finally {
+      setLoading(false); // terminamos la comprobación
+    }
+  };
+
   return (
-    <UserContext.Provider value={{ user, setUser, loading }}>
+    <UserContext.Provider value={{ user, setUser, updateUser, loading }}>
       {children}
     </UserContext.Provider>
   );
