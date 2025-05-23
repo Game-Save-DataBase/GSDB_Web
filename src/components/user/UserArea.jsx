@@ -42,8 +42,6 @@ function UserArea() {
   const [mail, setMail] = useState("");
   const [isMailDirty, setIsMailDirty] = useState(false);
 
-  const [isPasswordDirty, setIsPasswordDirty] = useState(false);
-
 
 
   useEffect(() => {
@@ -113,7 +111,7 @@ function UserArea() {
           break;
       }
 
-      if (!isSavingAll) updateUser();
+      if(!isSavingAll) updateUser();
     } catch (err) {
       console.error(`Error al actualizar ${field}:`, err);
       setAlertMessage("Error al guardar. Inténtalo de nuevo.");
@@ -159,7 +157,7 @@ function UserArea() {
       }
       setPendingBanner(null);
 
-      if (!isSavingAll) updateUser();
+      if(!isSavingAll) updateUser();
     } catch (error) {
       console.error("Error al guardar cambios", error);
       alert("Hubo un error al subir las imágenes.");
@@ -182,7 +180,7 @@ function UserArea() {
 
       setPendingPfp(null);
 
-      if (!isSavingAll) updateUser();
+      if(!isSavingAll) updateUser();
     } catch (error) {
       console.error("Error al guardar cambios", error);
       alert("Hubo un error al subir las imágenes.");
@@ -215,7 +213,7 @@ function UserArea() {
 
 
   const hasPendingChanges = () =>
-    hasAliasChanged || hasUserNameChanged || hasBioChanged || hasMailChanged || pendingBanner || pendingPfp || isPasswordDirty;
+    hasAliasChanged || hasUserNameChanged || hasBioChanged || hasMailChanged || pendingBanner || pendingPfp;
 
   const saveAll = () => {
     setIsSavingAll(true);
@@ -236,7 +234,6 @@ function UserArea() {
     undoField("mail");
     undoBannerChange();
     undoPfpChange();
-    setIsPasswordDirty(false);
   };
 
 
@@ -374,11 +371,7 @@ function UserArea() {
       </div>
 
       <hr />
-      <PasswordInput
-        mode="update"
-        onSubmit={handlePasswordUpdate}
-        onChangeDirty={setIsPasswordDirty}
-      />
+      <PasswordInput mode="update" onSubmit={handlePasswordUpdate} />
 
     </div>
   );

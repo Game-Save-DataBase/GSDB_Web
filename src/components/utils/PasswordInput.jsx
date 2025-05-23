@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+ import { useState, useEffect } from 'react';
 import zxcvbn from 'zxcvbn';
 
-const PasswordInput = ({ mode = 'register', onSubmit, onChangeDirty }) => {
+const PasswordInput = ({ mode = 'register', onSubmit}) => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -12,16 +12,6 @@ const PasswordInput = ({ mode = 'register', onSubmit, onChangeDirty }) => {
     const result = zxcvbn(newPassword);
     setPasswordStrength(result.score);
   }, [newPassword]);
-
-  // Detectar si hay cambios en el formulario de contraseña
-  useEffect(() => {
-    const dirty = mode === 'update'
-      ? currentPassword.length > 0 || newPassword.length > 0 || confirmPassword.length > 0
-      : newPassword.length > 0 || confirmPassword.length > 0;
-
-    if (onChangeDirty) onChangeDirty(dirty);
-  }, [currentPassword, newPassword, confirmPassword, mode, onChangeDirty]);
-
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -49,7 +39,6 @@ const PasswordInput = ({ mode = 'register', onSubmit, onChangeDirty }) => {
     setConfirmPassword('');
     setPasswordStrength(0);
     setMessage(null);
-    if (onChangeDirty) onChangeDirty(false);
   };
 
   return (
