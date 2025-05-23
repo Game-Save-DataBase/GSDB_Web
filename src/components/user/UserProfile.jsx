@@ -25,7 +25,7 @@ function UserProfile() {
         //carga el usuario a mostrar
         const fetchUser = async () => {
             try {
-                const userResponse = await api.get(`${config.api.users}?userName=${userNameParam}`);
+                const userResponse = await api.get(`${config.api.users}?userName=${userNameParam.toLowerCase()}`);
                 // redirige para tener una pretty url si el nombre esta escrito mal (mayus y minus)
                 if (userResponse.data.userName !== userNameParam) {
                     navigate(`/u/${userResponse.data.userName}`, { replace: true }); //replace se usa para que navigate no añada una nueva url al historial sino que la cambie

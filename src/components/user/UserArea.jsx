@@ -5,6 +5,7 @@ import api from "../../utils/interceptor";
 import { UserContext } from "../../contexts/UserContext.jsx";
 import "../../styles/user/UserArea.scss";
 import ImageUploader from "../utils/ImageUploader.jsx";
+import PasswordInput from "../utils/PasswordInput.jsx";
 
 function UserArea() {
   const navigate = useNavigate();
@@ -19,12 +20,14 @@ function UserArea() {
   // Imagen
   const [pendingBanner, setPendingBanner] = useState(null);
   const [pendingPfp, setPendingPfp] = useState(null);
+
   const handleBannerSelect = (file) => setPendingBanner(file);
   const handlePfpSelect = (file) => setPendingPfp(file);
   const undoBannerChange = () => setPendingBanner(null);
   const undoPfpChange = () => setPendingPfp(null);
+  //para las alertas y la actualizacion visual
   const [alertMessage, setAlertMessage] = useState(null);
-
+  const [isSavingAll, setIsSavingAll] = useState(false)
 
   // Campos editables
   const [alias, setAlias] = useState("");
@@ -38,6 +41,8 @@ function UserArea() {
 
   const [mail, setMail] = useState("");
   const [isMailDirty, setIsMailDirty] = useState(false);
+
+  const [isPasswordDirty, setIsPasswordDirty] = useState(false);
 
 
 
@@ -108,7 +113,7 @@ function UserArea() {
           break;
       }
 
-      updateUser();
+      if (!isSavingAll) updateUser();
     } catch (err) {
       console.error(`Error al actualizar ${field}:`, err);
       setAlertMessage("Error al guardar. Inténtalo de nuevo.");
@@ -140,30 +145,118 @@ function UserArea() {
     }
   };
 
-  // Guardar cambios de imágenes
-  const handleSaveChanges = async () => {
+  const saveBanner = async () => {
     try {
-      if (pendingBanner) {
-        console.log("Subiendo banner:", pendingBanner);
-        // Subir banner...
-      }
-      if (pendingPfp) {
-        console.log("Subiendo perfil:", pendingPfp);
-        // Subir pfp...
-      }
+      const userId = loggedUser._id;
 
+      if (pendingBanner) {
+        const formData = new FormData();
+        formData.append("image", pendingBanner);
+
+        await api.post(`${config.api.users}/${userId}/upload/banner`, formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+      }
       setPendingBanner(null);
-      setPendingPfp(null);
-      window.location.reload();
+
+      if (!isSavingAll) updateUser();
     } catch (error) {
       console.error("Error al guardar cambios", error);
+      alert("Hubo un error al subir las imágenes.");
     }
+  };
+
+  const savePfp = async () => {
+    try {
+      const userId = loggedUser._id;
+
+
+      if (pendingPfp) {
+        const formData = new FormData();
+        formData.append("image", pendingPfp);
+
+        await api.post(`${config.api.users}/${userId}/upload/pfp`, formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+      }
+
+      setPendingPfp(null);
+
+      if (!isSavingAll) updateUser();
+    } catch (error) {
+      console.error("Error al guardar cambios", error);
+      alert("Hubo un error al subir las imágenes.");
+    }
+  };
+
+  const handlePasswordUpdate = async ({ currentPassword, newPassword }) => {
+    try {
+      console.log(newPassword); console.log(currentPassword);
+      // verificamos a nivel de servidor porque la contraseña esta encriptada
+      const verifyRes = await api.post(`${config.api.users}/verify-password`, {
+        password: currentPassword
+      });
+
+      if (!verifyRes.data.valid) {
+        setAlertMessage('Current password is not correct.');
+        return;
+      }
+
+      // Actualizar contraseña
+      await api.put(`${config.api.users}/${loggedUser._id}`, {
+        password: newPassword
+      });
+
+      setAlertMessage('Password updated correctly');
+    } catch (err) {
+      setAlertMessage(err.response?.data?.error || 'Error changing password.');
+    }
+  };
+
+
+  const hasPendingChanges = () =>
+    hasAliasChanged || hasUserNameChanged || hasBioChanged || hasMailChanged || pendingBanner || pendingPfp || isPasswordDirty;
+
+  const saveAll = () => {
+    setIsSavingAll(true);
+    if (hasAliasChanged) saveField("alias", alias);
+    if (hasUserNameChanged) saveField("userName", userName);
+    if (hasBioChanged) saveField("bio", bio);
+    if (hasMailChanged) saveField("mail", mail);
+    if (pendingBanner) saveBanner();
+    if (pendingPfp) savePfp();
+    setIsSavingAll(false);
+    updateUser();
+  };
+
+  const discardAll = () => {
+    undoField("alias");
+    undoField("userName");
+    undoField("bio");
+    undoField("mail");
+    undoBannerChange();
+    undoPfpChange();
+    setIsPasswordDirty(false);
   };
 
 
   return (
     <div className="user-area">
-      <h2>@{loggedUser.userName || "unknow"}'s user area</h2>
+      <h2 className="d-flex align-items-center justify-content-between">
+        @{loggedUser.userName || "unknow"}'s user area
+
+        {hasPendingChanges() && (
+          <div className="ms-3 d-flex gap-2">
+            <button className="btn btn-success btn-sm" onClick={saveAll}>
+              Save all changes
+            </button>
+            <button className="btn btn-secondary btn-sm" onClick={discardAll}>
+              Discard all changes
+            </button>
+          </div>
+        )}
+      </h2>
+
       {alertMessage && (
         <div
           className="alert alert-warning alert-dismissible fade show"
@@ -188,9 +281,12 @@ function UserArea() {
       <div className="position-relative">
         {/* Banner */}
         <ImageUploader
-          src={pendingBanner ? URL.createObjectURL(pendingBanner) : `${config.connection}${loggedUser.banner}`}
+          src={pendingBanner ? URL.createObjectURL(pendingBanner) : `${config.connection}${loggedUser.banner}?${Date.now()}`}
           alt="Banner"
           onFileSelect={handleBannerSelect}
+          onSave={saveBanner}
+          onUndo={undoBannerChange}
+          hasPending={!!pendingBanner}
           className="img-fluid w-100 rounded"
           style={{
             aspectRatio: "5 / 1",
@@ -198,32 +294,18 @@ function UserArea() {
             border: pendingBanner ? "3px solid yellow" : undefined,
           }}
         />
-        {pendingBanner && (
-          <div
-            onClick={undoBannerChange}
-            style={{
-              position: "absolute",
-              top: 10,
-              right: 10,
-              backgroundColor: "yellow",
-              color: "black",
-              fontWeight: "bold",
-              padding: "2px 6px",
-              borderRadius: "4px",
-              cursor: "pointer",
-              zIndex: 20,
-            }}
-          >
-            Modified
-          </div>
-        )}
+
+
 
         {/* Imagen de perfil */}
         <div className="position-absolute top-100 start-0 translate-middle-y ms-3">
           <ImageUploader
-            src={pendingPfp ? URL.createObjectURL(pendingPfp) : `${config.connection}${loggedUser.pfp}`}
+            src={pendingPfp ? URL.createObjectURL(pendingPfp) : `${config.connection}${loggedUser.pfp}?${Date.now()}`}
             alt="Profile"
             onFileSelect={handlePfpSelect}
+            onSave={savePfp}
+            onUndo={undoPfpChange}
+            hasPending={!!pendingPfp}
             className="rounded-circle border border-3 border-white"
             style={{
               width: "120px",
@@ -232,25 +314,6 @@ function UserArea() {
               border: pendingPfp ? "3px solid yellow" : undefined,
             }}
           />
-          {pendingPfp && (
-            <div
-              onClick={undoPfpChange}
-              style={{
-                position: "absolute",
-                top: -10,
-                right: -10,
-                backgroundColor: "yellow",
-                color: "black",
-                fontWeight: "bold",
-                padding: "2px 6px",
-                borderRadius: "4px",
-                cursor: "pointer",
-                zIndex: 20,
-              }}
-            >
-              Modified
-            </div>
-          )}
         </div>
       </div>
 
@@ -310,24 +373,13 @@ function UserArea() {
         ))}
       </div>
 
+      <hr />
+      <PasswordInput
+        mode="update"
+        onSubmit={handlePasswordUpdate}
+        onChangeDirty={setIsPasswordDirty}
+      />
 
-
-      {(pendingBanner || pendingPfp) && (
-        <div className="mt-4">
-          <button className="btn btn-success me-2" onClick={handleSaveChanges}>
-            Guardar imágenes
-          </button>
-          <button
-            className="btn btn-secondary"
-            onClick={() => {
-              undoBannerChange();
-              undoPfpChange();
-            }}
-          >
-            Descartar cambios de imagen
-          </button>
-        </div>
-      )}
     </div>
   );
 }
