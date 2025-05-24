@@ -47,7 +47,7 @@ const Layout = ({ children }) => {
           <div className="center">
             <form className="search-bar" onSubmit={handleSearch}>
               <select value={searchType} onChange={(e) => setSearchType(e.target.value)}>
-                <option value="games">Juegos</option>
+                <option value="games">Games</option>
                 <option value="saves">Saves</option>
               </select>
               <input
@@ -63,11 +63,12 @@ const Layout = ({ children }) => {
           <div className="right">
             {loggedUser ? (
               <>
-                <Link to="/user-area">Área de usuario</Link>
-                <button className="logout-btn" onClick={handleLogout}>Cerrar sesión</button>
+                <Link to="/upload">Upload save</Link>
+                <Link to="/user-area">User area</Link>
+                <button className="logout-btn" onClick={handleLogout}>Logout</button>
               </>
             ) : (
-              <Link to="/login">Identifícate</Link>
+              <Link to="/login">Log in</Link>
             )}
           </div>
         </nav>

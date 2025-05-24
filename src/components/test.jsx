@@ -109,7 +109,7 @@ function hola() {
         <button>Botón</button>
       </form>
       <hr />
-      <img src="http://localhost:8082/assets/default/pfp.jpg" alt="Imagen de prueba" />
+      <img src="http://localhost:8082/assets/default/pfp.png" alt="Imagen de prueba" />
 
     </div>
   );

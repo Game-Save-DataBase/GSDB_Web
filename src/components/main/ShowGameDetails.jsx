@@ -1,159 +1,154 @@
 import config from '../../utils/config.js';
-import React, { useState, useEffect, useContext} from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import api from '../../utils/interceptor.js';
 import '../../styles/Common.scss';
 import '../../styles/main/ShowGameDetails.scss';
-import { PLATFORMS, getPlatformName } from '../../utils/constants.jsx'
+import { getPlatformName } from '../../utils/constants.jsx';
 
-
-function ShowGameDetails(props) {
-
-  const [game, setGame] = useState({}); //objeto con el juego
-  const [saveFiles, setSaveFiles] = useState([]); //array que almacena todos los savefiles del juego 
-  //checkboxes: creamos una por plataforma del juego y deshabilitamos las que no tengan saves. Ademas, debemos saber 
-  //cuales se estan usando para filtrar y cuales no
-  const [activePlatforms, setActivePlatforms] = useState([]); // plataformas activas (por id)
-  const [enabledPlatforms, setEnabledPlatforms] = useState([]); //plataformas disponibles (por id)
-  const [filteredSaveFiles, setFilteredSaveFiles] = useState([]); //array que almacena los savefiles a mostrar (filtrados)
+function ShowGameDetails() {
+  const [game, setGame] = useState(null); // mejor iniciar null para distinguir "no cargado"
+  const [saveFiles, setSaveFiles] = useState([]);
+  const [activePlatforms, setActivePlatforms] = useState([]);
+  const [enabledPlatforms, setEnabledPlatforms] = useState([]);
+  const [filteredSaveFiles, setFilteredSaveFiles] = useState([]);
 
   const { id } = useParams();
-  const navigate = useNavigate();
 
+  // Carga los detalles del juego
   useEffect(() => {
-    /*funcion que carga el juego, su caratula y sus datos del modelo de games */
     const fetchGameDetails = async () => {
       try {
-        const gameResponse = await api.get(`${config.api.games}?_id=${id}`);
-        setGame(gameResponse.data);
+        const { data } = await api.get(`${config.api.games}?_id=${id}`);
+        if (!data) {
+          console.warn(`Game with ID ${id} not found.`);
+          setGame(null);
+          return;
+        }
+        setGame(data);
       } catch (err) {
-        console.log('Error from ShowGameDetails');
+        console.error('Failed to load game details:', err.response?.data?.msg || err.message || err);
+        setGame(null);
       }
-    };//fetchGameDetails
-
+    };
     fetchGameDetails();
+  }, [id]);
 
-  }, [id]); // Solo se ejecuta cuando cambia el `id`
-
+  // Carga los archivos de guardado asociados
   useEffect(() => {
-    /* Solo obtener los archivos de guardado cuando `game` y `platformsID` estén disponibles */
     const fetchSaveFiles = async () => {
-      if (!game || !game.platformsID) {
-        return;
-      }
+      if (!game || !game.platformsID) return;
+
       try {
-        //obtenemos los archivos de guardado
-        const saveFilesResponse = await api.get(`${config.api.savedatas}?gameID=${id}`);
-        //les añadimos más datos que salen de la base de datos de usuarios
+        const { data } = await api.get(`${config.api.savedatas}?gameID=${id}`);
+
+        // Si no hay datos (array vacío) no es error, limpiamos estado
+        if (!data || data.length === 0) {
+          console.info(`No save files found for game ID ${id}.`);
+          setSaveFiles([]);
+          setFilteredSaveFiles([]);
+          return;
+        }
+
+        // Completar con datos de usuario
         const updatedSaveFiles = await Promise.all(
-          saveFilesResponse.data.map(async (sf) => {
+          data.map(async (sf) => {
             try {
-              const userResponse = await api.get(`${config.api.users}?_id=${sf.userID}`);
-              if (!userResponse.data) {
-                return {
-                  ...sf,
-                  platformName: getPlatformName(sf.platformID),
-                  alias: "Desconocido",
-                  pfp: `${config.paths.pfp_default}`
-                }
-              }
+              const { data: userData } = await api.get(`${config.api.users}?_id=${sf.userID}`);
               return {
                 ...sf,
-                platformName: getPlatformName(sf.platformID), //datos añadidos para tener un savedata con esteroides
-                alias: userResponse.data.alias || userResponse.data.userName || "Desconocido",
-                pfp: userResponse.data.pfp
+                platformName: getPlatformName(sf.platformID),
+                alias: userData?.alias || userData?.userName || "Desconocido",
+                pfp: userData?.pfp || config.paths.pfp_default,
               };
-
             } catch (err) {
-              //console.log(`Error fetching user for savefile ${sf._id}:`, err);
+              // Log interno y devolvemos con alias/pfp por defecto
+              console.warn(`Failed to load user for savefile ${sf._id}:`, err.message || err);
               return {
                 ...sf,
                 platformName: getPlatformName(sf.platformID),
                 alias: "Desconocido",
-                pfp: `${config.paths.pfp_default}`
+                pfp: config.paths.pfp_default,
               };
             }
           })
         );
-        //ademas ordenamos por fecha de subida. to do cambiar a fecha de ultima actualizacion
-        const sortedSaveFiles = [...updatedSaveFiles].sort(
+
+        const sortedSaveFiles = updatedSaveFiles.sort(
           (a, b) => new Date(b.postedDate) - new Date(a.postedDate)
         );
-        //inicializamos los dos arrays
+
         setSaveFiles(sortedSaveFiles);
         setFilteredSaveFiles(sortedSaveFiles);
+
       } catch (err) {
-        console.log('Error fetching game items');
+        if (err.response?.status === 404) {
+          // No es error, simplemente no hay saves
+          setSaveFiles([]);
+          setFilteredSaveFiles([]);
+          return;
+        }
+        console.error('Failed to fetch save files:', err.response?.data?.msg || err.message || err);
       }
-    };//fetchSaveFiles
+    };
 
     fetchSaveFiles();
+  }, [game, id]);
 
-  }, [game, id]); // Dependencia en `game` para que se ejecute cuando `game` cambie
-
+  // Determinar plataformas habilitadas y activas según saves
   useEffect(() => {
     if (!game || !game.platformsID || !saveFiles) return;
+
     const availablePlatformIDs = [...new Set(saveFiles.map(sf => sf.platformID))];
     setEnabledPlatforms(availablePlatformIDs);
     setActivePlatforms(availablePlatformIDs);
   }, [game, saveFiles]);
 
+  // Filtrar saves según plataformas activas
   useEffect(() => {
     const filtered = saveFiles.filter(sf => activePlatforms.includes(sf.platformID));
     setFilteredSaveFiles(filtered);
   }, [activePlatforms, saveFiles]);
 
-  //Nos guardamos ademas la ultima actualizacion de todos los saves
   const lastUpdate = saveFiles.length > 0 ? new Date(saveFiles[0].postedDate).toLocaleDateString() : "No updates";
 
   return (
     <div>
-      {/* Seccion previa al encabezado con el enlace y titulo. La dejo fuera del div container de la pagina a proposito.*/}
       <section className='nav-section'>
         <nav>
           <ol>
-            <li>
-              <Link to={`/`}>Home</Link>
-            </li>
-            <li>
-              {game &&
-                game.title || 'Juego sin título'}
-            </li>
+            <li><Link to={`/`}>Home</Link></li>
+            <li>{game?.title || 'Juego sin título'}</li>
           </ol>
         </nav>
       </section>
 
-
       <div className='container'>
-        {/* ...................................GAME SECTION */}
         <section className="game-section">
           <div className='table-data'>
             <div className="row">
-              {/* Columna izquierda: caratula del juego */}
               <div className="row-element text-center">
                 {game && (
                   <img
-                    src={`${config.connection}${game.cover}`} //guarda la ruta entera en bbdd
+                    src={`${config.connection}${game.cover}`}
                     alt={game.title}
                     onError={(e) => { e.target.src = `${config.connection}${config.paths.gameCover_default}`; }}
                   />
                 )}
               </div>
 
-              {/* Columna derecha: información del juego */}
               <div className='row-element text-muted'>
                 <p><strong>Available saves:</strong> {saveFiles.length}</p>
-                <p><strong>Last update: </strong>{lastUpdate} </p>
+                <p><strong>Last update: </strong>{lastUpdate}</p>
                 <button type="button" className="gsdb-btn-default">Install instructions</button>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ...................................SAVES SECTION */}
         <section className="saves-section">
           <form>
-            {game.platformsID && game.platformsID.map((platformID) => {
+            {game?.platformsID?.map(platformID => {
               const platformName = getPlatformName(platformID);
               const isEnabled = enabledPlatforms.includes(platformID);
               const isChecked = activePlatforms.includes(platformID);
@@ -183,29 +178,18 @@ function ShowGameDetails(props) {
           </form>
 
           {filteredSaveFiles.length > 0 ? (
-            filteredSaveFiles.map((saveFile) => (
+            filteredSaveFiles.map(saveFile => (
               <div key={saveFile._id} className="save">
                 <Link to={`/save/${saveFile._id}`}><strong>{saveFile.title}</strong></Link>
-                <p>
-                  <small>Uploaded by: {saveFile.alias}</small> - Plataforma: {saveFile.platformName}
-                </p>
+                <p><small>Uploaded by: {saveFile.alias}</small> - Plataforma: {saveFile.platformName}</p>
               </div>
             ))
           ) : (
             <p>No hay archivos de guardado disponibles.</p>
           )}
-
         </section>
-
-
-
-      </div >
-    </div >
-
-
-
-
-
+      </div>
+    </div>
   );
 }
 
