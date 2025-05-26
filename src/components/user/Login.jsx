@@ -1,29 +1,29 @@
-import config from '../../utils/config'
-import api from '../../utils/interceptor'
-import { useState, useContext } from 'react';
-import { UserContext } from "../../contexts/UserContext";
-import history from '../../utils/history'
+import config from '../../utils/config';
+import api from '../../utils/interceptor';
+import { useState, useEffect, useContext } from 'react';
+import { UserContext } from '../../contexts/UserContext';
+import history from '../../utils/history';
 import zxcvbn from 'zxcvbn';
-
+import '../../styles/user/Login.scss'
 
 const Login = () => {
   const { setUser } = useContext(UserContext);
-  const [inLogin, setInLogin] = useState(true);  // gestionamos la misma pagina para login y register
+  const [inLogin, setInLogin] = useState(true);
   const [formData, setFormData] = useState({
     userName: '',
     mail: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
   const [message, setMessage] = useState('');
-  //gestion de contraseña segura
   const [passwordStrength, setPasswordStrength] = useState(0);
-
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+
     if (e.target.name === 'password') {
       const result = zxcvbn(e.target.value);
       setPasswordStrength(result.score);
@@ -32,132 +32,184 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!inLogin && passwordStrength < 3) {
-      setMessage('La contraseña es demasiado débil. Usa una combinación más segura.');
+      setMessage('Password is too weak. Use a stronger combination.');
+      return;
+    }
+    if (!inLogin && formData.password !== formData.confirmPassword) {
+      setMessage('Password do not match.');
       return;
     }
     try {
-
-      //.......................LOGIN
       if (inLogin) {
         const res = await api.post(`${config.api.auth}/login`, {
           identifier: formData.userName || formData.mail,
           password: formData.password
         });
-        console.log(res)
 
-        setMessage('Login exitoso ✅')
-        //esperamos dos segundos antes de lanzar la pagina previa (to do: aun te manda a la principal)
+        setMessage('Login successful ✅');
         setTimeout(() => {
-          setUser(res.data.user)
-          history.push('/')
+          setUser(res.data.user);
+          history.push('/');
         }, 2000);
-      }
-      //.......................REGISTER
-      else {
+      } else {
         await api.post(`${config.api.auth}/register`, {
           userName: formData.userName.toLowerCase(),
           mail: formData.mail.toLowerCase(),
           password: formData.password
-        }, { withCredentials: true })
+        }, { withCredentials: true });
 
-        setMessage('Registro exitoso, iniciando sesión... ✅')
+        setMessage('Registration successful. Logging in...');
 
-        // Login automático tras registrarse
         const res = await api.post(`${config.api.auth}/login`, {
-          identifier: formData.userName.toLocaleLowerCase(),
+          identifier: formData.userName.toLowerCase(),
           password: formData.password
-        }, { withCredentials: true })
+        }, { withCredentials: true });
 
         setTimeout(() => {
-          setUser(res.data.user)
-          history.push('/')
-        }, 2000)
+          setUser(res.data.user);
+          history.push('/');
+        }, 2000);
       }
     } catch (err) {
-      if (err.response && err.response.data && err.response.data.msg) {
-        setMessage(err.response.data.msg)
-      } else {
-        setMessage('Ocurrió un error inesperado')
-      }
+      setMessage(err.response?.data?.msg || 'An unexpected error occurred');
     }
   };
 
   return (
-    <div>
-      <h2>{inLogin ? 'Inicia sesión en GSDB' : 'Regístrate en GSDB'}</h2>
 
-      <form onSubmit={handleSubmit}>
-        {!inLogin && (
-          <>
-            <div>
-              <label>Usuario</label>
+
+
+    <div className="login-wrapper">
+      <div>
+        {message && (
+          <div
+            className="alert alert-warning alert-dismissible fade show"
+            role="alert"
+            style={{
+              position: "fixed",
+              top: "20px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 9999,
+              width: "auto",
+              maxWidth: "600px",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+            }}
+          >
+            {message}
+            <button type="button" className="btn-close" onClick={() => setMessage(null)}></button>
+          </div>
+        )}
+      </div>
+      <div className="login-card">
+        <div className="text-center mb-4">
+          <img src={`${config.paths.assetsFolder}/logo.png`} alt="GSDB Logo" className="login-logo" />
+          <h4 className="mt-2">
+            {inLogin ? 'Sign in to GSDB' : 'Register for GSDB'}
+          </h4>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          {!inLogin && (
+            <>
+              <div className="mb-3">
+                <label className="form-label">Username</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  name="userName"
+                  value={formData.userName}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Email</label>
+                <input
+                  type="email"
+                  className="form-control"
+                  name="mail"
+                  value={formData.mail}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </>
+          )}
+
+          {inLogin && (
+            <div className="mb-3">
+              <label className="form-label">Username or Email</label>
               <input
                 type="text"
+                className="form-control"
                 name="userName"
                 value={formData.userName}
                 onChange={handleChange}
                 required
               />
             </div>
-            <div>
-              <label>Mail</label>
-              <input
-                type="email"
-                name="mail"
-                value={formData.mail}
-                onChange={handleChange}
-                required
-              />
-            </div>
-          </>
-        )}
+          )}
 
-        {inLogin && (
-          <div>
-            <label>Usuario o Mail</label>
+          <div className="mb-3">
+            <label className="form-label">Password</label>
             <input
-              type="text"
-              name="userName"
-              value={formData.userName}
+              type="password"
+              className="form-control"
+              name="password"
+              value={formData.password}
               onChange={handleChange}
               required
             />
           </div>
-        )}
 
-        <div>
-          <label>Contraseña</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
+          {!inLogin && (
+            <div className="mb-3">
+              <div className="progress">
+                <div
+                  className={`progress-bar ${passwordStrength >= 3 ? 'bg-success' : 'bg-danger'} password-strength-bar`}
+                  style={{ width: `${(passwordStrength / 4) * 100}%` }}
+                ></div>
+              </div>
+              <small className="text-muted password-strength-text">
+                Strength: {['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'][passwordStrength]}
+              </small>
+
+              <div>
+                <label className="form-label">Confirm password</label>
+                <input
+                  type="password"
+                  className="form-control"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="d-grid mb-2">
+            <button type="submit" className="btn btn-primary">
+              {inLogin ? 'Sign In' : 'Register'}
+            </button>
+          </div>
+        </form>
+
+        <div className="text-center">
+          <button
+            className="btn btn-link"
+            onClick={() => {
+              setInLogin(!inLogin);
+              setMessage('');
+            }}
+          >
+            {inLogin ? "Don't have an account? Register" : 'Already have an account? Sign In'}
+          </button>
         </div>
-        {!inLogin && <div className="mb-4">
-          <div className={`h-2 rounded ${passwordStrength >= 3 ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${(passwordStrength / 4) * 100}%` }}></div>
-          <p className="text-sm mt-1">
-            Seguridad: {
-              ['Muy débil', 'Débil', 'Aceptable', 'Buena', 'Muy buena'][passwordStrength]
-            }
-          </p>
-        </div>}
-
-        <button type="submit">
-          {inLogin ? 'Entrar' : 'Registrarse'}
-        </button>
-      </form>
-
-      <button onClick={() => {
-        setInLogin(!inLogin)
-        setMessage('')
-      }} style={{ marginTop: '10px' }}>
-        {inLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión'}
-      </button>
-
-      {message && <p>{message}</p>}
+      </div>
     </div>
   );
 };

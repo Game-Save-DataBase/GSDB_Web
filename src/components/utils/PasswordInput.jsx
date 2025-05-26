@@ -93,12 +93,6 @@ const PasswordInput = ({ mode = 'register', onSubmit}) => {
       <button type="submit" className="btn btn-primary">
         {mode === 'update' ? 'Update password' : 'Password'}
       </button>
-
-      {message && (
-        <div className="alert alert-info mt-3" role="alert">
-          {message}
-        </div>
-      )}
     </form>
   );
 };

@@ -111,7 +111,7 @@ function UserArea() {
           break;
       }
 
-      if(!isSavingAll) updateUser();
+      if (!isSavingAll) updateUser();
     } catch (err) {
       console.error(`Error al actualizar ${field}:`, err);
       setAlertMessage("Error al guardar. Inténtalo de nuevo.");
@@ -157,7 +157,7 @@ function UserArea() {
       }
       setPendingBanner(null);
 
-      if(!isSavingAll) updateUser();
+      if (!isSavingAll) updateUser();
     } catch (error) {
       console.error("Error al guardar cambios", error);
       alert("Hubo un error al subir las imágenes.");
@@ -180,7 +180,7 @@ function UserArea() {
 
       setPendingPfp(null);
 
-      if(!isSavingAll) updateUser();
+      if (!isSavingAll) updateUser();
     } catch (error) {
       console.error("Error al guardar cambios", error);
       alert("Hubo un error al subir las imágenes.");
@@ -317,56 +317,57 @@ function UserArea() {
       {/* Campos editables */}
       <div className="mt-5">
         {[
-          { label: "Alias", value: alias, onChange: setAlias, changed: hasAliasChanged, field: "alias" },
-          { label: "Nombre de usuario", value: userName, onChange: setUserName, changed: hasUserNameChanged, field: "userName" },
-          { label: "Bio", value: bio, onChange: setBio, changed: hasBioChanged, field: "bio", multiline: true },
-          { label: "Mail", value: mail, onChange: setMail, changed: hasMailChanged, field: "mail" },
-        ].map(({ label, value, onChange, changed, field, multiline }) => (
-          <div className="mb-3 d-flex align-items-center" key={field}>
-            <div className="flex-grow-1 me-3">
-              <label className="form-label">{label}</label>
-              {multiline ? (
-                <textarea
-                  className="form-control"
-                  value={value ?? ""}
-                  onChange={(e) => onChange(e.target.value)}
-                  onInput={(e) => {
-                    e.target.style.height = 'auto';
-                    e.target.style.height = `${Math.min(e.target.scrollHeight, 5 * 24)}px`; // 24px ≈ 1 línea
-                  }}
-                  rows={3}
-                  style={{
-                    overflow: 'hidden',
-                    resize: 'none',
-                    maxHeight: `${5 * 24}px`
-                  }}
-                />
-              ) : (
-                <input
-                  type="text"
-                  className="form-control"
-                  value={value ?? ""}
-                  onChange={(e) => onChange(e.target.value)}
-                />
-              )}
-            </div>
-            {changed && (
-              <div className="btn-group mt-4">
-                <button
-                  className="btn btn-success btn-sm"
-                  onClick={() => saveField(field, value.trim())}
-                >
-                  Save
-                </button>
-                <button
-                  className="btn btn-secondary btn-sm"
-                  onClick={() => undoField(field)}
-                >
-                  Undo
-                </button>
-              </div>
+          {
+            label: "Alias", value: alias, onChange: (val) => {setAlias(val);setIsAliasDirty(true);}, changed: hasAliasChanged, field: "alias" },
+        {label: "Nombre de usuario", value: userName, onChange: (val) => {setUserName(val);setIsUserNameDirty(true);}, changed: hasUserNameChanged, field: "userName" },
+        {label: "Bio", value: bio, onChange: (val) => {setBio(val);setIsBioDirty(true);}, changed: hasBioChanged, field: "bio", multiline: true },
+        {label: "Mail", value: mail, onChange: (val) => {setMail(val);setIsMailDirty(true);}, changed: hasMailChanged, field: "mail" },
+        ].map(({label, value, onChange, changed, field, multiline}) => (
+        <div className="mb-3 d-flex align-items-center" key={field}>
+          <div className="flex-grow-1 me-3">
+            <label className="form-label">{label}</label>
+            {multiline ? (
+              <textarea
+                className="form-control"
+                value={value ?? ""}
+                onChange={(e) => onChange(e.target.value)}
+                onInput={(e) => {
+                  e.target.style.height = 'auto';
+                  e.target.style.height = `${Math.min(e.target.scrollHeight, 5 * 24)}px`; // 24px ≈ 1 línea
+                }}
+                rows={3}
+                style={{
+                  overflow: 'hidden',
+                  resize: 'none',
+                  maxHeight: `${5 * 24}px`
+                }}
+              />
+            ) : (
+              <input
+                type="text"
+                className="form-control"
+                value={value ?? ""}
+                onChange={(e) => onChange(e.target.value)}
+              />
             )}
           </div>
+          {changed && (
+            <div className="btn-group mt-4">
+              <button
+                className="btn btn-success btn-sm"
+                onClick={() => saveField(field, value.trim())}
+              >
+                Save
+              </button>
+              <button
+                className="btn btn-secondary btn-sm"
+                onClick={() => undoField(field)}
+              >
+                Undo
+              </button>
+            </div>
+          )}
+        </div>
         ))}
       </div>
 

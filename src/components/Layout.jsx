@@ -91,7 +91,7 @@ const Layout = ({ children }) => {
       <aside className="right-sidebar" />
 
       <footer className="bottom-bar">
-        <p>© 2024 Game Save Database. Universidad Complutense de Madrid. Jorge Bello Martín - Eva Lucas Leiro.</p>
+        <p>© 2025 Game Save Database. Universidad Complutense de Madrid. Jorge Bello Martín - Eva Lucas Leiro.</p>
       </footer>
     </div>
   );

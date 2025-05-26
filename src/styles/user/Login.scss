@@ -1,0 +1,37 @@
+// Login.scss
+@use '../common' as *;
+
+.login-wrapper {
+    @extend .d-flex, .align-items-center, .justify-content-center;
+    min-height: 80vh;
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+}
+
+.login-card {
+    @extend .card, .p-4;
+    max-width: 400px;
+    width: 100%;
+    transition: none;
+    transform: none;
+    background-color: var(--color-foreground);
+
+    &:hover {
+        transition: none !important;
+        transform: none !important;
+    }
+}
+
+.login-logo {
+    max-width: 100px;
+}
+
+.password-strength-bar {
+    height: 0.5rem;
+    border-radius: 0.25rem;
+}
+
+.password-strength-text {
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
