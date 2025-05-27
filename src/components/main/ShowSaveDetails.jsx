@@ -16,12 +16,12 @@ function ShowSaveDetails(props) {
 
   // Función para obtener las imágenes desde el servidor
   const fetchscreenshots = async (saveId) => {
-    try {
-      const response = await api.get(`${config.api.savedatas}/${id}/screenshots`); setscreenshots(response.data);  // Aquí se actualizan las rutas de las imágenes
-      setscreenshots(response.data.screenshots);
-    } catch (err) {
-      console.log('Error fetching screenshots:', err);
-    }
+    // try {
+    //   const response = await api.get(`${config.api.savedatas}/${id}/screenshots`); setscreenshots(response.data);  // Aquí se actualizan las rutas de las imágenes
+    //   setscreenshots(response.data.screenshots);
+    // } catch (err) {
+    //   console.log('Error fetching screenshots:', err);
+    // }
   };
 
   useEffect(() => {

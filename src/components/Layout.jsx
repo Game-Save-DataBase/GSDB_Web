@@ -9,7 +9,7 @@ import '../styles/Common.scss';
 const Layout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user:loggedUser, setUser } = useContext(UserContext);
+  const { user: loggedUser, setUser } = useContext(UserContext);
 
   const [searchType, setSearchType] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,7 +36,6 @@ const Layout = ({ children }) => {
   };
 
   return (
-    // to do añadir a la classname layout dinamicamente un tema segun la configuracion escogida por el usuario
     <div className="layout">
       <header className="navbar">
         <nav className="nav-content">
@@ -60,12 +59,28 @@ const Layout = ({ children }) => {
             {errorMessage && <p className="error">{errorMessage}</p>}
           </div>
 
-          <div className="right">
+          <div className="right d-flex align-items-center">
             {loggedUser ? (
               <>
-                <Link to="/upload">Upload save</Link>
-                <Link to="/user-area">User area</Link>
-                <button className="logout-btn" onClick={handleLogout}>Logout</button>
+                <Link to="/upload" className="me-3">Upload save</Link>
+
+                <div className="dropdown">
+                  <button
+                    className="btn btn-secondary dropdown-toggle"
+                    type="button"
+                    id="userDropdown"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    {loggedUser.userName || loggedUser.Alias || "Account"}
+                  </button>
+                  <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                    <li><Link className="dropdown-item" to={`/u/${loggedUser.userName}`}>User profile</Link></li>
+                    <li><Link className="dropdown-item" to="/user-area">User area</Link></li>
+                    <li><hr className="dropdown-divider" /></li>
+                    <li><button className="dropdown-item" onClick={handleLogout}>Logout</button></li>
+                  </ul>
+                </div>
               </>
             ) : (
               <Link to="/login">Log in</Link>
@@ -81,7 +96,6 @@ const Layout = ({ children }) => {
           <li><Link to="/about">About Us</Link></li>
           <li><Link to="/faq">FAQ</Link></li>
         </ul>
-
       </aside>
 
       <main className="main-content">

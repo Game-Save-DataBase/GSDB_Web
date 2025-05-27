@@ -40,7 +40,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <Route path="/faq" element={<Layout><FAQ /></Layout>} />
             <Route path="/game/:id" element={<Layout><ShowGameDetails /></Layout>} />
             <Route path="/save/:id" element={<Layout><ShowSaveDetails /></Layout>} />
-            <Route path="/upload-save" element={<Layout><UploadSave /></Layout>} />
+            <Route path="/upload" element={<Layout><UploadSave /></Layout>} />
             <Route path="/search" element={<Layout><SearchResults /></Layout>} />
             <Route path="/login" element={<Layout><Login /></Layout>} />
             <Route path="/user-area" element={<Layout><UserArea /></Layout>} />
