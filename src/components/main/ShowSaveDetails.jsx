@@ -44,7 +44,12 @@ function ShowSaveDetails(props) {
     const fetchComments = async () => {
       try {
         const commentsResponse = await api.get(`${config.api.comments}?saveID=${id}`);
-        const commentsData = commentsResponse.data;
+        let commentsData = commentsResponse.data;
+        if(commentsData === "") {
+          setComments(null)
+          return
+        }
+        commentsData = Array.isArray(commentsData) ? commentsData : [commentsData];
 
         // Obtener los usernames para cada comentario
         const updatedComments = await Promise.all(
@@ -106,7 +111,6 @@ function ShowSaveDetails(props) {
       const fetchUserData = async () => {
         try {
           const userResponse = await api.get(`${config.api.users}?_id=${saveData.userID}`);
-          console.log(userResponse.data)
           setRelatedUser(userResponse.data);
         } catch (err) {
           console.log('Error fetching user:', err);
@@ -250,7 +254,7 @@ function ShowSaveDetails(props) {
                       <small>{comment.postedDate}</small>
                     </p>
                     <img
-                      src= {`${config.connection}${comment.pfp}`}
+                      src={`${config.connection}${comment.pfp}`}
                       alt={comment.alias || comment.userName}
                       onError={(e) => { e.target.src = `${config.connection}${config.paths.pfp_default}`; }}
                     />
