@@ -73,7 +73,8 @@ const Login = () => {
         }, 2000);
       }
     } catch (err) {
-      setMessage(err.response?.data?.msg || 'An unexpected error occurred');
+      console.log(err.response);
+      setMessage(err.response?.data?.message || 'An unexpected error occurred');
     }
   };
 

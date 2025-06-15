@@ -51,10 +51,10 @@ const UploadSave = () => {
       const formData = new FormData();
       const messages = [];
 
-      if (saveFile.title === "") messages.push("Debes poner un título al archivo de guardado.");
-      if (saveFile.gameID === "") messages.push("Debes elegir un juego.");
-      if (saveFile.platformID === "") messages.push("Debes seleccionar la plataforma.");
-      if (saveFile.file === "") messages.push("Debes subir un archivo de guardado.");
+      if (saveFile.title === "") messages.push("You must provide a title for the save file.");
+      if (saveFile.gameID === "") messages.push("You must select a game.");
+      if (saveFile.platformID === "") messages.push("You must choose a platform.");
+      if (saveFile.file === "") messages.push("You must upload a save file.");
 
       if (messages.length > 0) throw new Error(messages.join(" "));
 
@@ -74,13 +74,13 @@ const UploadSave = () => {
 
     } catch (err) {
       console.log("Error in CreateSaveFile!", err);
-      setMessage(err.message || "Ha ocurrido un error.");
+      setMessage(err.message || "An error has occurred.");
     }
   };
 
   return (
     <div className="container mt-5">
-      <h2 className="mb-4">Subir archivo de guardado</h2>
+      <h2 className="mb-4">Upload Save File</h2>
 
       {message && (
         <div className="alert alert-danger" role="alert">
@@ -91,16 +91,16 @@ const UploadSave = () => {
       <form onSubmit={onSubmit} className="p-4 border rounded shadow-sm bg-light">
 
         <div className="mb-3">
-          <label className="form-label">Archivo</label>
+          <label className="form-label">File</label>
           <input type="file" className="form-control" onChange={onFileChange} />
         </div>
 
         <div className="mb-3">
-          <label className="form-label">Título del archivo</label>
+          <label className="form-label">Save Title</label>
           <input
             type="text"
             className="form-control"
-            placeholder="Nombre del archivo"
+            placeholder="Name of the save file"
             name="title"
             value={saveFile.title}
             onChange={onChange}
@@ -108,14 +108,14 @@ const UploadSave = () => {
         </div>
 
         <div className="mb-3">
-          <label className="form-label">Juego</label>
+          <label className="form-label">Game</label>
           <select
             name="gameID"
             className="form-select"
             value={saveFile.gameID}
             onChange={onGameChange}
           >
-            <option value="">Selecciona un juego</option>
+            <option value="">Select a game</option>
             {games.map(game => (
               <option key={game._id} value={game._id}>{game.title}</option>
             ))}
@@ -123,7 +123,7 @@ const UploadSave = () => {
         </div>
 
         <div className="mb-3">
-          <label className="form-label">Plataforma</label>
+          <label className="form-label">Platform</label>
           <select
             name="platformID"
             className="form-select"
@@ -131,20 +131,20 @@ const UploadSave = () => {
             onChange={onChange}
             disabled={!saveFile.gameID}
           >
-            <option value="">Selecciona una plataforma</option>
+            <option value="">Select a platform</option>
             {platforms.map((platformID) => (
               <option key={platformID} value={platformID}>
-                {getPlatformName(platformID) || `Plataforma desconocida (${platformID})`}
+                {getPlatformName(platformID) || `Unknown platform (${platformID})`}
               </option>
             ))}
           </select>
         </div>
 
         <div className="mb-3">
-          <label className="form-label">Descripción (opcional)</label>
+          <label className="form-label">Description (optional)</label>
           <textarea
             className="form-control"
-            placeholder="Añade una descripción del archivo"
+            placeholder="Add a description of the save file"
             name="description"
             value={saveFile.description}
             onChange={onChange}
@@ -152,7 +152,7 @@ const UploadSave = () => {
           ></textarea>
         </div>
 
-        <button type="submit" className="btn btn-primary">Subir</button>
+        <button type="submit" className="btn btn-primary">Upload</button>
       </form>
     </div>
   );

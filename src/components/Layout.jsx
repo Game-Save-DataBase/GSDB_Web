@@ -40,7 +40,11 @@ const Layout = ({ children }) => {
       <header className="navbar">
         <nav className="nav-content">
           <div className="left">
-            <img src="/logo.png" alt="Logo" className="logo" />
+            <Link to="/">
+              <img src={`${config.paths.assetsFolder}/logo.png`} alt="Logo" className="logo"
+                style={{ width: "60px", height: "60px", objectFit: "cover" }}
+              />
+            </Link>
           </div>
 
           <div className="center">
@@ -72,13 +76,19 @@ const Layout = ({ children }) => {
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
                   >
+                    <img
+                      src={`${config.connection}${loggedUser.pfp}`}
+                      alt="Profile picture"
+                      className="rounded-circle"
+                      style={{ width: "30px", height: "30px", objectFit: "cover", marginRight: "10px" }}
+                    />
                     {loggedUser.userName || loggedUser.Alias || "Account"}
                   </button>
                   <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                     <li><Link className="dropdown-item" to={`/u/${loggedUser.userName}`}>User profile</Link></li>
                     <li><Link className="dropdown-item" to="/user-area">User area</Link></li>
                     <li><hr className="dropdown-divider" /></li>
-                    <li><button className="dropdown-item" onClick={handleLogout}>Logout</button></li>
+                    <li><button className="dropdown-item" onClick={handleLogout} style={{ color: "var(--color-text-alt)" }}>Logout</button></li>
                   </ul>
                 </div>
               </>

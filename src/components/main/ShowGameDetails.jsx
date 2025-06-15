@@ -1,69 +1,57 @@
-import config from '../../utils/config.js';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import config from '../../utils/config.js';
 import api from '../../utils/interceptor.js';
-import '../../styles/Common.scss';
-import '../../styles/main/ShowGameDetails.scss';
 import { getPlatformName } from '../../utils/constants.jsx';
 
-function ShowGameDetails() {
-  const [game, setGame] = useState(null); // mejor iniciar null para distinguir "no cargado"
-  const [saveFiles, setSaveFiles] = useState([]);
-  const [activePlatforms, setActivePlatforms] = useState([]);
-  const [enabledPlatforms, setEnabledPlatforms] = useState([]);
-  const [filteredSaveFiles, setFilteredSaveFiles] = useState([]);
+import FilterBar from '../filters/FilterBar.jsx';
+import FilterPlatform from '../filters/FilterPlatform.jsx';
 
+import '../../styles/Common.scss';
+import '../../styles/main/ShowGameDetails.scss';
+
+function ShowGameDetails() {
+  const [game, setGame] = useState(null);
+  const [saveFiles, setSaveFiles] = useState([]);
+  const [filteredSaveFiles, setFilteredSaveFiles] = useState([]);
+  const [disabledPlatforms, setDisabledPlatforms] = useState([]);
   const { id } = useParams();
 
-  // Carga los detalles del juego
+  // Cargar juego
   useEffect(() => {
     const fetchGameDetails = async () => {
       try {
         const { data } = await api.get(`${config.api.games}?_id=${id}`);
-        if (!data) {
-          console.warn(`Game with ID ${id} not found.`);
-          setGame(null);
-          return;
-        }
-        setGame(data);
+        setGame(data || null);
       } catch (err) {
-        console.error('Failed to load game details:', err.response?.data?.msg || err.message || err);
-        setGame(null);
+        console.error('Error loading game:', err);
       }
     };
     fetchGameDetails();
   }, [id]);
 
-  // Carga los archivos de guardado asociados
+  // Cargar saves
   useEffect(() => {
     const fetchSaveFiles = async () => {
-      if (!game || !game.platformsID) return;
+      if (!game) return;
 
       try {
-        const { data } = await api.get(`${config.api.savedatas}?gameID=${id}`);
+        let { data } = await api.get(`${config.api.savedatas}?gameID=${id}`);
+        if (!data) return;
 
-        // Si no hay datos (array vacío) no es error, limpiamos estado
-        if (!data || data.length === 0) {
-          console.info(`No save files found for game ID ${id}.`);
-          setSaveFiles([]);
-          setFilteredSaveFiles([]);
-          return;
-        }
+        data = Array.isArray(data) ? data : [data];
 
-        // Completar con datos de usuario
-        const updatedSaveFiles = await Promise.all(
-          data.map(async (sf) => {
+        const updated = await Promise.all(
+          data.map(async sf => {
             try {
-              const { data: userData } = await api.get(`${config.api.users}?_id=${sf.userID}`);
+              const { data: user } = await api.get(`${config.api.users}?_id=${sf.userID}`);
               return {
                 ...sf,
                 platformName: getPlatformName(sf.platformID),
-                alias: userData?.alias || userData?.userName || "Desconocido",
-                pfp: userData?.pfp || config.paths.pfp_default,
+                alias: user?.alias || user?.userName || "Desconocido",
+                pfp: user?.pfp || config.paths.pfp_default,
               };
-            } catch (err) {
-              // Log interno y devolvemos con alias/pfp por defecto
-              console.warn(`Failed to load user for savefile ${sf._id}:`, err.message || err);
+            } catch {
               return {
                 ...sf,
                 platformName: getPlatformName(sf.platformID),
@@ -74,43 +62,44 @@ function ShowGameDetails() {
           })
         );
 
-        const sortedSaveFiles = updatedSaveFiles.sort(
-          (a, b) => new Date(b.postedDate) - new Date(a.postedDate)
-        );
-
-        setSaveFiles(sortedSaveFiles);
-        setFilteredSaveFiles(sortedSaveFiles);
-
+        const sorted = updated.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
+        setSaveFiles(sorted);
+        setFilteredSaveFiles(sorted);
       } catch (err) {
-        if (err.response?.status === 404) {
-          // No es error, simplemente no hay saves
-          setSaveFiles([]);
-          setFilteredSaveFiles([]);
-          return;
-        }
-        console.error('Failed to fetch save files:', err.response?.data?.msg || err.message || err);
+        console.error('Error loading save files:', err);
       }
     };
-
     fetchSaveFiles();
   }, [game, id]);
-
-  // Determinar plataformas habilitadas y activas según saves
   useEffect(() => {
-    if (!game || !game.platformsID || !saveFiles) return;
+    if (!game) {
+      setDisabledPlatforms([]);
+      return;
+    }
 
-    const availablePlatformIDs = [...new Set(saveFiles.map(sf => sf.platformID))];
-    setEnabledPlatforms(availablePlatformIDs);
-    setActivePlatforms(availablePlatformIDs);
-  }, [game, saveFiles]);
+    const disabled = (game.platformsID || []).filter(
+      p => !saveFiles.some(sf => sf.platformID === p)
+    );
 
-  // Filtrar saves según plataformas activas
-  useEffect(() => {
-    const filtered = saveFiles.filter(sf => activePlatforms.includes(sf.platformID));
+    setDisabledPlatforms(disabled);
+  }, [saveFiles, game]);
+
+  const filters = useMemo(() => [
+    {
+      type: FilterPlatform,
+      props: {
+        platforms: game?.platformsID || [],
+        disabled: disabledPlatforms,
+      }
+    }
+  ], [game?.platformsID, disabledPlatforms]);
+
+  const handleFilteredChange = useCallback(filtered => {
     setFilteredSaveFiles(filtered);
-  }, [activePlatforms, saveFiles]);
-
-  const lastUpdate = saveFiles.length > 0 ? new Date(saveFiles[0].postedDate).toLocaleDateString() : "No updates";
+  }, []);
+  const lastUpdate = saveFiles.length > 0
+    ? new Date(saveFiles[0].postedDate).toLocaleDateString()
+    : "No updates";
 
   return (
     <div>
@@ -136,10 +125,9 @@ function ShowGameDetails() {
                   />
                 )}
               </div>
-
               <div className='row-element text-muted'>
                 <p><strong>Available saves:</strong> {saveFiles.length}</p>
-                <p><strong>Last update: </strong>{lastUpdate}</p>
+                <p><strong>Last update:</strong> {lastUpdate}</p>
                 <button type="button" className="gsdb-btn-default">Install instructions</button>
               </div>
             </div>
@@ -147,41 +135,19 @@ function ShowGameDetails() {
         </section>
 
         <section className="saves-section">
-          <form>
-            {game?.platformsID?.map(platformID => {
-              const platformName = getPlatformName(platformID);
-              const isEnabled = enabledPlatforms.includes(platformID);
-              const isChecked = activePlatforms.includes(platformID);
-
-              return (
-                <div className="form-check form-switch" key={platformID}>
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    id={`switch-${platformID}`}
-                    checked={isChecked}
-                    disabled={!isEnabled}
-                    onChange={() => {
-                      if (isChecked) {
-                        setActivePlatforms(prev => prev.filter(id => id !== platformID));
-                      } else {
-                        setActivePlatforms(prev => [...prev, platformID]);
-                      }
-                    }}
-                  />
-                  <label className="form-check-label" htmlFor={`switch-${platformID}`}>
-                    {platformName}
-                  </label>
-                </div>
-              );
-            })}
-          </form>
+          <FilterBar
+            data={saveFiles}
+            filters={filters}
+            onFilteredChange={setFilteredSaveFiles}
+          />
 
           {filteredSaveFiles.length > 0 ? (
-            filteredSaveFiles.map(saveFile => (
-              <div key={saveFile._id} className="save">
-                <Link to={`/save/${saveFile._id}`}><strong>{saveFile.title}</strong></Link>
-                <p><small>Uploaded by: {saveFile.alias}</small> - Plataforma: {saveFile.platformName}</p>
+            filteredSaveFiles.map(save => (
+              <div key={save._id} className="save">
+                <Link to={`/save/${save._id}`}><strong>{save.title}</strong></Link>
+                <p>
+                  <small>Uploaded by: {save.alias}</small> - Plataforma: {save.platformName}
+                </p>
               </div>
             ))
           ) : (

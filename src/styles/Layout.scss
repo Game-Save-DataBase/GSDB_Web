@@ -29,10 +29,6 @@
 
     li {
         margin: 0 15px;
-
-        &:hover {
-            font-weight: bold;
-        }
     }
 }
 
@@ -104,13 +100,8 @@
                 cursor: pointer;
 
                 &:hover {
-                    font-weight: bold;
                     text-decoration: underline;
                 }
-            }
-
-            button.logout-btn {
-                color: red;
             }
         }
     }

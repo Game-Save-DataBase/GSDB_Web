@@ -88,7 +88,6 @@ function UserProfile() {
                 const gameResponse = await api.post(`${config.api.games}/by-id`, {
                     ids: user.favGames
                 });
-                console.log(gameResponse.data);
                 if (!gameResponse.data) {
                     setFavGames([]);
                     return;

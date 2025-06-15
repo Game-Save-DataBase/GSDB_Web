@@ -39,13 +39,15 @@ blockquote {
 //para los enlaces dentro de estas listas de manera predeterminada
 a {
   text-decoration: none;
-  color: var(--color-links); // se le indica de nuevo el color para que funcione la transición
-  transition: all 0.2s ease;
+  color: var(--color-links);
+  transition: text-decoration 0.2s ease, color 0.2s ease;
 
   &:hover {
     text-decoration: underline;
   }
 }
+
+
 
 small {
   @extend .text-muted;
@@ -133,6 +135,3 @@ small {
   gap: 1rem;
   padding-bottom: 1rem;
 }
-
-
-

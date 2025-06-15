@@ -1,102 +1,77 @@
 import config from '../../utils/config.js';
 import api from "../../utils/interceptor.js";
 import { PLATFORMS } from '../../utils/constants.jsx';
-import React, { useState, useEffect, useContext } from 'react';
+
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+
+import FilterBar from '../filters/FilterBar.jsx';
+import FilterPlatform from '../filters/FilterPlatform.jsx';
+
 import '../../styles/Common.scss';
 
 function Catalog() {
+  const [games, setGames] = useState([]);
+  const [filteredGames, setFilteredGames] = useState([]);
+  const [disabledPlatforms, setDisabledPlatforms] = useState([]);
 
-    const [games, setGames] = useState([]);
-    const [filteredGames, setFilteredGames] = useState([]);
-    const [activeCheckboxes, setActiveCheckboxes] = useState({});
-    const [enabledCheckboxes, setCheckboxesEnabled] = useState({});
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        const res = await api.get(`${config.api.games}`);
+        const data = res.data || [];
+        setGames(data);
+        setFilteredGames(data);
 
-    useEffect(() => {
-        const fetchGames = async () => {
-            try {
-                const res = await api.get(`${config.api.games}`);
-                setGames(res.data);
-                setFilteredGames(res.data);
-                initializeCheckboxes(res.data);
-            } catch (err) {
-                console.error("Error fetching games:", err);
-            }
-        };
-        fetchGames();
-    }, []);
-
-
-    const initializeCheckboxes = (gamesData) => {
-        const platformsWithGames = new Set(
-            gamesData.flatMap(game => game.platformsID || [])
-        );
-
-        const newEnabledCheckboxes = {};
-        const newActiveCheckboxes = {};
-
-        PLATFORMS.forEach(platform => {
-            newEnabledCheckboxes[platform.id] = platformsWithGames.has(platform.id);
-            newActiveCheckboxes[platform.id] = platformsWithGames.has(platform.id);
-        });
-
-        setCheckboxesEnabled(newEnabledCheckboxes);
-        setActiveCheckboxes(newActiveCheckboxes);
+        // Determinar plataformas sin juegos
+        const platformsUsed = new Set(data.flatMap(game => game.platformsID || []));
+        const disabled = PLATFORMS.map(p => p.id).filter(id => !platformsUsed.has(id));
+        setDisabledPlatforms(disabled);
+      } catch (err) {
+        console.error("Error fetching games:", err);
+      }
     };
+    fetchGames();
+  }, []);
 
-    useEffect(() => {
-        const activePlatforms = Object.keys(activeCheckboxes).filter(platform => activeCheckboxes[platform]).map(Number);
-        const filtered = games.filter(game =>
-            game.platformsID.some(platform => activePlatforms.includes(platform))
-        );
+  const filters = useMemo(() => [
+    {
+      type: FilterPlatform,
+      props: {
+        platforms: PLATFORMS.map(p => p.id),
+        disabled: disabledPlatforms,
+        mode: 'anyMatch', // Personalizado si quieres expandir FilterPlatform
+      }
+    }
+  ], [disabledPlatforms]);
 
-        setFilteredGames(filtered);
-    }, [activeCheckboxes, games]);
+  const handleFilteredChange = useCallback(filtered => {
+    setFilteredGames(filtered);
+  }, []);
 
-    const handleCheckboxChange = (platform) => {
-        setActiveCheckboxes(prev => ({
-            ...prev,
-            [platform]: !prev[platform]
-        }));
-    };
+  return (
+    <div>
+      <h1>GSDB Catalog</h1>
 
-    return (
-        <div>
-            ...under construction..... por ahora esto es showgamelist tal cual, pero deberan ser mas cosas
-            <br></br>
-            <h1>Filtrar por Plataforma</h1>
-            <form>
-                {PLATFORMS.map((platform) => (
-                    <div className="form-check form-switch" key={platform.id}>
-                        <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id={`switch-${platform.id}`}
-                            checked={activeCheckboxes[platform.id] || false}
-                            disabled={!enabledCheckboxes[platform.id]}
-                            onChange={() => handleCheckboxChange(platform.id)}
-                        />
-                        <label className="form-check-label" htmlFor={`switch-${platform.id}`}>
-                            {platform.name}
-                        </label>
-                    </div>
-                ))}
-            </form>
+      <FilterBar
+        data={games}
+        filters={filters}
+        onFilteredChange={handleFilteredChange}
+      />
 
-            <h3>Juegos Disponibles</h3>
-            <ul>
-                {filteredGames.length > 0 ? (
-                    filteredGames.map((game) => (
-                        <li key={game._id}>
-                            <Link to={`/game/${game._id}`}>{game.title}</Link>
-                        </li>
-                    ))
-                ) : (
-                    <p>No hay juegos disponibles para las plataformas seleccionadas.</p>
-                )}
-            </ul>
-        </div>
-    );
+      <ul>
+        {filteredGames.length > 0 ? (
+          filteredGames.map((game) => (
+            <li key={game._id}>
+              <Link to={`/game/${game._id}`}>{game.title}</Link>
+            </li>
+          ))
+        ) : (
+          <p>No games available.</p>
+        )}
+      </ul>
+    </div>
+  );
 }
 
 export default Catalog;
