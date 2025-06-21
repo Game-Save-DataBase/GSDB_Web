@@ -17,6 +17,8 @@ import Test from "./components/test.jsx";
 import ShowGameDetails from "./components/main/ShowGameDetails.jsx";
 import ShowSaveDetails from "./components/main/ShowSaveDetails.jsx";
 import SearchResults from "./components/main/SearchResults.jsx";
+import SearchResultsAll from "./components/main/SearchResultsAll.jsx";
+
 //user related
 import UploadSave from "./components/user/UploadSave.jsx";
 import Login from "./components/user/Login.jsx";
@@ -42,6 +44,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <Route path="/save/:id" element={<Layout><ShowSaveDetails /></Layout>} />
             <Route path="/upload" element={<Layout><UploadSave /></Layout>} />
             <Route path="/search" element={<Layout><SearchResults /></Layout>} />
+            <Route path="/search/games" element={<Layout><SearchResultsAll type="games" /></Layout>} />
+            <Route path="/search/saves" element={<Layout><SearchResultsAll type="saves" /></Layout>} />
             <Route path="/login" element={<Layout><Login /></Layout>} />
             <Route path="/user-area" element={<Layout><UserArea /></Layout>} />
             <Route path="/u/:userNameParam" element={<Layout><UserProfile /></Layout>} />

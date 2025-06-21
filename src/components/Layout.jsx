@@ -22,7 +22,7 @@ const Layout = ({ children }) => {
       setTimeout(() => setErrorMessage(""), 3000);
       return;
     }
-    navigate(`/search?query=${searchQuery}&type=${searchType}`);
+    navigate(`/search?query=${encodeURIComponent(searchQuery)}`);
   };
 
   const handleLogout = async () => {
@@ -49,10 +49,6 @@ const Layout = ({ children }) => {
 
           <div className="center">
             <form className="search-bar" onSubmit={handleSearch}>
-              <select value={searchType} onChange={(e) => setSearchType(e.target.value)}>
-                <option value="games">Games</option>
-                <option value="saves">Saves</option>
-              </select>
               <input
                 type="text"
                 placeholder="Buscar..."
