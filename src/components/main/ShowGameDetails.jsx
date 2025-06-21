@@ -96,13 +96,6 @@ function ShowGameDetails() {
         platforms: game?.platformsID || [],
         disabled: disabledPlatforms,
       }
-    },
-    {
-      type: FilterPlatform,
-      props: {
-        platforms: game?.platformsID || [],
-        disabled: disabledPlatforms,
-      }
     }
   ], [game?.platformsID, disabledPlatforms]);
 
