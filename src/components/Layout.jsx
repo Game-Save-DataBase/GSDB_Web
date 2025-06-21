@@ -85,8 +85,8 @@ const Layout = ({ children }) => {
                     {loggedUser.userName || loggedUser.Alias || "Account"}
                   </button>
                   <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                    <li><Link className="dropdown-item" to={`/u/${loggedUser.userName}`}>User profile</Link></li>
-                    <li><Link className="dropdown-item" to="/user-area">User area</Link></li>
+                    <li><Link className="dropdown-item" to={`/u/${loggedUser.userName}`}>User area</Link></li>
+                    <li><Link className="dropdown-item" to="/user-area">Edit profile</Link></li>
                     <li><hr className="dropdown-divider" /></li>
                     <li><button className="dropdown-item" onClick={handleLogout} style={{ color: "var(--color-text-alt)" }}>Logout</button></li>
                   </ul>

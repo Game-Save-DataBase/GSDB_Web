@@ -1,0 +1,34 @@
+@use '../common' as *;
+
+.favorite-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+
+    svg {
+        transition: color 0.3s ease, transform 0.2s ease;
+    }
+
+    &.favorite {
+        svg {
+            color: var(--color-text-secondary);
+        }
+
+        &:hover svg {
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 6px var(--color-text-secondary));
+        }
+    }
+
+    &.not-favorite {
+        svg {
+            color: lightgray;
+        }
+
+        &:hover svg {
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 6px lightgray);
+        }
+    }
+}

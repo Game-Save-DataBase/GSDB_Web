@@ -202,9 +202,13 @@ function ShowSaveDetails(props) {
                 </p>
                 <p>
                   <strong>Submitted By:</strong> {' '}
-                  {relatedUser
-                    ? relatedUser.alias || relatedUser.userName || 'Desconocido'
-                    : 'Desconocido'}
+                  {relatedUser ? (
+                    <Link to={`/u/${relatedUser.userName}`}>
+                      {relatedUser.alias || relatedUser.userName || 'Desconocido'}
+                    </Link>
+                  ) : (
+                    'Desconocido'
+                  )}
                 </p>
                 <p>
                   <strong>Date added:</strong> {saveData.postedDate || 'N/A'}
