@@ -13,6 +13,7 @@ const config = {
   api: {
     api: import.meta.env.VITE_DIR_GSDB + import.meta.env.VITE_PORT + import.meta.env.VITE_API,
     games: import.meta.env.VITE_DIR_GSDB + import.meta.env.VITE_PORT + import.meta.env.VITE_API + import.meta.env.VITE_API_GAMES,
+    platforms: import.meta.env.VITE_DIR_GSDB + import.meta.env.VITE_PORT + import.meta.env.VITE_API + import.meta.env.VITE_API_PLATFORMS,
     savedatas: import.meta.env.VITE_DIR_GSDB + import.meta.env.VITE_PORT + import.meta.env.VITE_API + import.meta.env.VITE_API_SAVEDATAS,
     comments: import.meta.env.VITE_DIR_GSDB + import.meta.env.VITE_PORT + import.meta.env.VITE_API + import.meta.env.VITE_API_COMMENTS,
     users: import.meta.env.VITE_DIR_GSDB + import.meta.env.VITE_PORT + import.meta.env.VITE_API + import.meta.env.VITE_API_USERS,
