@@ -42,14 +42,6 @@ function Catalog() {
         disabled: disabledPlatforms,
         mode: 'anyMatch', // Personalizado si quieres expandir FilterPlatform
       }
-    },
-    {
-      type: FilterPlatform,
-      props: {
-        platforms: PLATFORMS.map(p => p.id),
-        disabled: disabledPlatforms,
-        mode: 'anyMatch', // Personalizado si quieres expandir FilterPlatform
-      }
     }
   ], [disabledPlatforms]);
 
