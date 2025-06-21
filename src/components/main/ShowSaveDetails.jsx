@@ -204,7 +204,7 @@ function ShowSaveDetails(props) {
                   <strong>Submitted By:</strong> {' '}
                   {relatedUser ? (
                     <Link to={`/u/${relatedUser.userName}`}>
-                      {relatedUser.alias || relatedUser.userName || 'Desconocido'}
+                      {`@${relatedUser.userName}`|| 'Desconocido'}
                     </Link>
                   ) : (
                     'Desconocido'

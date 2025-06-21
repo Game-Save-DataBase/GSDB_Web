@@ -155,8 +155,7 @@ function UserProfile() {
         if (user) { fetchSaves(); }
         if (user) { fetchGames(); }
         if (user) { fetchReviews(); }
-        if(user){console.log('user.favGames:', user.favGames, 'type:', typeof user.favGames, 'isArray:', Array.isArray(user.favGames));
-        }
+
     }, [user]);
 
     if (notFound) {
@@ -172,6 +171,10 @@ function UserProfile() {
                         {/* Banner */}
                         <img
                             src={`${config.connection}${user.banner}`}
+                            onError={(e) => {
+                                e.target.onerror = null; // Evita bucles si la imagen por defecto también falla
+                                e.target.src = `${config.connection}${config.paths.banner_default}`; // Ruta de imagen por defecto
+                            }}
                             alt={`@${user.userName}'s banner image`}
                             className="img-fluid w-100 rounded"
                             style={{
@@ -185,6 +188,10 @@ function UserProfile() {
                         <div className="position-absolute top-100 start-0 translate-middle-y ms-3">
                             <img
                                 src={`${config.connection}${user.pfp}`}
+                                onError={(e) => {
+                                    e.target.onerror = null; // Evita bucles si la imagen por defecto también falla
+                                    e.target.src = `${config.connection}${config.paths.pfp_default}`; // Ruta de imagen por defecto
+                                }}
                                 alt={`@${user.userName.toLowerCase()}'s profile picture`}
                                 className="rounded-circle border border-3 border-white"
                                 style={{
@@ -246,6 +253,7 @@ function UserProfile() {
                                 <div key={game._id}>
                                     <VerticalCard
                                         image={`${config.connection}${game.cover}`}
+                                        image_default={`${config.connection}${config.paths.gameCover_default}`}
                                         title={game.title}
                                         cLink={`/game/${game._id}`}
                                         platform={`${game.plaformsID}`}
@@ -262,6 +270,7 @@ function UserProfile() {
                                 <div key={save._id}>
                                     <VerticalCard
                                         image={`${config.connection}${save.save_img}`}
+                                        image_default={`${config.connection}${config.paths.gameCover_default}`}
                                         title={save.title}
                                         description={save.description}
                                         cLink={`/save/${save._id}`}
@@ -280,6 +289,7 @@ function UserProfile() {
                                 <div key={save._id}>
                                     <VerticalCard
                                         image={`${config.connection}${save.save_img}`}
+                                        image_default={`${config.connection}${config.paths.gameCover_default}`}
                                         title={save.title}
                                         description={save.description}
                                         cLink={`/save/${save._id}`}

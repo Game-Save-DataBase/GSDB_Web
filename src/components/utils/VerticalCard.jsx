@@ -3,14 +3,19 @@ import { Link } from 'react-router-dom';
 import '../../styles/utils/VerticalCard.scss';
 
 // Props: imagen del juego, titulo del save, inicio de la descripcion, nombre de usuario, link usuario, link del save, rating, plataforma
-const VerticalCard = ({ image, title, description, username, cLink, userLink, rating, platform }) => {
+const VerticalCard = ({ image, image_default, title, description, username, cLink, userLink, rating, platform }) => {
   // Usa saveLink si existe; si no, deja el enlace inactivo (fallback a "#")
   const cardLink = cLink || "#";
 
   return (
     <Link to={cardLink} className="card-container">
       <div className="card">
-        {image && <img src={image} className="card-img-top" alt={title || "cover"} />}
+        {image && <img src={image}
+          onError={(e) => {
+            e.target.onerror = null; // Evita bucles si la imagen por defecto también falla
+            e.target.src = `${image_default}`; // Ruta de imagen por defecto
+          }}
+          className="card-img-top" alt={title || "cover"} />}
         <div className="card-body">
           {title && <h5 className="card-title">{title}</h5>}
           {description && <p className="card-text">{description}</p>}

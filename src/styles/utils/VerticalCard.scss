@@ -6,19 +6,20 @@
     text-decoration: none;
     display: block;
     width: 200px;
-    height: auto;
+    height: 350px;
     margin: 10px;
 }
 
 .card {
+    width: 100%;
     height: 100%;
-    border: none;
     display: flex;
-    flex-direction: column; // Permite que el contenido se distribuya verticalmente
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    flex-direction: column;
     border-radius: 8px;
     overflow: hidden;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 
     &:hover {
         transform: translateY(-5px);
@@ -26,14 +27,15 @@
     }
 
     .card-img-top {
+        height: 70%; // 70% de la altura de la card
         width: 100%;
-        height: 55%;
-        object-fit: cover;
+        object-fit: fill;
+        flex-shrink: 0;
     }
 
     .card-body {
-        flex: 1;
-        padding: 12px;
+        height: 30%; // 30% restante
+        padding: 8px 12px;
         background-color: #fff;
         display: flex;
         flex-direction: column;
@@ -53,29 +55,18 @@
     .card-text {
         font-size: 0.85rem;
         color: #666;
-        margin: 8px 0;
+        margin: 4px 0;
         overflow: hidden;
         text-overflow: ellipsis;
         display: -webkit-box;
-        display: box; // definición estándar (fallback)
         -webkit-box-orient: vertical;
-        box-orient: vertical; // definición estándar (fallback)
-        -webkit-line-clamp: 2;
-        line-clamp: 2;
     }
-
 
     .card-platform,
-    .card-rating {
-        font-size: 0.75rem;
-        // color: #333;
-        margin-bottom: 4px;
-    }
-
+    .card-rating,
     .card-username {
         font-size: 0.75rem;
-        // color: #007bff;
-        font-weight: 500;
+        margin-bottom: 2px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
