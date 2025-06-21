@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useContext } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import config from '../../utils/config.js';
 import api from '../../utils/interceptor.js';
 import { getPlatformName } from '../../utils/constants.jsx';
+import { UserContext } from '../../contexts/UserContext.jsx';
 
 import FilterBar from '../filters/FilterBar.jsx';
 import FilterPlatform from '../filters/FilterPlatform.jsx';
@@ -10,12 +11,16 @@ import FilterPlatform from '../filters/FilterPlatform.jsx';
 import '../../styles/Common.scss';
 import '../../styles/main/ShowGameDetails.scss';
 
+import FavoriteButton from '../utils/FavoriteButton';
+
 function ShowGameDetails() {
   const [game, setGame] = useState(null);
   const [saveFiles, setSaveFiles] = useState([]);
   const [filteredSaveFiles, setFilteredSaveFiles] = useState([]);
   const [disabledPlatforms, setDisabledPlatforms] = useState([]);
   const { id } = useParams();
+  const { user: loggedUser } = useContext(UserContext);
+  
 
   // Cargar juego
   useEffect(() => {
@@ -133,6 +138,7 @@ function ShowGameDetails() {
                 )}
               </div>
               <div className='row-element text-muted'>
+                {game && <FavoriteButton gameID={game._id} loggedUser={loggedUser} />}
                 <p><strong>Available saves:</strong> {saveFiles.length}</p>
                 <p><strong>Last update:</strong> {lastUpdate}</p>
                 <button type="button" className="gsdb-btn-default">Install instructions</button>

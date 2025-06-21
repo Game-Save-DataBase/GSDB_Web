@@ -84,15 +84,29 @@ function UserProfile() {
         };
 
         const fetchGames = async () => {
+            //  favGames siempre es un array
+            let favGamesIds = user?.favGames;
+            if (!favGamesIds) {
+                setFavGames([]);
+                return;
+            }
+            // Si no es array, lo envolvemos en un array
+            if (!Array.isArray(favGamesIds)) {
+                favGamesIds = [favGamesIds];
+            }
             try {
                 const gameResponse = await api.post(`${config.api.games}/by-id`, {
-                    ids: user.favGames
+                    ids: favGamesIds
                 });
                 if (!gameResponse.data) {
                     setFavGames([]);
                     return;
                 }
-                setFavGames(gameResponse.data);
+                let gamesData = gameResponse.data;
+                if (!Array.isArray(gamesData)) {
+                    gamesData = [gamesData];
+                }
+                setFavGames(gamesData);
             } catch (err) {
                 console.log(`Error fetching favorite games user ${user._id}:`, err);
             }
@@ -138,10 +152,11 @@ function UserProfile() {
         }
 
 
-
         if (user) { fetchSaves(); }
         if (user) { fetchGames(); }
         if (user) { fetchReviews(); }
+        if(user){console.log('user.favGames:', user.favGames, 'type:', typeof user.favGames, 'isArray:', Array.isArray(user.favGames));
+        }
     }, [user]);
 
     if (notFound) {

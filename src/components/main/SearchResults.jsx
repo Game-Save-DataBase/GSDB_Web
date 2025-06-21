@@ -35,8 +35,11 @@ const SearchResults = () => {
 
                     
                     if (uniqueGameIDs.length > 0) {
-                        const gamesResponse = await api.get(`${config.api.games}?ids=${uniqueGameIDs.join(",")}`);
-                        const gamesArray = gamesResponse.data;
+                        const gamesResponse = await api.post(`${config.api.games}/by-id`, { ids: uniqueGameIDs}); 
+                        
+                        const gamesArray = Array.isArray(gamesResponse.data)
+                            ? gamesResponse.data
+                            : [gamesResponse.data];
 
                         const map = {};
                         for (const game of gamesArray) {
