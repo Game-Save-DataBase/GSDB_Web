@@ -1,0 +1,71 @@
+@use '../common' as *;
+
+.notification-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.4rem 0.4rem;
+  margin-bottom: 0.75rem;
+  background-color: white;
+  transition: background 0.2s;
+  cursor: default;
+  font-size: 0.85rem;
+
+  &.unread {
+    background-color: #f5f9ff;
+    border-left: 3px solid var(--color-text-secondary);
+  }
+
+  &.read {
+    opacity: 0.8;
+  }
+
+  .notification-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.3rem;
+
+    .notification-title {
+      margin: 0;
+      font-weight: 600;
+      font-size: 0.9rem;
+      line-height: 1.1;
+      cursor: pointer;
+      color: var(--color-text-secondary);
+      text-decoration: underline;
+
+      &:hover {
+        color: var(--color-h1);
+      }
+    }
+
+  }
+
+  .notification-delete-button {
+    background: none;
+    border: none;
+    color: red;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 8px;
+    align-self: start;
+
+    &:hover {
+      color: darkred;
+    }
+  }
+
+  .notification-body {
+    margin: 0.25rem 0;
+    color: #555;
+    font-size: 0.85rem;
+    line-height: 1.2;
+  }
+
+  .notification-date {
+    font-size: 0.7rem;
+    color: #999;
+    margin-top: 0.15rem;
+  }
+}

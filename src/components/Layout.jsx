@@ -3,6 +3,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import api from "../utils/interceptor";
 import { UserContext } from "../contexts/UserContext";
+import NotificationBoard from "../components/user/NotificationBoard";
 import '../styles/Layout.scss';
 import '../styles/Common.scss';
 
@@ -108,7 +109,9 @@ const Layout = ({ children }) => {
         {children}
       </main>
 
-      <aside className="right-sidebar" />
+      <aside className="right-sidebar" >
+        <NotificationBoard />
+      </aside>
 
       <footer className="bottom-bar">
         <p>© 2025 Game Save Database. Universidad Complutense de Madrid. Jorge Bello Martín - Eva Lucas Leiro.</p>

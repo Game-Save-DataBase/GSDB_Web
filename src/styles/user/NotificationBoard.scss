@@ -1,0 +1,16 @@
+@use '../common' as *;
+
+.notification-board {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  max-width: 600px;
+  margin: auto;
+}
+
+.no-notifications {
+  text-align: center;
+  font-style: italic;
+  color: #888;
+}
