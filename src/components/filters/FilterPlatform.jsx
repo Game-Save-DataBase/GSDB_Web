@@ -1,20 +1,23 @@
 import React, { useState, forwardRef, useImperativeHandle, useEffect } from 'react';
-import { getPlatformName } from '../../utils/constants';
 
 const FilterPlatform = forwardRef(({ platforms, disabled = [], onChange }, ref) => {
   const [selected, setSelected] = useState([]);
   const [expanded, setExpanded] = useState(false);
 
+  // Inicializa las seleccionadas con todas las plataformas habilitadas
   useEffect(() => {
-    const initiallySelected = platforms.filter(p => !disabled.includes(p));
+    const initiallySelected = platforms
+      .map(p => p.IGDB_ID)
+      .filter(id => !disabled.includes(id));
     setSelected(initiallySelected);
   }, [platforms, disabled]);
 
-  const handleToggle = (platformID) => {
+
+  const handleToggle = (abbr) => {
     setSelected(prev =>
-      prev.includes(platformID)
-        ? prev.filter(p => p !== platformID)
-        : [...prev, platformID]
+      prev.includes(abbr)
+        ? prev.filter(p => p !== abbr)
+        : [...prev, abbr]
     );
   };
 
@@ -25,11 +28,18 @@ const FilterPlatform = forwardRef(({ platforms, disabled = [], onChange }, ref) 
   useImperativeHandle(ref, () => ({
     getPredicate: () => {
       return (item) => {
-        const itemPlatforms = Array.isArray(item.platformsID) ? item.platformsID : [item.platformID];
-        return itemPlatforms.some(p => selected.includes(p));
+        const platforms = Array.isArray(item.platformsID)
+          ? item.platformsID
+          : item.platformID !== undefined
+            ? [item.platformID]
+            : [];
+
+        return platforms.some(p => selected.includes(p));
       };
     }
+
   }));
+
 
   return (
     <div className="mb-3">
@@ -46,26 +56,27 @@ const FilterPlatform = forwardRef(({ platforms, disabled = [], onChange }, ref) 
           className="border mt-2 p-2 rounded bg-light"
           style={{ maxHeight: '300px', overflowY: 'auto' }}
         >
-          {platforms.map(platformID => {
-            const isChecked = selected.includes(platformID);
-            const isDisabled = disabled.includes(platformID);
+          {platforms.map(({ IGDB_ID, name }) => {
+            const isChecked = selected.includes(IGDB_ID);
+            const isDisabled = disabled.includes(IGDB_ID);
 
             return (
-              <div className="form-check" key={platformID}>
+              <div className="form-check" key={IGDB_ID}>
                 <input
                   type="checkbox"
                   className="form-check-input"
-                  id={`plat-${platformID}`}
+                  id={`${IGDB_ID}`}
                   checked={isChecked}
                   disabled={isDisabled}
-                  onChange={() => handleToggle(platformID)}
+                  onChange={() => handleToggle(IGDB_ID)}
                 />
-                <label className="form-check-label" htmlFor={`plat-${platformID}`}>
-                  {getPlatformName(platformID)}
+                <label className="form-check-label" htmlFor={`${IGDB_ID}`}>
+                  {name}
                 </label>
               </div>
             );
           })}
+
         </div>
       )}
     </div>

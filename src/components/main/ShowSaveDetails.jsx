@@ -8,6 +8,7 @@ import '../../styles/main/ShowSaveDetails.scss';
 function ShowSaveDetails(props) {
   const [saveData, setSaveData] = useState({});
   const [relatedGame, setRelatedGame] = useState(null);
+  const [relatedPlatform, setRelatedPlatform] = useState(null);
   const [relatedUser, setRelatedUser] = useState(null);
   const [comments, setComments] = useState([]);
   const [screenshots, setscreenshots] = useState([]);
@@ -45,7 +46,7 @@ function ShowSaveDetails(props) {
       try {
         const commentsResponse = await api.get(`${config.api.comments}?saveID=${id}`);
         let commentsData = commentsResponse.data;
-        if(commentsData === "") {
+        if (commentsData === "") {
           setComments(null)
           return
         }
@@ -104,6 +105,22 @@ function ShowSaveDetails(props) {
       fetchGameData();
     }
   }, [saveData.gameID]); // Este useEffect se activa cuando saveData.gameID cambia
+
+  useEffect(() => {
+    if (saveData.platformID !== undefined && saveData.platformID !== null) {
+      const fetchPlatformData = async () => {
+        try {
+          const response = await api.get(`${config.api.platforms}?IGDB_ID=${saveData.platformID}`);
+          setRelatedPlatform(response.data);
+        } catch (err) {
+          console.error('Error fetching platform data:', err);
+        }
+      };
+
+      fetchPlatformData();
+    }
+  }, [saveData.platformID]);
+
 
   useEffect(() => {
     // Solo ejecutar si userID está disponible
@@ -182,7 +199,7 @@ function ShowSaveDetails(props) {
               <div className="row-element text-center">
                 {relatedGame && (
                   <img
-                    src={`${config.connection}${relatedGame.cover}`}
+                    src={`${relatedGame.cover}`}
                     alt={relatedGame.title}
                     onError={(e) => { e.target.src = `${config.connection}${config.paths.gameCover_default}`; }}
                   />
@@ -193,10 +210,9 @@ function ShowSaveDetails(props) {
               <div className='row-element text-muted'>
                 <p>
                   <strong>Platform:</strong>{' '}
-                  {relatedGame && relatedGame.platformsID && saveData.platformID !== undefined
-                    ? relatedGame.platformsID[saveData.platformID] || 'Plataforma desconocida'
-                    : 'Plataforma desconocida'}
+                  {relatedPlatform ? relatedPlatform.name || 'Plataforma desconocida' : 'Plataforma desconocida'}
                 </p>
+
                 <p>
                   <strong>File size:</strong> {saveData.filseSize || 'Tamaño sin determinar'}
                 </p>
@@ -204,7 +220,7 @@ function ShowSaveDetails(props) {
                   <strong>Submitted By:</strong> {' '}
                   {relatedUser ? (
                     <Link to={`/u/${relatedUser.userName}`}>
-                      {`@${relatedUser.userName}`|| 'Desconocido'}
+                      {`@${relatedUser.userName}` || 'Desconocido'}
                     </Link>
                   ) : (
                     'Desconocido'

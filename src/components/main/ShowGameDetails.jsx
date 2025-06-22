@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo, useCallback, useContext } from 're
 import { Link, useParams } from 'react-router-dom';
 import config from '../../utils/config.js';
 import api from '../../utils/interceptor.js';
-import { getPlatformName } from '../../utils/constants.jsx';
 import { UserContext } from '../../contexts/UserContext.jsx';
 
 import FilterBar from '../filters/FilterBar.jsx';
@@ -17,10 +16,11 @@ function ShowGameDetails() {
   const [game, setGame] = useState(null);
   const [saveFiles, setSaveFiles] = useState([]);
   const [filteredSaveFiles, setFilteredSaveFiles] = useState([]);
+  const [gamePlatforms, setGamePlatforms] = useState([]);
   const [disabledPlatforms, setDisabledPlatforms] = useState([]);
   const { id } = useParams();
   const { user: loggedUser } = useContext(UserContext);
-  
+
 
   // Cargar juego
   useEffect(() => {
@@ -34,6 +34,25 @@ function ShowGameDetails() {
     };
     fetchGameDetails();
   }, [id]);
+
+  useEffect(() => {
+    const fetchPlatforms = async () => {
+      if (!game?.platformsID?.length) return;
+
+      try {
+        const { data } = await api.post(`${config.api.platforms}/by-id`, {
+          ids: game.platformsID
+        });
+
+        const platforms = Array.isArray(data) ? data : [data];
+        setGamePlatforms(platforms);
+      } catch (err) {
+        console.error("Error fetching platforms by IDs:", err);
+      }
+    };
+
+    fetchPlatforms();
+  }, [game]);
 
   // Cargar saves
   useEffect(() => {
@@ -52,14 +71,14 @@ function ShowGameDetails() {
               const { data: user } = await api.get(`${config.api.users}?_id=${sf.userID}`);
               return {
                 ...sf,
-                platformName: getPlatformName(sf.platformID),
+                platformName: gamePlatforms.find(p => p.IGDB_ID === sf.platformID)?.name || `Unknown`,
                 alias: user?.alias || user?.userName || "Desconocido",
                 pfp: user?.pfp || config.paths.pfp_default,
               };
             } catch {
               return {
                 ...sf,
-                platformName: getPlatformName(sf.platformID),
+                platformName: "",
                 alias: "Desconocido",
                 pfp: config.paths.pfp_default,
               };
@@ -75,29 +94,33 @@ function ShowGameDetails() {
       }
     };
     fetchSaveFiles();
-  }, [game, id]);
+  }, [gamePlatforms]);
+
+
+
   useEffect(() => {
     if (!game) {
       setDisabledPlatforms([]);
       return;
     }
-
     const disabled = (game.platformsID || []).filter(
       p => !saveFiles.some(sf => sf.platformID === p)
     );
 
     setDisabledPlatforms(disabled);
-  }, [saveFiles, game]);
+  }, [saveFiles]);
+
+
 
   const filters = useMemo(() => [
     {
       type: FilterPlatform,
       props: {
-        platforms: game?.platformsID || [],
+        platforms: gamePlatforms,
         disabled: disabledPlatforms,
       }
     }
-  ], [game?.platformsID, disabledPlatforms]);
+  ], [gamePlatforms, disabledPlatforms]);
 
   const handleFilteredChange = useCallback(filtered => {
     setFilteredSaveFiles(filtered);
@@ -124,7 +147,7 @@ function ShowGameDetails() {
               <div className="row-element text-center">
                 {game && (
                   <img
-                    src={`${config.connection}${game.cover}`}
+                    src={`${game.cover}`}
                     alt={game.title}
                     onError={(e) => { e.target.src = `${config.connection}${config.paths.gameCover_default}`; }}
                   />
@@ -144,7 +167,7 @@ function ShowGameDetails() {
           <FilterBar
             data={saveFiles}
             filters={filters}
-            onFilteredChange={setFilteredSaveFiles}
+            onFilteredChange={handleFilteredChange}
           />
 
           {filteredSaveFiles.length > 0 ? (
@@ -152,7 +175,7 @@ function ShowGameDetails() {
               <div key={save._id} className="save">
                 <Link to={`/save/${save._id}`}><strong>{save.title}</strong></Link>
                 <p>
-                  <small>Uploaded by: {save.alias}</small> - Plataforma: {save.platformName}
+                  <small>Uploaded by: {save.alias} - Platform: {save.platformName} </small>
                 </p>
               </div>
             ))

@@ -7,7 +7,6 @@ import VerticalCard from '../utils/VerticalCard.jsx';
 import UserFollowButton from '../utils/UserFollowButton.jsx';
 import { UserContext } from '../../contexts/UserContext.jsx';
 
-import { PLATFORMS, getPlatformName } from '../../utils/constants.jsx'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowUpFromBracket, faDownload, faEye, faStar } from '@fortawesome/free-solid-svg-icons';
 
@@ -59,13 +58,13 @@ function UserProfile() {
                             if (!gameResponse.data) {
                                 return {
                                     ...save,
-                                    platformName: getPlatformName(save.platformID),
+                                    platformName: "",
                                     save_img: `${config.paths.gameCover_default}`
                                 };
                             }
                             return {
                                 ...save,
-                                platformName: getPlatformName(save.platformID),
+                                platformName: "",
                                 save_img: gameResponse.data.cover
 
                             };
@@ -127,7 +126,7 @@ function UserProfile() {
                             const userResponse = await api.get(`${config.api.users}?_id=${save.userID}`);
                             return {
                                 ...save,
-                                platformName: getPlatformName(save.platformID),
+                                platformName: "",
                                 save_img: gameResponse.data?.cover || config.paths.gameCover_default,
                                 userName: userResponse.data?.userName || "Unknown",
                                 userPfp: userResponse.data?.pfp || config.paths.pfp_default
@@ -136,7 +135,7 @@ function UserProfile() {
                             console.log(`Error fetching additional data for save ${save._id}:`, err);
                             return {
                                 ...save,
-                                platformName: getPlatformName(save.platformID),
+                                platformName: "",
                                 save_img: config.paths.gameCover_default,
                                 userName: "Unknown",
                                 userPfp: config.paths.pfp_default
@@ -252,11 +251,11 @@ function UserProfile() {
                             {favGames.map(game => (
                                 <div key={game._id}>
                                     <VerticalCard
-                                        image={`${config.connection}${game.cover}`}
+                                        image={`${game.cover}`}
                                         image_default={`${config.connection}${config.paths.gameCover_default}`}
                                         title={game.title}
                                         cLink={`/game/${game._id}`}
-                                        platform={`${game.plaformsID}`}
+                                        platformsID={game.platformsID}
                                     />
                                 </div>
                             ))}
@@ -269,7 +268,7 @@ function UserProfile() {
                             {uploadedSaves.map(save => (
                                 <div key={save._id}>
                                     <VerticalCard
-                                        image={`${config.connection}${save.save_img}`}
+                                        image={`${save.save_img}`}
                                         image_default={`${config.connection}${config.paths.gameCover_default}`}
                                         title={save.title}
                                         description={save.description}
@@ -288,7 +287,7 @@ function UserProfile() {
                             {reviewedSaves.map(save => (
                                 <div key={save._id}>
                                     <VerticalCard
-                                        image={`${config.connection}${save.save_img}`}
+                                        image={`${save.save_img}`}
                                         image_default={`${config.connection}${config.paths.gameCover_default}`}
                                         title={save.title}
                                         description={save.description}

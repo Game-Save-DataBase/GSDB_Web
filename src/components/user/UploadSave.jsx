@@ -3,7 +3,6 @@ import React, { useState, useEffect, useContext } from "react";
 import api from "../../utils/interceptor";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../contexts/UserContext";
-import { PLATFORMS, getPlatformName } from '../../utils/constants';
 import '../../styles/Common.scss';
 
 const UploadSave = () => {
@@ -19,7 +18,7 @@ const UploadSave = () => {
   });
 
   const [games, setGames] = useState([]);
-  const [platforms, setPlatforms] = useState([]);
+  const [platforms, setPlatforms] = useState([]); // array de objetos { _id, name }
 
   useEffect(() => {
     api.get(`${config.api.games}`)
@@ -31,22 +30,34 @@ const UploadSave = () => {
     setSaveFile({ ...saveFile, [e.target.name]: e.target.value });
   };
 
-  const onGameChange = (e) => {
+  const onGameChange = async (e) => {
     const value = e.target.value;
     setSaveFile({ ...saveFile, gameID: value, platformID: "" });
+    setPlatforms([]);
 
     const selectedGame = games.find(game => game._id === value);
-    setPlatforms(selectedGame ? selectedGame.platformsID || [] : []);
+    const platformIDs = selectedGame?.platformsID || [];
+
+    if (platformIDs.length > 0) {
+      try {
+        const { data } = await api.post(`${config.api.platforms}/by-id`, {
+          ids: platformIDs
+        });
+        const platformsArr = Array.isArray(data) ? data : [data];
+        setPlatforms(platformsArr);
+      } catch (err) {
+        console.error("Error loading platform names", err);
+      }
+    }
   };
 
   const onFileChange = (e) => {
     const file = e.target.files[0];
-    setSaveFile({ ...saveFile, file: file });
+    setSaveFile({ ...saveFile, file });
   };
 
   const onSubmit = async (e) => {
     e.preventDefault();
-
     try {
       const formData = new FormData();
       const messages = [];
@@ -54,7 +65,7 @@ const UploadSave = () => {
       if (saveFile.title === "") messages.push("You must provide a title for the save file.");
       if (saveFile.gameID === "") messages.push("You must select a game.");
       if (saveFile.platformID === "") messages.push("You must choose a platform.");
-      if (saveFile.file === "") messages.push("You must upload a save file.");
+      if (!saveFile.file) messages.push("You must upload a save file.");
 
       if (messages.length > 0) throw new Error(messages.join(" "));
 
@@ -89,7 +100,6 @@ const UploadSave = () => {
       )}
 
       <form onSubmit={onSubmit} className="p-4 border rounded shadow-sm bg-light">
-
         <div className="mb-3">
           <label className="form-label">File</label>
           <input type="file" className="form-control" onChange={onFileChange} />
@@ -132,10 +142,8 @@ const UploadSave = () => {
             disabled={!saveFile.gameID}
           >
             <option value="">Select a platform</option>
-            {platforms.map((platformID) => (
-              <option key={platformID} value={platformID}>
-                {getPlatformName(platformID) || `Unknown platform (${platformID})`}
-              </option>
+            {platforms.map(p => (
+              <option key={p.IGDB_ID} value={p.IGDB_ID}>{p.name}</option>
             ))}
           </select>
         </div>
