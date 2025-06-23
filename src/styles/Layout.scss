@@ -32,6 +32,25 @@
     }
 }
 
+.typeahead-dropdown {
+  position: absolute;
+  top: 100%;     /* justo debajo del input */
+  margin-top: 5px;  /* o más para separar */
+  background: white;
+  border: 1px solid #ccc;
+  width: 100%;
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+  li {
+    padding: 8px;
+    cursor: pointer;
+    &:hover {
+      background: #eee;
+    }
+  }
+}
+
 
 
 /* Barra de navegacion (zona superior) */
