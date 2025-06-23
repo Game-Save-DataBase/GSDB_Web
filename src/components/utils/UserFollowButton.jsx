@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/interceptor';
+import NotificationTemplates from './NotificationTemplates';
 
 
 const UserFollowButton = ({ user, loggedUser}) => {
@@ -36,6 +37,14 @@ const UserFollowButton = ({ user, loggedUser}) => {
           toFollow: user._id,
         });
         setIsFollowing(true);
+        const notification = NotificationTemplates.newFollower({
+          followerUser: loggedUser
+        });
+        await api.post(`/api/users/send-notification`, 
+          { toUserId: user._id,
+            ...notification
+          }
+        );
       }
     } catch (err) {
       console.error('Error al seguir/dejar de seguir al usuario:', err);
