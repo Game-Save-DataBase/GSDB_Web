@@ -4,6 +4,8 @@ import api from "../../utils/interceptor";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../contexts/UserContext";
 import '../../styles/Common.scss';
+import NotificationTemplates from '../utils/NotificationTemplates';
+
 
 const UploadSave = () => {
   const navigate = useNavigate();
@@ -79,6 +81,20 @@ const UploadSave = () => {
       const res = await api.post(`${config.api.savedatas}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+      
+      const {data: game}  = await api.get(`${config.api.games}?_id=${saveFile.gameID}`);
+
+      if (game.userFav && Array.isArray(game.userFav) && game.userFav.length > 0) {
+        const notification = NotificationTemplates.newSaveForFavorite({ game });
+
+        await Promise.all(game.userFav.map(favUserId =>
+          api.post(`/api/users/send-notification`,
+            {
+              toUserId: favUserId,
+              ...notification
+            })
+        ));
+      }
 
       setSaveFile({ title: "", gameID: "", platformID: "", description: "", file: null });
       navigate(`/save/${res.data._id}`);

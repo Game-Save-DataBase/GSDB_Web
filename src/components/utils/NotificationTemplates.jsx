@@ -8,11 +8,11 @@ const NotificationTemplates = {
     read: false,
   }),
 
-  saveOnFav : ({ game }) => ({
+  newSaveForFavorite : ({ game }) => ({
     type: 2,
     title: `Nuevo Save para "${game.title}"`,
     body: `Alguien ha añadido un nuevo save en tu juego favorito "${game.title}"`,
-    link: `/u/${game._id}`,
+    link: `/game/${game._id}`,
     createdAt: new Date().toISOString(),
     read: false,
   }),

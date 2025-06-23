@@ -29,10 +29,12 @@ const FavoriteButton = ({ gameID}) => {
       if (isFavorite) {
         // Unfavorite
         await api.post('/api/users/unfavorite-game', { gameID });
+        await api.delete(`/api/games/${gameID}/favorites`);
         setIsFavorite(false);
       } else {
         // Favorite
         await api.post('/api/users/favorite-game', { gameID });
+        await api.post(`/api/games/${gameID}/favorites`);
         setIsFavorite(true);
       }
       updateUser();
