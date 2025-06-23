@@ -5,25 +5,8 @@ import api from "../utils/interceptor";
 export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // usuario activo
-  const [loading, setLoading] = useState(true); // flag para saber si aún se está comprobando sesión
-
-  // comprobamos la sesión activa al cargar
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const res = await api.get(`${config.api.auth}/me`);
-        setUser(res.data.user);
-      } catch {
-        setUser(null);
-      } finally {
-        setLoading(false); // terminamos la comprobación
-      }
-    };
-
-    checkSession();
-  }, []);
-
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const updateUser = async () => {
     try {
@@ -31,10 +14,26 @@ export const UserProvider = ({ children }) => {
       setUser(res.data.user);
     } catch {
       setUser(null);
-    } finally {
-      setLoading(false); // terminamos la comprobación
     }
   };
+
+  useEffect(() => {
+    const checkSession = async () => {
+      await updateUser();
+      setLoading(false);
+    };
+
+    checkSession();
+  }, []);
+
+  
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     updateUser();
+  //   }, 60000); 
+
+  //   return () => clearInterval(interval); 
+  // }, []);
 
   return (
     <UserContext.Provider value={{ user, setUser, updateUser, loading }}>
