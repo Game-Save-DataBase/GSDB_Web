@@ -3,9 +3,10 @@ import React, { useState, useEffect, useContext } from "react";
 import api from "../../utils/interceptor";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../contexts/UserContext";
-import '../../styles/Common.scss';
 import NotificationTemplates from '../utils/NotificationTemplates';
-
+import { Typeahead } from 'react-bootstrap-typeahead';
+import 'react-bootstrap-typeahead/css/Typeahead.css';
+import '../../styles/Common.scss';
 
 const UploadSave = () => {
   const navigate = useNavigate();
@@ -16,41 +17,57 @@ const UploadSave = () => {
     gameID: "",
     platformID: "",
     description: "",
-    file: ""
+    file: null
   });
 
   const [games, setGames] = useState([]);
-  const [platforms, setPlatforms] = useState([]); // array de objetos { _id, name }
+  const [platforms, setPlatforms] = useState([]);
+  const [platformsById, setPlatformsById] = useState({});
+  const [selectedGameObj, setSelectedGameObj] = useState(null);
 
   useEffect(() => {
-    api.get(`${config.api.games}`)
-      .then(response => setGames(response.data))
-      .catch(error => console.log("Error fetching games", error));
+    const fetchGamesAndPlatforms = async () => {
+      try {
+        const res = await api.get(`${config.api.games}`);
+        const gameList = res.data;
+        setGames(gameList);
+
+        const platformIDs = Array.from(
+          new Set(gameList.flatMap(game => game.platformsID || []))
+        );
+
+        const { data } = await api.post(`${config.api.platforms}/by-id`, { ids: platformIDs });
+        const platformMap = {};
+        data.forEach(p => {
+          platformMap[p.IGDB_ID] = p.abbreviation || p.name;
+        });
+        setPlatformsById(platformMap);
+      } catch (err) {
+        console.error("Error fetching games or platforms", err);
+      }
+    };
+
+    fetchGamesAndPlatforms();
   }, []);
+
+  const loadPlatformsForGame = async (gameID) => {
+    try {
+      const selected = games.find(g => g._id === gameID);
+      const platformIDs = selected?.platformsID || [];
+      if (platformIDs.length > 0) {
+        const { data } = await api.post(`${config.api.platforms}/by-id`, { ids: platformIDs });
+        const platformsArr = Array.isArray(data) ? data : [data];
+        setPlatforms(platformsArr);
+      } else {
+        setPlatforms([]);
+      }
+    } catch (err) {
+      console.error("Error loading platform names", err);
+    }
+  };
 
   const onChange = (e) => {
     setSaveFile({ ...saveFile, [e.target.name]: e.target.value });
-  };
-
-  const onGameChange = async (e) => {
-    const value = e.target.value;
-    setSaveFile({ ...saveFile, gameID: value, platformID: "" });
-    setPlatforms([]);
-
-    const selectedGame = games.find(game => game._id === value);
-    const platformIDs = selectedGame?.platformsID || [];
-
-    if (platformIDs.length > 0) {
-      try {
-        const { data } = await api.post(`${config.api.platforms}/by-id`, {
-          ids: platformIDs
-        });
-        const platformsArr = Array.isArray(data) ? data : [data];
-        setPlatforms(platformsArr);
-      } catch (err) {
-        console.error("Error loading platform names", err);
-      }
-    }
   };
 
   const onFileChange = (e) => {
@@ -81,18 +98,16 @@ const UploadSave = () => {
       const res = await api.post(`${config.api.savedatas}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      
-      const {data: game}  = await api.get(`${config.api.games}?_id=${saveFile.gameID}`);
+
+      const { data: game } = await api.get(`${config.api.games}?_id=${saveFile.gameID}`);
 
       if (game.userFav && Array.isArray(game.userFav) && game.userFav.length > 0) {
         const notification = NotificationTemplates.newSaveForFavorite({ game });
-
         await Promise.all(game.userFav.map(favUserId =>
-          api.post(`/api/users/send-notification`,
-            {
-              toUserId: favUserId,
-              ...notification
-            })
+          api.post(`/api/users/send-notification`, {
+            toUserId: favUserId,
+            ...notification
+          })
         ));
       }
 
@@ -100,7 +115,7 @@ const UploadSave = () => {
       navigate(`/save/${res.data._id}`);
 
     } catch (err) {
-      console.log("Error in CreateSaveFile!", err);
+      console.error("Error in CreateSaveFile!", err);
       setMessage(err.message || "An error has occurred.");
     }
   };
@@ -135,18 +150,52 @@ const UploadSave = () => {
 
         <div className="mb-3">
           <label className="form-label">Game</label>
-          <select
-            name="gameID"
-            className="form-select"
-            value={saveFile.gameID}
-            onChange={onGameChange}
-          >
-            <option value="">Select a game</option>
-            {games.map(game => (
-              <option key={game._id} value={game._id}>{game.title}</option>
-            ))}
-          </select>
+          <Typeahead
+            id="game-search"
+            labelKey="title" // Mostrar solo el título como input, mantiene el resaltado
+            options={games}
+            placeholder="Search for a game..."
+            onChange={(selected) => {
+              if (selected.length > 0) {
+                const game = selected[0];
+                setSelectedGameObj(game);
+                setSaveFile(prev => ({ ...prev, gameID: game._id, platformID: "" }));
+                loadPlatformsForGame(game._id);
+              } else {
+                setSelectedGameObj(null);
+                setSaveFile(prev => ({ ...prev, gameID: "", platformID: "" }));
+                setPlatforms([]);
+              }
+            }}
+            renderMenuItemChildren={(option, props) => {
+              const abbreviations = (option.platformsID || [])
+                .map(id => platformsById[id])
+                .filter(Boolean);
+              const platformText = abbreviations.length ? `(${abbreviations.join(", ")})` : "";
+
+              return (
+                <div>
+                  <span className="fw-bold">
+                    {option.title}
+                  </span>{" "}
+                  <small className="text-muted">{platformText}</small>
+                </div>
+              );
+            }}
+          />
+
         </div>
+
+        {selectedGameObj?.coverURL && (
+          <div className="mb-3 text-center">
+            <img
+              src={selectedGameObj.coverURL}
+              alt={`${selectedGameObj.title} cover`}
+              style={{ maxHeight: "250px", objectFit: "contain" }}
+              className="img-fluid rounded shadow-sm"
+            />
+          </div>
+        )}
 
         <div className="mb-3">
           <label className="form-label">Platform</label>
@@ -159,7 +208,9 @@ const UploadSave = () => {
           >
             <option value="">Select a platform</option>
             {platforms.map(p => (
-              <option key={p.IGDB_ID} value={p.IGDB_ID}>{p.name}</option>
+              <option key={p.IGDB_ID} value={p.IGDB_ID}>
+                {p.name}
+              </option>
             ))}
           </select>
         </div>
