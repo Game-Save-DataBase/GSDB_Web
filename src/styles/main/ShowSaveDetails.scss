@@ -68,6 +68,30 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del sav
         color: white;
         filter: drop-shadow(0 0 3px var(--color-text-secondary));
       }
+
+      &::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%) translateY(5px);
+        background: rgba(30, 30, 30, 0.95);
+        color: white;
+        padding: 6px 10px;
+        border-radius: 6px;
+        white-space: nowrap;
+        font-size: 0.75rem;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        z-index: 10;
+      }
+
+      &:hover::after {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+
     }
   }
 }

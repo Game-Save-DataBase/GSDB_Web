@@ -263,7 +263,7 @@ function ShowSaveDetails(props) {
                 {tags.length > 0 && (
                   <div className="tags-container">
                     {tags.map(tag => (
-                      <span key={tag._id} className="tag-badge">{tag.name}</span>
+                      <span key={tag._id} className="tag-badge" data-tooltip={tag.description}>{tag.name}</span>
                     ))}
                   </div>
                 )}
