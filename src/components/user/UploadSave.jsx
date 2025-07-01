@@ -17,13 +17,16 @@ const UploadSave = () => {
     gameID: "",
     platformID: "",
     description: "",
-    file: null
+    file: null,
+    tags: ""
   });
 
   const [games, setGames] = useState([]);
   const [platforms, setPlatforms] = useState([]);
   const [platformsById, setPlatformsById] = useState({});
   const [selectedGameObj, setSelectedGameObj] = useState(null);
+  const [tags, setTags] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]);
 
   useEffect(() => {
     const fetchGamesAndPlatforms = async () => {
@@ -46,8 +49,20 @@ const UploadSave = () => {
         console.error("Error fetching games or platforms", err);
       }
     };
+    const fetchTags = async () => {
+      try {
+        const { data } = await api.get('/api/tags');
+        if (Array.isArray(data)) {
+          setTags(data);
+        }
+      } catch (err) {
+        console.error("Error fetching tags", err);
+      }
+    };
 
     fetchGamesAndPlatforms();
+    fetchTags();
+
   }, []);
 
   const loadPlatformsForGame = async (gameID) => {
@@ -94,6 +109,7 @@ const UploadSave = () => {
       formData.append("description", saveFile.description);
       formData.append("userID", user._id);
       formData.append("file", saveFile.file);
+      selectedTags.forEach(tag => formData.append("tags[]", tag._id));
 
       const res = await api.post(`${config.api.savedatas}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -111,7 +127,7 @@ const UploadSave = () => {
         ));
       }
 
-      setSaveFile({ title: "", gameID: "", platformID: "", description: "", file: null });
+      setSaveFile({ title: "", gameID: "", platformID: "", description: "", file: null, tags: "" });
       navigate(`/save/${res.data._id}`);
 
     } catch (err) {
@@ -196,6 +212,26 @@ const UploadSave = () => {
             />
           </div>
         )}
+
+        <div className="mb-3">
+          <label className="form-label">Tags</label>
+          <Typeahead
+            id="tags-select"
+            labelKey="name"
+            multiple
+            options={tags}
+            placeholder="Select one or more tags..."
+            onChange={(selected) => setSelectedTags(selected)}
+            selected={selectedTags}
+            renderMenuItemChildren={(option) => (
+              <div>
+                <strong>{option.name}</strong>
+                {option.description && <div className="text-muted small">{option.description}</div>}
+              </div>
+            )}
+          />
+        </div>
+
 
         <div className="mb-3">
           <label className="form-label">Platform</label>

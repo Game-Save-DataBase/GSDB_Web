@@ -8,7 +8,8 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del sav
   margin-top: 20px;
   padding: 20px;
 }
-.container > * {
+
+.container>* {
   background-color: var(--color-background);
   color: var(--color-text-primary);
 }
@@ -21,19 +22,21 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del sav
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
-  .table-data{
+  .table-data {
     padding: 1%;
     background-color: var(--color-foreground);
+
     //la parte de texto centrado, muted etc la añado en el jsx porque crear mas clases para eso me parece innecesario
     .row {
       display: flex;
       padding: 5px;
+
       // align-items: center;
       .row-element {
         @extend .col-md-4;
       }
     }
-  
+
     /* Imagen del juego */
     img {
       max-width: 200px;
@@ -41,7 +44,32 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del sav
       border-radius: 8px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
-  }  
+
+    .tags-container {
+      margin-top: 0.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .tag-badge {
+      background-color: var(--color-text-secondary);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      display: inline-block;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease, color 0.3s ease;
+      cursor: pointer;
+
+      &:hover {
+        background-color: var(--color-h2);
+        color: white;
+        filter: drop-shadow(0 0 3px var(--color-text-secondary));
+      }
+    }
+  }
 }
 
 
@@ -58,34 +86,41 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del sav
   .comment {
     padding: 10px 0;
     border-bottom: 1px solid #eee;
+
     :last-child {
       border-bottom: none;
     }
-    
+
     p {
       font-size: 1rem;
     }
   }
 
 
-  .screenshot{
+  .screenshot {
     width: 200px;
     height: 200px;
-    overflow: hidden; /* Asegura que la imagen no se desborde */
+    overflow: hidden;
+    /* Asegura que la imagen no se desborde */
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s, filter 0.3s; /* Transición para el efecto hover */
+    transition: transform 0.3s, filter 0.3s;
+    /* Transición para el efecto hover */
     padding: 5px;
+
     /* Imagen dentro de screenshot */
     img {
       width: 100%;
       height: 100%;
-      object-fit: cover; /* Asegura que la imagen cubra el contenedor sin deformarse */
+      object-fit: cover;
+      /* Asegura que la imagen cubra el contenedor sin deformarse */
     }
 
     &:hover {
-      transform: scale(1.05); /* Aumenta ligeramente el tamaño de la imagen */
-      filter: brightness(1.2); /* Ilumina la imagen al pasar el ratón */
+      transform: scale(1.05);
+      /* Aumenta ligeramente el tamaño de la imagen */
+      filter: brightness(1.2);
+      /* Ilumina la imagen al pasar el ratón */
       cursor: pointer;
     }
   }

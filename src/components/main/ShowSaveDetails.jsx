@@ -14,6 +14,8 @@ function ShowSaveDetails(props) {
   const [screenshots, setscreenshots] = useState([]);
   const { id } = useParams();
   const navigate = useNavigate();
+  const [tags, setTags] = useState([]);
+
 
   // Función para obtener las imágenes desde el servidor
   const fetchscreenshots = async (saveId) => {
@@ -25,6 +27,7 @@ function ShowSaveDetails(props) {
     // }
   };
 
+  //SAVE
   useEffect(() => {
     // Función para obtener los detalles del archivo de guardado
     const fetchSaveData = async () => {
@@ -138,6 +141,27 @@ function ShowSaveDetails(props) {
     }
   }, [saveData.userID]); // Este useEffect se activa cuando saveData.gameID cambia
 
+
+
+// TAGS
+  useEffect(() => {
+    if (saveData.tags && saveData.tags.length > 0) {
+      const fetchTags = async () => {
+        try {
+          const response = await api.post(`${config.api.tags}/by-id`, { ids: saveData.tags });
+          const fetched = Array.isArray(response.data) ? response.data : [response.data];
+          setTags(fetched);
+        } catch (err) {
+          console.log('Error fetching tags:', err);
+        }
+      };
+
+      fetchTags();
+    }
+  }, [saveData.tags]);
+
+  
+  
   const handleDownload = async () => {
     try {
       const response = await api.get(`${config.api.savedatas}/${id}/download`, {
@@ -236,6 +260,13 @@ function ShowSaveDetails(props) {
                 <p>
                   <strong>Descripción:</strong> {saveData.description || 'Sin descripción disponible'}
                 </p>
+                {tags.length > 0 && (
+                  <div className="tags-container">
+                    {tags.map(tag => (
+                      <span key={tag._id} className="tag-badge">{tag.name}</span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 

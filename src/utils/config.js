@@ -18,7 +18,8 @@ const config = {
     comments: import.meta.env.VITE_DIR_GSDB + import.meta.env.VITE_PORT + import.meta.env.VITE_API + import.meta.env.VITE_API_COMMENTS,
     users: import.meta.env.VITE_DIR_GSDB + import.meta.env.VITE_PORT + import.meta.env.VITE_API + import.meta.env.VITE_API_USERS,
     info: import.meta.env.VITE_DIR_GSDB + import.meta.env.VITE_PORT + import.meta.env.VITE_API + import.meta.env.VITE_API_INFO,
-    auth: import.meta.env.VITE_DIR_GSDB + import.meta.env.VITE_PORT + import.meta.env.VITE_API + import.meta.env.VITE_API_AUTH
+    auth: import.meta.env.VITE_DIR_GSDB + import.meta.env.VITE_PORT + import.meta.env.VITE_API + import.meta.env.VITE_API_AUTH,
+    tags: import.meta.env.VITE_DIR_GSDB + import.meta.env.VITE_PORT + import.meta.env.VITE_API + import.meta.env.VITE_API_TAGS
   }
 };
 
