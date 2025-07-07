@@ -11,80 +11,8 @@ const Layout = ({ children }) => {
   const navigate = useNavigate();
   const { user: loggedUser, setUser } = useContext(UserContext);
 
-  const [searchType, setSearchType] = useState("juegos");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
-  const [dataset, setDataset] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Fetch de dataset al cambiar tipo
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        let response;
-        if (searchType === "juegos") {
-          response = await api.get("/api/games");
-        } else if (searchType === "savedatas") {
-          response = await api.get("/api/savedatas");
-        } else {
-          response = await api.get("/api/users");
-        }
-        setDataset(response.data instanceof Array ? response.data : [response.data]);
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        setDataset([]);
-      }
-    };
-    fetchData();
-  }, [searchType]);
-
-  useEffect(() => {
-    if (searchQuery.length < 1) {
-      setSuggestions([]);
-      return;
-    }
-    const query = searchQuery.toLowerCase();
-    let filtered = [];
-
-    if (searchType === "juegos") {
-      filtered = dataset.filter((item) => item.title?.toLowerCase().includes(query));
-    } else if (searchType === "savedatas") {
-      filtered = dataset.filter(
-        (item) =>
-          item.title?.toLowerCase().includes(query) ||
-          item.description?.toLowerCase().includes(query)
-      );
-    } else {
-      filtered = dataset.filter(
-        (item) =>
-          item.userName?.toLowerCase().includes(query) ||
-          item.Alias?.toLowerCase().includes(query)
-      );
-    }
-    setSuggestions(filtered.slice(0, 5)); // máx 5 sugerencias
-  }, [searchQuery, dataset]);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim().length < 3) {
-      setErrorMessage("La búsqueda debe tener al menos 3 caracteres.");
-      setTimeout(() => setErrorMessage(""), 3000);
-      return;
-    }
-    navigate(`/search?type=${searchType}&query=${encodeURIComponent(searchQuery)}`);
-  };
-
-  const handleSelect = (item) => {
-    if (searchType === "juegos") {
-      navigate(`/game/${item._id || item.IGDB_ID}`);
-    } else if (searchType === "savedatas") {
-      navigate(`/save/${item._id}`);
-    } else {
-      navigate(`/u/${item.userName}`);
-    }
-    setSearchQuery("");
-    setSuggestions([]);
-  };
 
   const handleLogout = async () => {
     try {
@@ -109,32 +37,7 @@ const Layout = ({ children }) => {
           </div>
 
           <div className="center">
-            <form className="search-bar position-relative" onSubmit={handleSearch}>
-              <select value={searchType} onChange={(e) => setSearchType(e.target.value)}>
-                <option value="juegos">Games</option>
-                <option value="savedatas">Savedatas</option>
-                <option value="usuarios">Users</option>
-              </select>
-              <input
-                type="text"
-                placeholder="Buscar..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              {/* <button type="submit">🔍</button> */}
-              {suggestions.length > 0 && (
-                <ul className="typeahead-dropdown">
-                  {suggestions.map((item, idx) => (
-                    <li key={idx} onClick={() => handleSelect(item)}>
-                      {searchType === "juegos" && item.title}
-                      {searchType === "savedatas" && `${item.title} - ${item.description?.slice(0, 30)}`}
-                      {searchType === "usuarios" && `${item.userName} (${item.Alias})`}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </form>
-            {errorMessage && <p className="error">{errorMessage}</p>}
+            
           </div>
 
           <div className="right d-flex align-items-center">

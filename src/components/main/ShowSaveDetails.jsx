@@ -13,19 +13,9 @@ function ShowSaveDetails(props) {
   const [comments, setComments] = useState([]);
   const [screenshots, setscreenshots] = useState([]);
   const { id } = useParams();
-  const navigate = useNavigate();
   const [tags, setTags] = useState([]);
 
 
-  // Función para obtener las imágenes desde el servidor
-  const fetchscreenshots = async (saveId) => {
-    // try {
-    //   const response = await api.get(`${config.api.savedatas}/${id}/screenshots`); setscreenshots(response.data);  // Aquí se actualizan las rutas de las imágenes
-    //   setscreenshots(response.data.screenshots);
-    // } catch (err) {
-    //   console.log('Error fetching screenshots:', err);
-    // }
-  };
 
   //SAVE
   useEffect(() => {
@@ -34,7 +24,6 @@ function ShowSaveDetails(props) {
       try {
         const saveResponse = await api.get(`${config.api.savedatas}?_id=${id}`);
         setSaveData(saveResponse.data);
-        fetchscreenshots(id)
       } catch (err) {
         console.log('Error fetching save data:', err);
       }

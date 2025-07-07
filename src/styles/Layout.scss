@@ -32,27 +32,6 @@
     }
 }
 
-.typeahead-dropdown {
-  position: absolute;
-  top: 100%;     /* justo debajo del input */
-  margin-top: 5px;  /* o más para separar */
-  background: white;
-  border: 1px solid #ccc;
-  width: 100%;
-  z-index: 10;
-  max-height: 200px;
-  overflow-y: auto;
-  li {
-    padding: 8px;
-    cursor: pointer;
-    &:hover {
-      background: #eee;
-    }
-  }
-}
-
-
-
 /* Barra de navegacion (zona superior) */
 .navbar {
     grid-area: navbar;
@@ -88,22 +67,6 @@
             transform: translateX(-50%);
             display: flex;
             align-items: center;
-
-            .search-bar {
-                display: flex;
-                gap: 10px;
-
-                select,
-                input {
-                    padding: 5px;
-                }
-
-                .error {
-                    color: red;
-                    font-size: 0.8rem;
-                    margin-top: 5px;
-                }
-            }
         }
 
         .right {

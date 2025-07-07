@@ -2,10 +2,6 @@ import React, { useState, useEffect, useMemo, useCallback, useContext } from 're
 import { Link, useParams } from 'react-router-dom';
 import config from '../../utils/config.js';
 import api from '../../utils/interceptor.js';
-import { UserContext } from '../../contexts/UserContext.jsx';
-
-import FilterBar from '../filters/FilterBar.jsx';
-import FilterPlatform from '../filters/FilterPlatform.jsx';
 
 import '../../styles/Common.scss';
 import '../../styles/main/ShowGameDetails.scss';
@@ -15,11 +11,8 @@ import FavoriteButton from '../utils/FavoriteButton';
 function ShowGameDetails() {
   const [game, setGame] = useState(null);
   const [saveFiles, setSaveFiles] = useState([]);
-  const [filteredSaveFiles, setFilteredSaveFiles] = useState([]);
   const [gamePlatforms, setGamePlatforms] = useState([]);
-  const [disabledPlatforms, setDisabledPlatforms] = useState([]);
   const { id } = useParams();
-  const { user: loggedUser } = useContext(UserContext);
 
 
   // Cargar juego
@@ -88,7 +81,6 @@ function ShowGameDetails() {
 
         const sorted = updated.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
         setSaveFiles(sorted);
-        setFilteredSaveFiles(sorted);
       } catch (err) {
         console.error('Error loading save files:', err);
       }
@@ -96,38 +88,6 @@ function ShowGameDetails() {
     fetchSaveFiles();
   }, [gamePlatforms]);
 
-
-
-  useEffect(() => {
-    if (!game) {
-      setDisabledPlatforms([]);
-      return;
-    }
-    const disabled = (game.platformsID || []).filter(
-      p => !saveFiles.some(sf => sf.platformID === p)
-    );
-
-    setDisabledPlatforms(disabled);
-  }, [saveFiles]);
-
-
-
-  const filters = useMemo(() => [
-    {
-      type: FilterPlatform,
-      props: {
-        platforms: gamePlatforms,
-        disabled: disabledPlatforms,
-      }
-    }
-  ], [gamePlatforms, disabledPlatforms]);
-
-  const handleFilteredChange = useCallback(filtered => {
-    setFilteredSaveFiles(filtered);
-  }, []);
-  const lastUpdate = saveFiles.length > 0
-    ? new Date(saveFiles[0].postedDate).toLocaleDateString()
-    : "No updates";
 
   return (
     <div>
@@ -164,14 +124,9 @@ function ShowGameDetails() {
         </section>
 
         <section className="saves-section">
-          <FilterBar
-            data={saveFiles}
-            filters={filters}
-            onFilteredChange={handleFilteredChange}
-          />
-
-          {filteredSaveFiles.length > 0 ? (
-            filteredSaveFiles.map(save => (
+        
+          {saveFiles.length > 0 ? (
+            saveFiles.map(save => (
               <div key={save._id} className="save">
                 <Link to={`/save/${save._id}`}><strong>{save.title}</strong></Link>
                 <p>
