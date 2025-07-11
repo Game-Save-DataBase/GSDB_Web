@@ -37,7 +37,7 @@ const Layout = ({ children }) => {
           </div>
 
           <div className="center">
-            
+
           </div>
 
           <div className="right d-flex align-items-center">
@@ -53,10 +53,15 @@ const Layout = ({ children }) => {
                     aria-expanded="false"
                   >
                     <img
-                      src={`${config.connection}${loggedUser.pfp}`}
+                      src={`${config.api.assets}/user/${loggedUser.userID}/pfp`}
                       alt="Profile"
                       className="rounded-circle"
                       style={{ width: "30px", height: "30px", objectFit: "cover", marginRight: "10px" }}
+                      onError={(e) => {
+                        console.log(`${config.api.assets}/user/${loggedUser.userID}`)
+                        e.target.onerror = null; 
+                        e.target.src = `${config.connection}${config.paths.pfp_default}`;
+                      }}
                     />
                     {loggedUser.userName || loggedUser.Alias || "Account"}
                   </button>

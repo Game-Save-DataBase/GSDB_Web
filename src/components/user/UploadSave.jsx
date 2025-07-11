@@ -1,5 +1,5 @@
 import config from "../../utils/config";
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import api from "../../utils/interceptor";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../contexts/UserContext";
@@ -22,33 +22,24 @@ const UploadSave = () => {
   });
 
   const [games, setGames] = useState([]);
-  const [platforms, setPlatforms] = useState([]);
-  const [platformsById, setPlatformsById] = useState({});
+  const searchTimeout = useRef(null);
   const [selectedGameObj, setSelectedGameObj] = useState(null);
   const [tags, setTags] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
+  const [selectedPlatform, setSelectedPlatform] = useState('');
+  const [platforms, setPlatforms] = useState([]);
 
   useEffect(() => {
-    const fetchGamesAndPlatforms = async () => {
+    // Fetch all platforms once at component load
+    const fetchPlatforms = async () => {
       try {
-        const res = await api.get(`${config.api.games}`);
-        const gameList = res.data;
-        setGames(gameList);
-
-        const platformIDs = Array.from(
-          new Set(gameList.flatMap(game => game.platformsID || []))
-        );
-
-        const { data } = await api.post(`${config.api.platforms}/by-id`, { ids: platformIDs });
-        const platformMap = {};
-        data.forEach(p => {
-          platformMap[p.IGDB_ID] = p.abbreviation || p.name;
-        });
-        setPlatformsById(platformMap);
+        const { data } = await api.get(`${config.api.platforms}?limit=200`);
+        setPlatforms(data);
       } catch (err) {
-        console.error("Error fetching games or platforms", err);
+        console.error("Error fetching platforms", err);
       }
     };
+
     const fetchTags = async () => {
       try {
         const { data } = await api.get('/api/tags');
@@ -60,25 +51,56 @@ const UploadSave = () => {
       }
     };
 
-    fetchGamesAndPlatforms();
+    fetchPlatforms();
     fetchTags();
-
   }, []);
 
-  const loadPlatformsForGame = async (gameID) => {
+  const fetchGamesByTitle = async (query) => {
+    const normalizedQuery = query.trim().toLowerCase(); // limpieza
     try {
-      const selected = games.find(g => g._id === gameID);
-      const platformIDs = selected?.platformsID || [];
-      if (platformIDs.length > 0) {
-        const { data } = await api.post(`${config.api.platforms}/by-id`, { ids: platformIDs });
-        const platformsArr = Array.isArray(data) ? data : [data];
-        setPlatforms(platformsArr);
-      } else {
-        setPlatforms([]);
+      let { data } = await api.get(`${config.api.games}?limit=35&complete=false&title[like]=${encodeURIComponent(query)}`);
+      if (!Array.isArray(data)) {
+        data = [data]
       }
+
+      const sorted = data.sort((a, b) => {
+        const aTitle = a.title.toLowerCase();
+        const bTitle = b.title.toLowerCase();
+
+        const aIndex = aTitle.indexOf(normalizedQuery);
+        const bIndex = bTitle.indexOf(normalizedQuery);
+
+        if (aTitle.startsWith(normalizedQuery) && !bTitle.startsWith(normalizedQuery)) return -1;
+        if (!aTitle.startsWith(normalizedQuery) && bTitle.startsWith(normalizedQuery)) return 1;
+        if (aIndex !== bIndex) return aIndex - bIndex;
+        return aTitle.length - bTitle.length;
+      });
+
+      setGames(sorted);
     } catch (err) {
-      console.error("Error loading platform names", err);
+      console.error("Error fetching games", err);
     }
+  };
+
+  const handleGameInputChange = (query) => {
+    const trimmedQuery = query.trim();
+
+    clearTimeout(searchTimeout.current);
+
+    if (trimmedQuery.length >= 2) {
+      searchTimeout.current = setTimeout(() => {
+        fetchGamesByTitle(trimmedQuery);
+      }, 300);
+    } else {
+      setGames([]);
+    }
+  };
+
+  const getPlatformAbbreviations = (platformIDs) => {
+    return platforms
+      .filter(p => platformIDs.includes(p.IGDB_ID))
+      .map(p => p.abbreviation)
+      .filter(Boolean);
   };
 
   const onChange = (e) => {
@@ -98,43 +120,52 @@ const UploadSave = () => {
 
       if (saveFile.title === "") messages.push("You must provide a title for the save file.");
       if (saveFile.gameID === "") messages.push("You must select a game.");
-      if (saveFile.platformID === "") messages.push("You must choose a platform.");
       if (!saveFile.file) messages.push("You must upload a save file.");
 
       if (messages.length > 0) throw new Error(messages.join(" "));
 
       formData.append("title", saveFile.title);
       formData.append("gameID", saveFile.gameID);
-      formData.append("platformID", saveFile.platformID);
       formData.append("description", saveFile.description);
-      formData.append("userID", user._id);
+      formData.append("userID", user.userID);
       formData.append("file", saveFile.file);
-      selectedTags.forEach(tag => formData.append("tags[]", tag._id));
+      formData.append("platformID", selectedPlatform);
+      selectedTags.forEach(tag => formData.append("tags[]", tag.tagID));
 
       const res = await api.post(`${config.api.savedatas}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      const { data: game } = await api.get(`${config.api.games}?_id=${saveFile.gameID}`);
+      sendNotifications();
 
-      if (game.userFav && Array.isArray(game.userFav) && game.userFav.length > 0) {
-        const notification = NotificationTemplates.newSaveForFavorite({ game });
-        await Promise.all(game.userFav.map(favUserId =>
-          api.post(`/api/users/send-notification`, {
-            toUserId: favUserId,
-            ...notification
-          })
-        ));
-      }
-
-      setSaveFile({ title: "", gameID: "", platformID: "", description: "", file: null, tags: "" });
-      navigate(`/save/${res.data._id}`);
+      setSaveFile({ title: "", gameID: "", description: "", file: null, tags: "" });
+      setSelectedTags([]);
+      setSelectedGameObj(null);
+      navigate(`/s/${res.data.id}`);
 
     } catch (err) {
       console.error("Error in CreateSaveFile!", err);
       setMessage(err.message || "An error has occurred.");
     }
   };
+
+  const sendNotifications = async (e) => {
+
+    const { data: game } = await api.get(`${config.api.games}?_id=${saveFile.gameID}`);
+
+    if (game.userFav && Array.isArray(game.userFav) && game.userFav.length > 0) {
+      const notification = NotificationTemplates.newSaveForFavorite({ game });
+      await Promise.all(game.userFav.map(favUserId =>
+        api.post(`/api/users/send-notification`, {
+          id: favUserId,
+          ...notification
+        })
+      ));
+    }
+  };
+
+
+
 
   return (
     <div className="container mt-5">
@@ -168,44 +199,86 @@ const UploadSave = () => {
           <label className="form-label">Game</label>
           <Typeahead
             id="game-search"
-            labelKey="title" // Mostrar solo el título como input, mantiene el resaltado
+            labelKey="title"
             options={games}
             placeholder="Search for a game..."
             onChange={(selected) => {
               if (selected.length > 0) {
                 const game = selected[0];
                 setSelectedGameObj(game);
-                setSaveFile(prev => ({ ...prev, gameID: game._id, platformID: "" }));
-                loadPlatformsForGame(game._id);
+                setSaveFile(prev => ({ ...prev, gameID: game.gameID }));
               } else {
                 setSelectedGameObj(null);
-                setSaveFile(prev => ({ ...prev, gameID: "", platformID: "" }));
-                setPlatforms([]);
+                setSaveFile(prev => ({ ...prev, gameID: "" }));
               }
             }}
-            renderMenuItemChildren={(option, props) => {
-              const abbreviations = (option.platformsID || [])
-                .map(id => platformsById[id])
-                .filter(Boolean);
-              const platformText = abbreviations.length ? `(${abbreviations.join(", ")})` : "";
-
+            onInputChange={(text, e) => {
+              if (e && e.type === 'change') {
+                handleGameInputChange(text);
+              }
+            }} renderMenuItemChildren={(option) => {
+              const year = option.release_date ? new Date(option.release_date).getFullYear() : 'TBD';
+              const platformNames = getPlatformAbbreviations(option.platformID || []).join(", ");
               return (
                 <div>
-                  <span className="fw-bold">
-                    {option.title}
-                  </span>{" "}
-                  <small className="text-muted">{platformText}</small>
+                  <strong>{option.title}</strong>{" "}
+                  <span className="text-muted">
+                    ({year}{platformNames ? `) [${platformNames}]` : ")"}
+                  </span>
                 </div>
               );
             }}
+            emptyLabel="No games found"
           />
-
         </div>
 
-        {selectedGameObj?.coverURL && (
+        {selectedGameObj?.platformID?.length > 0 && (
+          <div className="mb-3">
+            <label className="form-label">Platform</label>
+            <Typeahead
+              id="platform-select"
+              labelKey="name"
+              options={platforms.filter(p => selectedGameObj.platformID.includes(p.IGDB_ID))}
+              placeholder="Select a platform..."
+              onChange={(selected) => {
+                if (selected.length > 0) {
+                  const platform = selected[0];
+                  setSaveFile(prev => ({ ...prev, platformID: platform.platformID }));
+                } else {
+                  setSaveFile(prev => ({ ...prev, platformID: "" }));
+                }
+              }}
+              selected={
+                platforms
+                  .filter(p => selectedGameObj.platformID.includes(p.IGDB_ID))
+                  .filter(p => p.platformID === saveFile.platformID)
+              }
+              multiple={false}
+              renderMenuItemChildren={(option) => (
+                <div className="d-flex align-items-center">
+                  {option.logo && (
+                    <img
+                      src={option.logo}
+                      alt={`${option.name} logo`}
+                      style={{ height: "24px", width: "24px", objectFit: "contain", marginRight: "8px" }}
+                    />
+                  )}
+                  <span>
+                    {option.name}
+                    {option.abbreviation ? ` [${option.abbreviation}]` : ""}
+                  </span>
+                </div>
+              )}
+            />
+          </div>
+        )}
+
+
+
+        {selectedGameObj?.cover && (
           <div className="mb-3 text-center">
             <img
-              src={selectedGameObj.coverURL}
+              src={selectedGameObj.cover}
               alt={`${selectedGameObj.title} cover`}
               style={{ maxHeight: "250px", objectFit: "contain" }}
               className="img-fluid rounded shadow-sm"
@@ -230,25 +303,6 @@ const UploadSave = () => {
               </div>
             )}
           />
-        </div>
-
-
-        <div className="mb-3">
-          <label className="form-label">Platform</label>
-          <select
-            name="platformID"
-            className="form-select"
-            value={saveFile.platformID}
-            onChange={onChange}
-            disabled={!saveFile.gameID}
-          >
-            <option value="">Select a platform</option>
-            {platforms.map(p => (
-              <option key={p.IGDB_ID} value={p.IGDB_ID}>
-                {p.name}
-              </option>
-            ))}
-          </select>
         </div>
 
         <div className="mb-3">

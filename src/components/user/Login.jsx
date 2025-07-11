@@ -54,6 +54,7 @@ const Login = () => {
           history.push('/');
         }, 2000);
       } else {
+        console.log(formData.userName.toLowerCase(), formData.userName.toLowerCase(), formData.password)
         await api.post(`${config.api.auth}/register`, {
           userName: formData.userName.toLowerCase(),
           mail: formData.mail.toLowerCase(),
