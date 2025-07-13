@@ -86,7 +86,7 @@ function ShowSaveDetails(props) {
     if (saveData.gameID) {
       const fetchGameData = async () => {
         try {
-          const gameResponse = await api.get(`${config.api.games}?_id=${saveData.gameID}`);
+          const gameResponse = await api.get(`${config.api.games}?gameID=${saveData.gameID}`);
           setRelatedGame(gameResponse.data);
         } catch (err) {
           console.log('Error fetching game data:', err);
@@ -101,7 +101,7 @@ function ShowSaveDetails(props) {
     if (saveData.platformID !== undefined && saveData.platformID !== null) {
       const fetchPlatformData = async () => {
         try {
-          const response = await api.get(`${config.api.platforms}?IGDB_ID=${saveData.platformID}`);
+          const response = await api.get(`${config.api.platforms}?platformID=${saveData.platformID}`);
           setRelatedPlatform(response.data);
         } catch (err) {
           console.error('Error fetching platform data:', err);
@@ -118,7 +118,7 @@ function ShowSaveDetails(props) {
     if (saveData.userID) {
       const fetchUserData = async () => {
         try {
-          const userResponse = await api.get(`${config.api.users}?_id=${saveData.userID}`);
+          const userResponse = await api.get(`${config.api.users}?userID=${saveData.userID}`);
           setRelatedUser(userResponse.data);
         } catch (err) {
           console.log('Error fetching user:', err);
@@ -131,12 +131,12 @@ function ShowSaveDetails(props) {
 
 
 
-// TAGS
+  // TAGS
   useEffect(() => {
     if (saveData.tags && saveData.tags.length > 0) {
       const fetchTags = async () => {
         try {
-          const response = await api.post(`${config.api.tags}/by-id`, { ids: saveData.tags });
+          const response = await api.get(`${config.api.tags}?tagID[in]=${saveData.tags.join(',')}`);
           const fetched = Array.isArray(response.data) ? response.data : [response.data];
           setTags(fetched);
         } catch (err) {
@@ -147,34 +147,6 @@ function ShowSaveDetails(props) {
       fetchTags();
     }
   }, [saveData.tags]);
-
-  
-  
-  const handleDownload = async () => {
-    try {
-      const response = await api.get(`${config.api.savedatas}/${id}/download`, {
-        responseType: 'blob' // importante para recibir archivos binarios
-      });
-      console.log(response)
-      // Creamos un blob URL a partir de la respuesta
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-
-      // Creamos y lanzamos un enlace de descarga
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'savefile.sav'); // puedes personalizar el nombre aquí
-      document.body.appendChild(link);
-      link.click();
-
-      // Limpiar
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-    } catch (error) {
-      console.error('Error descargando el archivo:', error);
-    }
-  };
-
 
   return (
     <div>
@@ -260,7 +232,11 @@ function ShowSaveDetails(props) {
 
             <div className='row'>
               <div className='row-element text-center'>
-                <button type="button" className="gsdb-btn-default" onClick={handleDownload}>Download</button>
+                <button type="button" className="gsdb-btn-default"
+                  onClick={() => {
+                    window.location.href = `${config.api.assets}/savedata/${id}`;
+                  }}>
+                  Download</button>
               </div>
             </div>
           </div>
