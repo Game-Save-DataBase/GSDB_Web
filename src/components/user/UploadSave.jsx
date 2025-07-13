@@ -26,7 +26,6 @@ const UploadSave = () => {
   const [selectedGameObj, setSelectedGameObj] = useState(null);
   const [tags, setTags] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
-  const [selectedPlatform, setSelectedPlatform] = useState('');
   const [platforms, setPlatforms] = useState([]);
 
   useEffect(() => {
@@ -129,7 +128,8 @@ const UploadSave = () => {
       formData.append("description", saveFile.description);
       formData.append("userID", user.userID);
       formData.append("file", saveFile.file);
-      formData.append("platformID", selectedPlatform);
+      formData.append("platformID", saveFile.platformID);
+      console.log(formData)
       selectedTags.forEach(tag => formData.append("tags[]", tag.tagID));
 
       const res = await api.post(`${config.api.savedatas}`, formData, {
