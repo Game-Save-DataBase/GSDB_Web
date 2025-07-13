@@ -159,7 +159,7 @@ function ShowSaveDetails(props) {
             </li>
             <li>
               {relatedGame && (
-                <Link to={`/game/${saveData.gameID}`}>
+                <Link to={`/g/${relatedGame.slug}`}>
                   {`${relatedGame.title}` || 'Juego'}
                 </Link>
               )}

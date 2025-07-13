@@ -38,7 +38,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <Route path="/catalog" element={<Layout><Catalog /></Layout>} />
             <Route path="/about" element={<Layout><About /></Layout>} />
             <Route path="/faq" element={<Layout><FAQ /></Layout>} />
-            <Route path="/g/:id" element={<Layout><ShowGameDetails /></Layout>} />
+            <Route path="/g/:slug" element={<Layout><ShowGameDetails /></Layout>} />
             <Route path="/s/:id" element={<Layout><ShowSaveDetails /></Layout>} />
             <Route path="/upload" element={<Layout><UploadSave /></Layout>} />
             <Route path="/login" element={<Layout><Login /></Layout>} />

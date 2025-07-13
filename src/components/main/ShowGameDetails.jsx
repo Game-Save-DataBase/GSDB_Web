@@ -12,30 +12,29 @@ function ShowGameDetails() {
   const [game, setGame] = useState(null);
   const [saveFiles, setSaveFiles] = useState([]);
   const [gamePlatforms, setGamePlatforms] = useState([]);
-  const { id } = useParams();
+  const { slug } = useParams();
 
 
   // Cargar juego
   useEffect(() => {
     const fetchGameDetails = async () => {
       try {
-        const { data } = await api.get(`${config.api.games}?_id=${id}`);
+        const { data } = await api.get(`${config.api.games}?slug=${slug}`);
         setGame(data || null);
       } catch (err) {
         console.error('Error loading game:', err);
       }
     };
     fetchGameDetails();
-  }, [id]);
+  }, [slug]);
 
   useEffect(() => {
     const fetchPlatforms = async () => {
-      if (!game?.platformsID?.length) return;
+      if (!game?.platformID?.length) return;
 
       try {
-        const { data } = await api.post(`${config.api.platforms}/by-id`, {
-          ids: game.platformsID
-        });
+        console.log(`${config.api.platforms}?platformID[in]=${game.platformID.join(',')}`)
+        const { data } = await api.get(`${config.api.platforms}?platformID[in]=${game.platformID.join(',')}`)
 
         const platforms = Array.isArray(data) ? data : [data];
         setGamePlatforms(platforms);
@@ -48,32 +47,31 @@ function ShowGameDetails() {
   }, [game]);
 
   // Cargar saves
+
   useEffect(() => {
     const fetchSaveFiles = async () => {
       if (!game) return;
 
       try {
-        let { data } = await api.get(`${config.api.savedatas}?gameID=${id}`);
+        let { data } = await api.get(`${config.api.savedatas}?saveID[in]=${game.saveID.join(',')}`);
         if (!data) return;
-
         data = Array.isArray(data) ? data : [data];
+        console.log(data)
 
         const updated = await Promise.all(
           data.map(async sf => {
             try {
-              const { data: user } = await api.get(`${config.api.users}?_id=${sf.userID}`);
+              const { data: user } = await api.get(`${config.api.users}?userID=${sf.userID}`);
               return {
                 ...sf,
-                platformName: gamePlatforms.find(p => p.IGDB_ID === sf.platformID)?.name || `Unknown`,
-                alias: user?.alias || user?.userName || "Desconocido",
-                pfp: user?.pfp || config.paths.pfp_default,
+                platformName: gamePlatforms.find(p => p.platformID === sf.platformID)?.name || `Unknown`,
+                alias: user?.alias || user?.userName || "Unknown"
               };
             } catch {
               return {
                 ...sf,
-                platformName: "",
-                alias: "Desconocido",
-                pfp: config.paths.pfp_default,
+                platformName: "Unknown",
+                alias: "Unknown"
               };
             }
           })
@@ -87,6 +85,8 @@ function ShowGameDetails() {
     };
     fetchSaveFiles();
   }, [gamePlatforms]);
+
+
 
 
   return (
@@ -109,14 +109,14 @@ function ShowGameDetails() {
                   <img
                     src={`${game.cover}`}
                     alt={game.title}
-                    onError={(e) => { e.target.src = `${config.connection}${config.paths.gameCover_default}`; }}
+                    onError={(e) => { e.target.src = `${config.api.assets}/default/game-cover`; }}
                   />
                 )}
               </div>
               <div className='row-element text-muted'>
                 {game && <FavoriteButton gameID={game._id} />}
                 <p><strong>Available saves:</strong> {saveFiles.length}</p>
-                <p><strong>Last update:</strong> {lastUpdate}</p>
+                {/* <p><strong>Last update:</strong> {lastUpdate}</p> */}
                 <button type="button" className="gsdb-btn-default">Install instructions</button>
               </div>
             </div>
@@ -127,8 +127,8 @@ function ShowGameDetails() {
         
           {saveFiles.length > 0 ? (
             saveFiles.map(save => (
-              <div key={save._id} className="save">
-                <Link to={`/save/${save._id}`}><strong>{save.title}</strong></Link>
+              <div key={save.saveID} className="save">
+                <Link to={`/s/${save.saveID}`}><strong>{save.title}</strong></Link>
                 <p>
                   <small>Uploaded by: {save.alias} - Platform: {save.platformName} </small>
                 </p>
