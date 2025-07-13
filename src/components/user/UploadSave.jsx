@@ -141,7 +141,7 @@ const UploadSave = () => {
       setSaveFile({ title: "", gameID: "", description: "", file: null, tags: "" });
       setSelectedTags([]);
       setSelectedGameObj(null);
-      navigate(`/s/${res.data.id}`);
+      navigate(`/s/${res.data.saveID}`);
 
     } catch (err) {
       console.error("Error in CreateSaveFile!", err);

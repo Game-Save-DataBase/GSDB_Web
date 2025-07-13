@@ -16,13 +16,12 @@ function ShowSaveDetails(props) {
   const [tags, setTags] = useState([]);
 
 
-
   //SAVE
   useEffect(() => {
     // Función para obtener los detalles del archivo de guardado
     const fetchSaveData = async () => {
       try {
-        const saveResponse = await api.get(`${config.api.savedatas}?_id=${id}`);
+        const saveResponse = await api.get(`${config.api.savedatas}?id=${id}`);
         setSaveData(saveResponse.data);
       } catch (err) {
         console.log('Error fetching save data:', err);
@@ -48,7 +47,7 @@ function ShowSaveDetails(props) {
         const updatedComments = await Promise.all(
           commentsData.map(async (comment) => {
             try {
-              const userResponse = await api.get(`${config.api.users}?_id=${comment.userID}`);
+              const userResponse = await api.get(`${config.api.users}?id=${comment.userID}`);
               if (!userResponse.data) {
                 return {
                   ...comment,
