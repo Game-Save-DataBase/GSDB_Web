@@ -97,7 +97,7 @@ const UploadSave = () => {
 
   const getPlatformAbbreviations = (platformIDs) => {
     return platforms
-      .filter(p => platformIDs.includes(p.IGDB_ID))
+      .filter(p => platformIDs.includes(p.platformID))
       .map(p => p.abbreviation)
       .filter(Boolean);
   };
@@ -238,7 +238,7 @@ const UploadSave = () => {
             <Typeahead
               id="platform-select"
               labelKey="name"
-              options={platforms.filter(p => selectedGameObj.platformID.includes(p.IGDB_ID))}
+              options={platforms.filter(p => selectedGameObj.platformID.includes(p.platformID))}
               placeholder="Select a platform..."
               onChange={(selected) => {
                 if (selected.length > 0) {
@@ -250,7 +250,7 @@ const UploadSave = () => {
               }}
               selected={
                 platforms
-                  .filter(p => selectedGameObj.platformID.includes(p.IGDB_ID))
+                  .filter(p => selectedGameObj.platformID.includes(p.platformID))
                   .filter(p => p.platformID === saveFile.platformID)
               }
               multiple={false}

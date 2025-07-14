@@ -29,14 +29,13 @@ const FavoriteButton = ({ gameID}) => {
     }
     try {
       if (!isFavorite) {
-        // Unfavorite
-        
-        await api.post(`${config.api.users}/favorite-game-toggle`, { gameID, action: "favorite" });
-        setIsFavorite(false);
-      } else {
         // Favorite
-        await api.post(`${config.api.users}/favorite-game-toggle`, { gameID, action: "unfavorite" });
+        await api.post(`${config.api.users}/favorite-game-toggle`, { gameID, action: "favorite" });
         setIsFavorite(true);
+      } else {
+        // Unavorite
+        await api.post(`${config.api.users}/favorite-game-toggle`, { gameID, action: "unfavorite" });
+        setIsFavorite(false);
       }
       updateUser();
     } catch (err) {

@@ -33,7 +33,6 @@ function ShowGameDetails() {
       if (!game?.platformID?.length) return;
 
       try {
-        console.log(`${config.api.platforms}?platformID[in]=${game.platformID.join(',')}`)
         const { data } = await api.get(`${config.api.platforms}?platformID[in]=${game.platformID.join(',')}`)
 
         const platforms = Array.isArray(data) ? data : [data];
