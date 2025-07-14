@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/interceptor';
-import NotificationTemplates from './NotificationTemplates';
 import config from '../../utils/config'
 
 
@@ -32,12 +31,11 @@ const UserFollowButton = ({ user, loggedUser }) => {
           targetId: user.userID, action: 'follow'
         });
         setIsFollowing(true);
-        const notification = NotificationTemplates.newFollower({
-          followerUser: loggedUser
-        });
-        await api.post(`${config.api.users}/send-notification?userID=${user.userID}`,
+        await api.post(`${config.api.users}/send-notification`,
           {
-            ...notification
+            type: 1,
+            args: { followerUser: loggedUser },
+            userID: user.userID
           }
         );
       } else {
