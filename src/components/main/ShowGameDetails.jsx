@@ -114,7 +114,7 @@ function ShowGameDetails() {
                 )}
               </div>
               <div className='row-element text-muted'>
-                {game && <FavoriteButton gameID={game._id} />}
+                {game && <FavoriteButton gameID={game.gameID} />}
                 <p><strong>Available saves:</strong> {saveFiles.length}</p>
                 {/* <p><strong>Last update:</strong> {lastUpdate}</p> */}
                 <button type="button" className="gsdb-btn-default">Install instructions</button>

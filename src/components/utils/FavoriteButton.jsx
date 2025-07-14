@@ -1,11 +1,13 @@
 import { useState, useEffect, useContext} from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/interceptor';
+import config from '../../utils/config'
 import { UserContext } from "../../contexts/UserContext.jsx";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
 import '../../styles/utils/FavoriteButton.scss';
+
 
 const FavoriteButton = ({ gameID}) => {
   const navigate = useNavigate();
@@ -26,15 +28,14 @@ const FavoriteButton = ({ gameID}) => {
       return;
     }
     try {
-      if (isFavorite) {
+      if (!isFavorite) {
         // Unfavorite
-        await api.post('/api/users/unfavorite-game', { gameID });
-        await api.delete(`/api/games/${gameID}/favorites`);
+        
+        await api.post(`${config.api.users}/favorite-game-toggle`, { gameID, action: "favorite" });
         setIsFavorite(false);
       } else {
         // Favorite
-        await api.post('/api/users/favorite-game', { gameID });
-        await api.post(`/api/games/${gameID}/favorites`);
+        await api.post(`${config.api.users}/favorite-game-toggle`, { gameID, action: "unfavorite" });
         setIsFavorite(true);
       }
       updateUser();
