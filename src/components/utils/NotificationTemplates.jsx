@@ -12,7 +12,7 @@ const NotificationTemplates = {
     type: 2,
     title: `Nuevo Save para "${game.title}"`,
     body: `Alguien ha añadido un nuevo save en tu juego favorito "${game.title}"`,
-    link: `/game/${game._id}`,
+    link: `/g/${game.slug}`,
     createdAt: new Date().toISOString(),
     read: false,
   }),

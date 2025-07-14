@@ -2,16 +2,17 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/interceptor';
 import NotificationTemplates from './NotificationTemplates';
+import config from '../../utils/config'
 
 
-const UserFollowButton = ({ user, loggedUser}) => {
+const UserFollowButton = ({ user, loggedUser }) => {
   const navigate = useNavigate();
   const [isFollowing, setIsFollowing] = useState(false);
 
   // Detectar si ya sigue al usuario
   useEffect(() => {
     if (loggedUser && user) {
-      const following = loggedUser.following.some(id => id.toString() === user._id.toString());
+      const following = loggedUser.following.some(id => id === user.userID);
       setIsFollowing(following);
     }
   }, [loggedUser, user]);
@@ -21,30 +22,30 @@ const UserFollowButton = ({ user, loggedUser}) => {
       navigate('/login');
       return;
     }
-    if (loggedUser._id === user._id) {
+    if (loggedUser.userID === user.userID) {
       return; // no debería pasar pero por si acaso
     }
     try {
-      if (isFollowing) {
-        // Hacer unfollow
-        await api.post(`/api/users/unfollow`, {
-          toUnfollow: user._id,
-        });
-        setIsFollowing(false);
-      } else {
+      if (!isFollowing) {
         // Hacer follow
-        await api.post(`/api/users/follow`, {
-          toFollow: user._id,
+        await api.post(`${config.api.users}/follow-toggle`, {
+          targetId: user.userID, action: 'follow'
         });
         setIsFollowing(true);
         const notification = NotificationTemplates.newFollower({
           followerUser: loggedUser
         });
-        await api.post(`/api/users/send-notification`, 
-          { toUserId: user._id,
+        await api.post(`${config.api.users}/send-notification?userID=${user.userID}`,
+          {
             ...notification
           }
         );
+      } else {
+        // Hacer unfollow
+        await api.post(`${config.api.users}/follow-toggle`, {
+          targetId: user.userID, action: 'unfollow'
+        });
+        setIsFollowing(false);
       }
     } catch (err) {
       console.error('Error al seguir/dejar de seguir al usuario:', err);
@@ -56,7 +57,7 @@ const UserFollowButton = ({ user, loggedUser}) => {
     <button
       className={`btn ${isFollowing ? 'btn-secondary' : 'btn-primary'}`}
       onClick={handleFollow}
-      disabled={loggedUser && loggedUser._id === user._id}
+      disabled={loggedUser && loggedUser.userID === user.userID}
     >
       {isFollowing ? 'Following' : 'Follow'}
     </button>

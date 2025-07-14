@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import NotificationCard from '../utils/NotificationCard';
 import api from '../../utils/interceptor';
 import config from '../../utils/config';
-import { UserContext} from '../../contexts/UserContext';
+import { UserContext } from '../../contexts/UserContext';
 import '../../styles/user/NotificationBoard.scss';
 
 const NotificationBoard = () => {
@@ -11,25 +11,26 @@ const NotificationBoard = () => {
 
   //pilla las notificaciones cada 30 seg
   useEffect(() => {
-  const interval = setInterval(async () => {
-    if (!user) return;
+    const interval = setInterval(async () => {
+      if (!user) return;
 
-    try {
-      const res = await api.get(`${config.api.users}/notifications`);
-      setNotifications(res.data || []);
-    } catch (err) {
-      console.error('Error actualizando notificaciones:', err);
-    }
-  }, 30000);
+      try {
+        const res = await api.get(`${config.api.users}/notifications`);
+        setNotifications(res.data || []);
+      } catch (err) {
+        console.error('Error actualizando notificaciones:', err);
+      }
+    }, 30000);
 
-  return () => clearInterval(interval);
-}, [user]); // se reinicia si cambia el usuario
+    return () => clearInterval(interval);
+  }, [user]); // se reinicia si cambia el usuario
 
 
   useEffect(() => {
     // Cada vez que el usuario cambie, actualizamos el estado local con sus notificaciones
     if (user && Array.isArray(user.notifications)) {
       setNotifications(user.notifications);
+      console.log(notifications)
     } else {
       setNotifications([]);
     }
@@ -37,7 +38,7 @@ const NotificationBoard = () => {
 
   const removeNotification = async (notificationId) => {
     try {
-      await api.delete(`${config.api.users}/remove-notification/${notificationId}`);
+      await api.delete(`${config.api.users}/remove-notification?id=${notificationId}`);
       setNotifications((prev) => prev.filter(n => n._id !== notificationId));
       updateUser()
     } catch (err) {
@@ -47,7 +48,7 @@ const NotificationBoard = () => {
 
   const markAsRead = async (notificationId) => {
     try {
-      await api.patch(`${config.api.users}/notification/${notificationId}/read`);
+      await api.patch(`${config.api.users}/read-notification?id=${notificationId}`);
       setNotifications((prev) =>
         prev.map((n) => (n._id === notificationId ? { ...n, read: true } : n))
       );

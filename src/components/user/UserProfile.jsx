@@ -46,57 +46,61 @@ function UserProfile() {
 
     useEffect(() => {
         const fetchSaves = async () => {
-            try {
-                //filtramos todos los saves subidos por el usuario                
-                const savesResponse = await api.get(`${config.api.savedatas}?userID=${user._id}`)
-                const savesResponseData = savesResponse.data;
-                //vitaminamos cada uplaod con su imagen (viene del juego) y nombre de la plataforma
-                const updatedUploads = await Promise.all(
-                    (savesResponseData || []).map(async (save) => {
-                        try {
-                            const gameResponse = await api.get(`${config.api.games}?_id=${save.gameID}`);
-                            if (!gameResponse.data) {
+            if (user.uploads.length <= 0) {
+                setUploadedSaves([]);
+            } else {
+                try {
+                    //filtramos todos los saves subidos por el usuario       
+                    const savesResponse = await api.get(`${config.api.savedatas}?saveID[in]=${user.uploads.join(',')}`)
+                    const savesResponseData = Array.isArray(savesResponse.data) ? savesResponse.data : [savesResponse.data];
+                    //vitaminamos cada uplaod con su imagen (viene del juego) y nombre de la plataforma
+                    const updatedUploads = await Promise.all(
+                        (savesResponseData || []).map(async (save) => {
+                            try {
+                                const gameResponse = await api.get(`${config.api.games}?gameID=${save.gameID}`);
+                                if (!gameResponse.data) {
+                                    return {
+                                        ...save,
+                                        save_img: `${config.api.assets}/defaults/game-cover`
+
+                                    };
+                                }
                                 return {
                                     ...save,
-                                    platformName: "",
-                                    save_img: `${config.paths.gameCover_default}`
+                                    save_img: gameResponse.data.cover
+
+                                };
+                            } catch (err) {
+                                console.log(`Error fetching game image for save ${save.saveID}:`, err);
+                                return {
+                                    ...save,
+                                    save_img: `${config.api.assets}/defaults/game-cover`
+
                                 };
                             }
-                            return {
-                                ...save,
-                                platformName: "",
-                                save_img: gameResponse.data.cover
+                        })
 
-                            };
-                        } catch (err) {
-                            console.log(`Error fetching game image for save ${save._id}:`, err);
-                        }
-                    })
+                    )
+                    setUploadedSaves(updatedUploads);
 
-                )
-                setUploadedSaves(updatedUploads);
-
-            } catch (err) {
-                console.log("Error fetching saves from user", err);
-                setUploadedSaves([]);
+                } catch (err) {
+                    console.log("Error fetching saves from user", err);
+                    setUploadedSaves([]);
+                }
             }
         };
 
         const fetchGames = async () => {
-            //  favGames siempre es un array
             let favGamesIds = user?.favGames;
             if (!favGamesIds) {
                 setFavGames([]);
                 return;
             }
-            // Si no es array, lo envolvemos en un array
             if (!Array.isArray(favGamesIds)) {
                 favGamesIds = [favGamesIds];
             }
             try {
-                const gameResponse = await api.post(`${config.api.games}/by-id`, {
-                    ids: favGamesIds
-                });
+                const gameResponse = await api.get(`${config.api.games}?gameID[in]=${favGamesIds.join(',')}&complete=false&external=false&limit=500`)
                 if (!gameResponse.data) {
                     setFavGames([]);
                     return;
@@ -107,46 +111,16 @@ function UserProfile() {
                 }
                 setFavGames(gamesData);
             } catch (err) {
-                console.log(`Error fetching favorite games user ${user._id}:`, err);
+                console.log(`Error fetching favorite games user ${user.userID}:`, err);
             }
         }
 
 
         const fetchReviews = async () => {
             try {
-                const saveIds = (user.reviews || []).map(review => review.saveID);
-                const savesResponse = await api.post(`${config.api.savedatas}/by-id`, {
-                    ids: saveIds
-                });
-                //vitaminamos cada review con su imagen (viene del juego), nombre de la plataforma, nombre de usuario de la subida
-                const updatedReviews = await Promise.all(
-                    (savesResponse.data || []).map(async (save) => {
-                        try {
-                            const gameResponse = await api.get(`${config.api.games}?_id=${save.gameID}`);
-                            const userResponse = await api.get(`${config.api.users}?_id=${save.userID}`);
-                            return {
-                                ...save,
-                                platformName: "",
-                                save_img: gameResponse.data?.cover || config.paths.gameCover_default,
-                                userName: userResponse.data?.userName || "Unknown",
-                                userPfp: userResponse.data?.pfp || config.paths.pfp_default
-                            };
-                        } catch (err) {
-                            console.log(`Error fetching additional data for save ${save._id}:`, err);
-                            return {
-                                ...save,
-                                platformName: "",
-                                save_img: config.paths.gameCover_default,
-                                userName: "Unknown",
-                                userPfp: config.paths.pfp_default
-                            };
-                        }
-                    })
-
-                )
-                setReviewedSaves(updatedReviews);
+                setReviewedSaves([])
             } catch (err) {
-                console.log(`Error fetching reviews from user ${user._id}:`, err);
+                console.log(`Error fetching reviews from user ${user.userID}:`, err);
             }
         }
 
@@ -169,10 +143,10 @@ function UserProfile() {
                     <div className="position-relative">
                         {/* Banner */}
                         <img
-                            src={`${config.connection}${user.banner}`}
+                            src={`${config.api.assets}/user/${user.userID}/banner`}
                             onError={(e) => {
                                 e.target.onerror = null; // Evita bucles si la imagen por defecto también falla
-                                e.target.src = `${config.connection}${config.paths.banner_default}`; // Ruta de imagen por defecto
+                                e.target.src = `${config.api.assets}/defaults/banner}`; // Ruta de imagen por defecto
                             }}
                             alt={`@${user.userName}'s banner image`}
                             className="img-fluid w-100 rounded"
@@ -186,10 +160,10 @@ function UserProfile() {
                         {/* Imagen de perfil */}
                         <div className="position-absolute top-100 start-0 translate-middle-y ms-3">
                             <img
-                                src={`${config.connection}${user.pfp}`}
+                                src={`${config.api.assets}/user/${user.userID}/pfp`}
                                 onError={(e) => {
                                     e.target.onerror = null; // Evita bucles si la imagen por defecto también falla
-                                    e.target.src = `${config.connection}${config.paths.pfp_default}`; // Ruta de imagen por defecto
+                                    e.target.src = `${config.api.assets}/defaults/pfp}`; // Ruta de imagen por defecto
                                 }}
                                 alt={`@${user.userName.toLowerCase()}'s profile picture`}
                                 className="rounded-circle border border-3 border-white"
@@ -249,13 +223,13 @@ function UserProfile() {
                     ) : (
                         <div className="horizontal-scroll">
                             {favGames.map(game => (
-                                <div key={game._id}>
+                                <div key={game.gameID}>
                                     <VerticalCard
                                         image={`${game.cover}`}
-                                        image_default={`${config.connection}${config.paths.gameCover_default}`}
+                                        image_default={`${config.api.assets}/defaults/game-cover`}
                                         title={game.title}
-                                        cLink={`/game/${game._id}`}
-                                        platformsID={game.platformsID}
+                                        cLink={`/g/${game.slug}`}
+                                        platformID={game.platformID}
                                     />
                                 </div>
                             ))}
@@ -266,14 +240,14 @@ function UserProfile() {
                     ) : (
                         <div className="horizontal-scroll">
                             {uploadedSaves.map(save => (
-                                <div key={save._id}>
+                                <div key={save.saveID}>
                                     <VerticalCard
                                         image={`${save.save_img}`}
-                                        image_default={`${config.connection}${config.paths.gameCover_default}`}
+                                        image_default={`${config.api.assets}/defaults/game-cover`}
                                         title={save.title}
                                         description={save.description}
-                                        cLink={`/save/${save._id}`}
-                                        platform={save.platformName}
+                                        cLink={`/s/${save.saveID}`}
+                                        platformID={save.platformID}
                                         rating={save.rating || "0"}
                                     />
                                 </div>
@@ -285,14 +259,14 @@ function UserProfile() {
                     ) : (
                         <div className="horizontal-scroll">
                             {reviewedSaves.map(save => (
-                                <div key={save._id}>
+                                <div key={save.saveID}>
                                     <VerticalCard
                                         image={`${save.save_img}`}
-                                        image_default={`${config.connection}${config.paths.gameCover_default}`}
+                                        image_default={`${config.api.assets}/defaults/game-cover`}
                                         title={save.title}
                                         description={save.description}
-                                        cLink={`/save/${save._id}`}
-                                        platform={save.platformName}
+                                        cLink={`/s/${save.saveID}`}
+                                        platformID={save.platformID}
                                         rating={save.rating || "0"}
                                         username={save.userName}
                                         userLink={`/u/${save.userName}`}

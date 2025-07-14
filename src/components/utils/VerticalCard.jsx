@@ -6,27 +6,25 @@ import api from '../../utils/interceptor';
 
 
 // Props: imagen del juego, titulo del save, inicio de la descripcion, nombre de usuario, link usuario, link del save, rating, plataforma
-const VerticalCard = ({ image, image_default, title, description, username, cLink, userLink, rating, platformsID }) => {
-  const [platformNames, setPlatformNames] = useState([]);
+const VerticalCard = ({ image, image_default, title, description, username, cLink, userLink, rating, platformID }) => {
+  const [platformAbbr, setPlatformAbbr] = useState([]);
 
   useEffect(() => {
-    const fetchPlatformNames = async () => {
+    const fetchPlatformsAbbr = async () => {
       try {
-        const res = await api.get(config.api.platforms);
+        const ids = Array.isArray(platformID)? platformID.join(',') :platformID
+        const res = await api.get(`${config.api.platforms}?platformID[in]=${ids}`);
         const platformsDB = Array.isArray(res.data) ? res.data : [res.data];
-        const names = platformsDB
-          .filter(p => platformsID?.includes(p.IGDB_ID))
-          .map(p => p.name);
-        setPlatformNames(names);
+        const abbr = platformsDB
+          .map(p => p.abbreviation);
+        setPlatformAbbr(abbr);
       } catch (err) {
         console.error("Error fetching platform names on vertical card:", err);
       }
     };
 
-    if (Array.isArray(platformsID) && platformsID.length > 0) {
-      fetchPlatformNames();
-    }
-  }, [platformsID]);
+    fetchPlatformsAbbr();
+  }, [platformID]);
 
 
   // Usa saveLink si existe; si no, deja el enlace inactivo (fallback a "#")
@@ -48,9 +46,9 @@ const VerticalCard = ({ image, image_default, title, description, username, cLin
         <div className="card-body">
           {title && <h5 className="card-title">{title}</h5>}
           {description && <p className="card-text">{description}</p>}
-          {platformNames.length > 0 && (
+          {platformAbbr.length > 0 && (
             <p className="card-platform">
-              <strong>Platforms:</strong> {platformNames.join(', ')}
+              <strong>Platforms:</strong> {platformAbbr.join(', ')}
             </p>
           )}
           {rating !== undefined && (
