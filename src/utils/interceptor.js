@@ -27,7 +27,7 @@ api.interceptors.response.use(
                 history.push('/login');
             }
         }
-
+        console.log(error)
         // retornamos cualquier otro error si no
         return Promise.reject(error);
     }

@@ -30,7 +30,6 @@ const NotificationBoard = () => {
     // Cada vez que el usuario cambie, actualizamos el estado local con sus notificaciones
     if (user && Array.isArray(user.notifications)) {
       setNotifications(user.notifications);
-      console.log(notifications)
     } else {
       setNotifications([]);
     }

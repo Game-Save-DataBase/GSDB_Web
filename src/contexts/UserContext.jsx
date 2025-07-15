@@ -26,15 +26,6 @@ export const UserProvider = ({ children }) => {
     checkSession();
   }, []);
 
-  
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     updateUser();
-  //   }, 60000); 
-
-  //   return () => clearInterval(interval); 
-  // }, []);
-
   return (
     <UserContext.Provider value={{ user, setUser, updateUser, loading }}>
       {children}
