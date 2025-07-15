@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useContext } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import config from '../../utils/config.js';
 import api from '../../utils/interceptor.js';
 
@@ -9,6 +9,8 @@ import '../../styles/main/ShowGameDetails.scss';
 import FavoriteButton from '../utils/FavoriteButton';
 
 function ShowGameDetails() {
+  const navigate = useNavigate();
+
   const [game, setGame] = useState(null);
   const [saveFiles, setSaveFiles] = useState([]);
   const [gamePlatforms, setGamePlatforms] = useState([]);
@@ -19,6 +21,11 @@ function ShowGameDetails() {
   useEffect(() => {
     const fetchGameDetails = async () => {
       try {
+        if (slug.toLowerCase() !== slug) {
+          //redirige para tener prety url
+          navigate(`/g/${slug.toLowerCase()}`, { replace: true }); //replace se usa para que navigate no añada una nueva url al historial sino que la cambie
+          return;
+        }
         const { data } = await api.get(`${config.api.games}?slug=${slug}`);
         setGame(data || null);
       } catch (err) {
@@ -123,7 +130,7 @@ function ShowGameDetails() {
         </section>
 
         <section className="saves-section">
-        
+
           {saveFiles.length > 0 ? (
             saveFiles.map(save => (
               <div key={save.saveID} className="save">

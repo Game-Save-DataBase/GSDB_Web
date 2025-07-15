@@ -31,13 +31,6 @@ const UserFollowButton = ({ user, loggedUser }) => {
           targetId: user.userID, action: 'follow'
         });
         setIsFollowing(true);
-        await api.post(`${config.api.users}/send-notification`,
-          {
-            type: 1,
-            args: { followerUser: loggedUser },
-            userID: user.userID
-          }
-        );
       } else {
         // Hacer unfollow
         await api.post(`${config.api.users}/follow-toggle`, {

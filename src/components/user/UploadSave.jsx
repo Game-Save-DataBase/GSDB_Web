@@ -3,7 +3,6 @@ import React, { useState, useContext, useEffect, useRef } from "react";
 import api from "../../utils/interceptor";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../contexts/UserContext";
-import NotificationTemplates from '../utils/NotificationTemplates';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import '../../styles/Common.scss';
@@ -129,14 +128,11 @@ const UploadSave = () => {
       formData.append("userID", user.userID);
       formData.append("file", saveFile.file);
       formData.append("platformID", saveFile.platformID);
-      console.log(formData)
       selectedTags.forEach(tag => formData.append("tags[]", tag.tagID));
 
       const res = await api.post(`${config.api.savedatas}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
-      sendNotifications();
 
       setSaveFile({ title: "", gameID: "", description: "", file: null, tags: "" });
       setSelectedTags([]);
@@ -148,24 +144,6 @@ const UploadSave = () => {
       setMessage(err.message || "An error has occurred.");
     }
   };
-
-  const sendNotifications = async (e) => {
-
-    const { data: game } = await api.get(`${config.api.games}?_id=${saveFile.gameID}`);
-
-    if (game.userFav && Array.isArray(game.userFav) && game.userFav.length > 0) {
-      const notification = NotificationTemplates.newSaveForFavorite({ game });
-      await Promise.all(game.userFav.map(favUserId =>
-        api.post(`/api/users/send-notification`, {
-          id: favUserId,
-          ...notification
-        })
-      ));
-    }
-  };
-
-
-
 
   return (
     <div className="container mt-5">
