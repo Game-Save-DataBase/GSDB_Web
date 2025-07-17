@@ -11,6 +11,7 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 
 // Components imports
 import { UserProvider } from "./contexts/UserContext";
+import { LoadingProvider } from './contexts/LoadingContext';
 import Layout from "./components/Layout.jsx"; /*contenedor principal */
 import Test from "./components/test.jsx";
 //contenido principal
@@ -32,7 +33,8 @@ import FAQ from "./components/misc/FAQ.jsx"
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <HistoryRouter history={history}>
-      <UserProvider>
+      <LoadingProvider>
+        <UserProvider>
           <Routes>
             <Route path="/" element={<Layout><Home /></Layout>} />
             <Route path="/catalog" element={<Layout><Catalog /></Layout>} />
@@ -46,7 +48,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <Route path="/u/:userNameParam" element={<Layout><UserProfile /></Layout>} />
             <Route path="/test" element={<Layout><Test /></Layout>} />
           </Routes>
-      </UserProvider>
+        </UserProvider>
+      </LoadingProvider>
     </HistoryRouter>
   </React.StrictMode>,
 )

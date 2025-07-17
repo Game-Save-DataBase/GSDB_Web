@@ -7,70 +7,52 @@ import '../../styles/Common.scss';
 import '../../styles/main/ShowGameDetails.scss';
 
 import FavoriteButton from '../utils/FavoriteButton';
+import { LoadingContext } from '../../contexts/LoadingContext';
 
 function ShowGameDetails() {
   const navigate = useNavigate();
-
+  const { isInitialLoad, block, unblock, markAsLoaded, resetLoad } = useContext(LoadingContext);
   const [game, setGame] = useState(null);
   const [saveFiles, setSaveFiles] = useState([]);
   const [gamePlatforms, setGamePlatforms] = useState([]);
   const { slug } = useParams();
-
-
-  // Cargar juego
   useEffect(() => {
-    const fetchGameDetails = async () => {
+    const loadAll = async () => {
       try {
+        resetLoad();
+        block();
+
+        // Redirección si el slug tiene mayúsculas
         if (slug.toLowerCase() !== slug) {
-          //redirige para tener prety url
-          navigate(`/g/${slug.toLowerCase()}`, { replace: true }); //replace se usa para que navigate no añada una nueva url al historial sino que la cambie
+          navigate(`/g/${slug.toLowerCase()}`, { replace: true });
           return;
         }
-        const { data } = await api.get(`${config.api.games}?slug=${slug}`);
-        setGame(data || null);
-      } catch (err) {
-        console.error('Error loading game:', err);
-      }
-    };
-    fetchGameDetails();
-  }, [slug]);
 
-  useEffect(() => {
-    const fetchPlatforms = async () => {
-      if (!game?.platformID?.length) return;
+        // 1. Cargar el juego
+        const { data: gameData } = await api.get(`${config.api.games}?slug=${slug}`);
+        if (!gameData) throw new Error('Juego no encontrado');
+        setGame(gameData);
 
-      try {
-        const { data } = await api.get(`${config.api.platforms}?platformID[in]=${game.platformID.join(',')}`)
+        // 2. Cargar plataformas si existen
+        let platforms = [];
+        if (gameData.platformID?.length) {
+          const { data: platformsData } = await api.get(`${config.api.platforms}?platformID[in]=${gameData.platformID.join(',')}`);
+          platforms = Array.isArray(platformsData) ? platformsData : [platformsData];
+          setGamePlatforms(platforms);
+        }
 
-        const platforms = Array.isArray(data) ? data : [data];
-        setGamePlatforms(platforms);
-      } catch (err) {
-        console.error("Error fetching platforms by IDs:", err);
-      }
-    };
-
-    fetchPlatforms();
-  }, [game]);
-
-  // Cargar saves
-
-  useEffect(() => {
-    const fetchSaveFiles = async () => {
-      if (!game) return;
-
-      try {
-        let { data } = await api.get(`${config.api.savedatas}?saveID[in]=${game.saveID.join(',')}`);
-        if (!data) return;
-        data = Array.isArray(data) ? data : [data];
-        console.log(data)
+        // 3. Cargar saves
+        let { data: saves } = await api.get(`${config.api.savedatas}?saveID[in]=${gameData.saveID.join(',')}`);
+        if (!saves) saves = [];
+        saves = Array.isArray(saves) ? saves : [saves];
 
         const updated = await Promise.all(
-          data.map(async sf => {
+          saves.map(async sf => {
             try {
               const { data: user } = await api.get(`${config.api.users}?userID=${sf.userID}`);
               return {
                 ...sf,
-                platformName: gamePlatforms.find(p => p.platformID === sf.platformID)?.name || `Unknown`,
+                platformName: platforms.find(p => p.platformID === sf.platformID)?.name || `Unknown`,
                 alias: user?.alias || user?.userName || "Unknown"
               };
             } catch {
@@ -85,15 +67,21 @@ function ShowGameDetails() {
 
         const sorted = updated.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
         setSaveFiles(sorted);
-      } catch (err) {
-        console.error('Error loading save files:', err);
+
+      } catch (error) {
+        console.error("Error durante la carga de la página:", error);
+      } finally {
+        markAsLoaded();
+        unblock();
       }
     };
-    fetchSaveFiles();
-  }, [gamePlatforms]);
+
+    loadAll();
+  }, [slug]);
 
 
 
+  if (isInitialLoad) return <p style={{ textAlign: 'center' }}>loading...</p>;
 
   return (
     <div>

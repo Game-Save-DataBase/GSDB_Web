@@ -127,6 +127,22 @@
     font-size: 0.9rem;
 }
 
+
+.blocking-overlay-inside {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(20, 20, 20, 0.4); // solo un ligero gris
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: all;
+}
+
+
 /* RESPONSIVE DESIGN: Lo mismo, pero para diferentes tamaños de ventana. */
 
 /* Pantallas medianas (tablets) */

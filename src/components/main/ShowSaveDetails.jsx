@@ -1,152 +1,121 @@
 import config from '../../utils/config';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import api from '../../utils/interceptor';
+import { LoadingContext } from '../../contexts/LoadingContext';
 import '../../styles/Common.scss';
 import '../../styles/main/ShowSaveDetails.scss';
 
-function ShowSaveDetails(props) {
+function ShowSaveDetails() {
   const [saveData, setSaveData] = useState({});
   const [relatedGame, setRelatedGame] = useState(null);
   const [relatedPlatform, setRelatedPlatform] = useState(null);
   const [relatedUser, setRelatedUser] = useState(null);
   const [comments, setComments] = useState([]);
-  const [screenshots, setscreenshots] = useState([]);
-  const { id } = useParams();
+  const [screenshots, setScreenshots] = useState([]);
   const [tags, setTags] = useState([]);
 
-
-  //SAVE
-  useEffect(() => {
-    // Función para obtener los detalles del archivo de guardado
-    const fetchSaveData = async () => {
-      try {
-        const saveResponse = await api.get(`${config.api.savedatas}?id=${id}`);
-        setSaveData(saveResponse.data);
-      } catch (err) {
-        console.log('Error fetching save data:', err);
-      }
-    };
-
-    fetchSaveData();
-  }, [id]);
+  const { id } = useParams();
+  const { isInitialLoad, block, unblock, markAsLoaded, resetLoad } = useContext(LoadingContext);
 
   useEffect(() => {
-    // Obtener comentarios y añadir usernames
-    const fetchComments = async () => {
+    const loadAll = async () => {
       try {
-        const commentsResponse = await api.get(`${config.api.comments}?saveID=${id}`);
-        let commentsData = commentsResponse.data;
-        if (commentsData === "") {
-          setComments(null)
-          return
+        resetLoad();
+        block();
+
+        // 1. Guardado principal
+        const { data: save } = await api.get(`${config.api.savedatas}?id=${id}`);
+        setSaveData(save);
+
+        // 2. Juego relacionado
+        if (save.gameID) {
+          try {
+            const { data: game } = await api.get(`${config.api.games}?gameID=${save.gameID}`);
+            setRelatedGame(game);
+          } catch {
+            console.warn('No se pudo cargar el juego relacionado.');
+          }
         }
-        commentsData = Array.isArray(commentsData) ? commentsData : [commentsData];
 
-        // Obtener los usernames para cada comentario
-        const updatedComments = await Promise.all(
-          commentsData.map(async (comment) => {
-            try {
-              const userResponse = await api.get(`${config.api.users}?id=${comment.userID}`);
-              if (!userResponse.data) {
+        // 3. Plataforma relacionada
+        if (save.platformID !== undefined && save.platformID !== null) {
+          try {
+            const { data: platform } = await api.get(`${config.api.platforms}?platformID=${save.platformID}`);
+            setRelatedPlatform(platform);
+          } catch {
+            console.warn('No se pudo cargar la plataforma.');
+          }
+        }
+
+        // 4. Usuario relacionado
+        if (save.userID) {
+          try {
+            const { data: user } = await api.get(`${config.api.users}?userID=${save.userID}`);
+            setRelatedUser(user);
+          } catch {
+            console.warn('No se pudo cargar el usuario.');
+          }
+        }
+
+        // 5. Comentarios + usuarios de cada uno
+        try {
+          const { data: rawComments } = await api.get(`${config.api.comments}?saveID=${id}`);
+          let commentsData = rawComments === "" ? [] : Array.isArray(rawComments) ? rawComments : [rawComments];
+
+          const updatedComments = await Promise.all(
+            commentsData.map(async (comment) => {
+              try {
+                const { data: user } = await api.get(`${config.api.users}?id=${comment.userID}`);
+                return {
+                  ...comment,
+                  userName: user?.userName || 'Usuario desconocido',
+                  alias: user?.alias || '',
+                  pfp: user?.pfp || config.paths.pfp_default
+                };
+              } catch {
                 return {
                   ...comment,
                   userName: 'Usuario desconocido',
-                  pfp: `${config.paths.pfp_default}`
+                  alias: '',
+                  pfp: config.paths.pfp_default
                 };
               }
-              return {
-                ...comment,
-                userName: userResponse.data.userName,
-                alias: userResponse.data.alias,
-                pfp: userResponse.data.pfp
-              };
-            } catch (err) {
-              console.log(`Error fetching user for comment ${comment._id}:`, err);
-              return {
-                ...comment,
-                userName: 'Usuario desconocido',
-                pfp: `${config.paths.pfp_default}`
-              };
-            }
-          })
-        );
+            })
+          );
 
-        setComments(updatedComments);
+          setComments(updatedComments);
+        } catch (err) {
+          console.error('Error cargando comentarios:', err);
+          setComments([]);
+        }
+
+        // 6. Tags (si existen)
+        if (save.tags && save.tags.length > 0) {
+          try {
+            const { data: rawTags } = await api.get(`${config.api.tags}?tagID[in]=${save.tags.join(',')}`);
+            setTags(Array.isArray(rawTags) ? rawTags : [rawTags]);
+          } catch {
+            console.warn('Error cargando tags');
+          }
+        }
+
+        // 7. Screenshots (en futuro real, aquí harías el fetch a imágenes)
+        setScreenshots([]); // Por ahora vacío
+
       } catch (err) {
-        console.log('Error fetching comments:', err);
+        console.error('Error general al cargar el archivo de guardado:', err);
+      } finally {
+        markAsLoaded();
+        unblock();
       }
     };
 
-    fetchComments();
+    loadAll();
   }, [id]);
 
-  useEffect(() => {
-    // Solo ejecutar si gameID está disponible
-    if (saveData.gameID) {
-      const fetchGameData = async () => {
-        try {
-          const gameResponse = await api.get(`${config.api.games}?gameID=${saveData.gameID}`);
-          setRelatedGame(gameResponse.data);
-        } catch (err) {
-          console.log('Error fetching game data:', err);
-        }
-      };
+  if (isInitialLoad) return <p style={{ textAlign: 'center' }}>loading...</p>;
 
-      fetchGameData();
-    }
-  }, [saveData.gameID]); // Este useEffect se activa cuando saveData.gameID cambia
-
-  useEffect(() => {
-    if (saveData.platformID !== undefined && saveData.platformID !== null) {
-      const fetchPlatformData = async () => {
-        try {
-          const response = await api.get(`${config.api.platforms}?platformID=${saveData.platformID}`);
-          setRelatedPlatform(response.data);
-        } catch (err) {
-          console.error('Error fetching platform data:', err);
-        }
-      };
-
-      fetchPlatformData();
-    }
-  }, [saveData.platformID]);
-
-
-  useEffect(() => {
-    // Solo ejecutar si userID está disponible
-    if (saveData.userID) {
-      const fetchUserData = async () => {
-        try {
-          const userResponse = await api.get(`${config.api.users}?userID=${saveData.userID}`);
-          setRelatedUser(userResponse.data);
-        } catch (err) {
-          console.log('Error fetching user:', err);
-        }
-      };
-
-      fetchUserData();
-    }
-  }, [saveData.userID]); // Este useEffect se activa cuando saveData.gameID cambia
-
-
-
-  // TAGS
-  useEffect(() => {
-    if (saveData.tags && saveData.tags.length > 0) {
-      const fetchTags = async () => {
-        try {
-          const response = await api.get(`${config.api.tags}?tagID[in]=${saveData.tags.join(',')}`);
-          const fetched = Array.isArray(response.data) ? response.data : [response.data];
-          setTags(fetched);
-        } catch (err) {
-          console.log('Error fetching tags:', err);
-        }
-      };
-
-      fetchTags();
-    }
-  }, [saveData.tags]);
 
   return (
     <div>

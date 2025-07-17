@@ -7,12 +7,15 @@ import NotificationBoard from "../components/user/NotificationBoard";
 import '../styles/Layout.scss';
 import '../styles/Common.scss';
 
+import { LoadingContext } from "../contexts/LoadingContext";
+import { Spinner } from "reactstrap";
+
 const Layout = ({ children }) => {
   const navigate = useNavigate();
   const { user: loggedUser, setUser } = useContext(UserContext);
 
   const [errorMessage, setErrorMessage] = useState("");
-
+  const { isBlocked } = useContext(LoadingContext);
 
   const handleLogout = async () => {
     try {
@@ -59,7 +62,7 @@ const Layout = ({ children }) => {
                       style={{ width: "30px", height: "30px", objectFit: "cover", marginRight: "10px" }}
                       onError={(e) => {
                         console.log(`${config.api.assets}/user/${loggedUser.userID}`)
-                        e.target.onerror = null; 
+                        e.target.onerror = null;
                         e.target.src = `${config.connection}${config.paths.pfp_default}`;
                       }}
                     />
@@ -89,7 +92,13 @@ const Layout = ({ children }) => {
         </ul>
       </aside>
 
-      <main className="main-content">
+
+      <main className="main-content position-relative">
+        {isBlocked && (
+          <div className="blocking-overlay-inside">
+            <Spinner color="light" />
+          </div>
+        )}
         {children}
       </main>
 
