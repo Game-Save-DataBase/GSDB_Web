@@ -3,7 +3,7 @@ import { Form } from "react-bootstrap";
 
 function FilterDate({ label, value, onChange }) {
   return (
-    <Form.Group className="mb-3">
+    <Form.Group className="mb-0 w-100">
       <Form.Label>{label}</Form.Label>
       <Form.Control
         type="date"
@@ -11,6 +11,7 @@ function FilterDate({ label, value, onChange }) {
         onChange={(e) => onChange(e.target.value)}
       />
     </Form.Group>
+
   );
 }
 

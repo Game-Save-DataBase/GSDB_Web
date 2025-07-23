@@ -1,90 +1,185 @@
 import React from "react";
-import { Card, ListGroup } from "react-bootstrap";
+import {
+  Card,
+  ListGroup,
+  Container,
+  Button,
+  Row,
+  Col,
+} from "react-bootstrap";
+
 function formatIfDate(value) {
   const date = new Date(value);
   if (!isNaN(date)) {
     const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0"); // +1 porque enero es 0
+    const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   }
   return value;
 }
 
-function View({ data = [], type = "list", renderProps = {} }) {
-  if (!Array.isArray(data) || data.length === 0) {
-    return <p className="text-muted text-center">No results</p>;
-  }
+function View({
+  data = [],
+  type = "list",
+  renderProps = {},
+  limit = 10,
+  offset = 0,
+  currentPage = 1,
+  hasMore = false,
+  onPageChange = () => { },
+  platformMap = {},
+}) {
+  data = Array.isArray(data) ? data : data ? [data] : [];
   const renderTitle = (item) => {
     const title = item[renderProps.title];
     const link = item[renderProps.link];
 
     return link ? (
-      <a href={link} style={{ textDecoration: "none" }}>{title}</a>
+      <a href={link} style={{ textDecoration: "none", color: "#4b0082" }}>
+        <strong>{title}</strong>
+      </a>
     ) : (
-      title
+      <strong>{title}</strong>
     );
   };
 
-  if (type === "card") {
-    return (
-      <div className="d-flex flex-wrap justify-content-start gap-3">
-        {data.map((item, idx) => (
-          <Card style={{ width: "18rem" }} key={idx}>
-            {renderProps.image && (
-              <Card.Img variant="top" src={item[renderProps.image]} />
-            )}
-            <Card.Body>
-              <Card.Title>{renderTitle(item)}</Card.Title>
+  const handlePrev = () => {
+    if (currentPage > 1) {
+      onPageChange(currentPage - 1);
+    }
+  };
 
-              {renderProps.releaseDate && (
-                <Card.Subtitle className="mb-2 text-muted">
-                  Release date: {formatIfDate(item[renderProps.releaseDate])}
-                </Card.Subtitle>
-              )}
+  const handleNext = () => {
+    if (hasMore) {
+      onPageChange(currentPage + 1);
+    }
+  };
 
-              {renderProps.description && (
-                <Card.Text>{item[renderProps.description]}</Card.Text>
-              )}
-
-              {renderProps.uploads !== undefined && (
-                <Card.Text className="mt-2">
-                  <small className="text-muted">
-                    Uploads: {item[renderProps.uploads] ?? 0}
-                  </small>
-                </Card.Text>
-              )}
-            </Card.Body>
-          </Card>
-        ))}
-      </div>
-    );
-  }
-
-  // Default to list view
   return (
-    <ListGroup>
-      {data.map((item, idx) => {
-        const elements = [];
+    <Container>
+      <hr className="mb-4" />
 
-        if (renderProps.title) elements.push(<strong key="title">{renderTitle(item)}</strong>);
-        if (renderProps.releaseDate) elements.push(
-          <span key="releaseDate"> — Release date: {formatIfDate(item[renderProps.releaseDate])}</span>
-        );
-        if (renderProps.description) elements.push(
-          <span key="desc"> — {item[renderProps.description]}</span>
-        );
-        if (renderProps.uploads !== undefined) elements.push(
-          <span key="uploads"> — Uploads: {item[renderProps.uploads] ?? 0}</span>
-        );
+      {data.length === 0 ? (
+        <p className="text-center text-muted">No results found.</p>
+      ) : type === "card" ? (
+        <Row className="g-4 justify-content-start">
+          {data.map((item, idx) => (
+            <Col
+              key={idx}
+              style={{ flex: "0 0 20%", maxWidth: "20%" }}
+              className="px-2"
+            >
+              <Card
+                className="h-100 shadow-sm d-flex flex-column"
+                style={{
+                  height: "360px",
+                  overflow: "hidden",
+                }}
+              >
+                {renderProps.image && (
+                  <div
+                    style={{
+                      height: "360px",
+                      width: "100%",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <Card.Img
+                      variant="top"
+                      src={item[renderProps.image]}
+                      style={{
+                        height: "100%",
+                        width: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </div>
+                )}
 
-        return (
-          <ListGroup.Item key={idx}>
-            {elements}
-          </ListGroup.Item>
-        );
-      })}
-    </ListGroup>
+                <Card.Body className="d-flex flex-column px-2 py-2">
+                  <Card.Title className="fs-6 mb-1 text-truncate">
+                    {renderTitle(item)}
+                  </Card.Title>
+
+                  {renderProps.releaseDate && (
+                    <Card.Subtitle
+                      className="mb-1 text-muted"
+                      style={{ fontSize: "0.8rem" }}
+                    >
+                      {formatIfDate(item[renderProps.releaseDate])}
+                    </Card.Subtitle>
+                  )}
+                  {renderProps.platforms && Array.isArray(item[renderProps.platforms]) && (
+                    <Card.Text className="text-muted" style={{ fontSize: "0.75rem" }}>
+                      {item[renderProps.platforms]
+                        .map((pid) => platformMap[pid?.toString()] || null)
+                        .filter(Boolean)
+                        .join(" / ")}
+                    </Card.Text>
+                  )}
+
+                  {renderProps.uploads !== undefined && (
+                    <Card.Text
+                      className="text-muted"
+                      style={{ fontSize: "0.75rem" }}
+                    >
+                      Uploads: {item[renderProps.uploads] ?? 0}
+                    </Card.Text>
+                  )}
+
+                </Card.Body>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+
+      ) : (
+        <ListGroup>
+          {data.map((item, idx) => {
+            const elements = [];
+
+            if (renderProps.title)
+              elements.push(<strong key="title">{renderTitle(item)}</strong>);
+            if (renderProps.releaseDate)
+              elements.push(
+                <span key="releaseDate"> — {formatIfDate(item[renderProps.releaseDate])}</span>
+              );
+            if (renderProps.description)
+              elements.push(
+                <span key="desc"> — {item[renderProps.description]}</span>
+              );
+            if (renderProps.uploads !== undefined)
+              elements.push(
+                <span key="uploads"> — Uploads: {item[renderProps.uploads] ?? 0}</span>
+              );
+
+            return <ListGroup.Item key={idx}>{elements}</ListGroup.Item>;
+          })}
+        </ListGroup>
+      )}
+
+      {/* Pagination Controls */}
+      <div className="d-flex justify-content-between align-items-center mt-4">
+        <Button
+          variant="outline-secondary"
+          onClick={handlePrev}
+          disabled={currentPage <= 1}
+        >
+          Previous
+        </Button>
+        <span className="text-muted">
+          Page {currentPage}
+        </span>
+        <Button
+          variant="outline-secondary"
+          onClick={handleNext}
+          disabled={!hasMore}
+        >
+          Next
+        </Button>
+      </div>
+    </Container>
   );
 }
 

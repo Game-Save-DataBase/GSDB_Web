@@ -1,0 +1,14 @@
+@use '../common' as *;
+.filter-date-group {
+  min-width: 220px;
+}
+
+.filter-date-group .form-label {
+  margin-bottom: 0.25rem;
+}
+
+.filter-date-group .form-control {
+  min-width: 220px;
+  box-sizing: border-box;
+}
+

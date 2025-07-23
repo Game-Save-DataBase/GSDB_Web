@@ -30,10 +30,13 @@ function Catalog() {
 
   const [platforms, setPlatforms] = useState([]);
   const [games, setGames] = useState([]);
+  const [offset, setOffset] = useState(0);
+  const [limit, setLimit] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [viewType, setViewType] = useState("list");
+  const [viewType, setViewType] = useState("card");
 
-  // Cargar plataformas al montar
   useEffect(() => {
     const fetchPlatforms = async () => {
       try {
@@ -42,6 +45,7 @@ function Catalog() {
         const platformsFormatted = data.map((p) => ({
           value: p.platformID?.toString() ?? "",
           label: p.name ?? "",
+          abbreviation: p.abbreviation ?? "",
         }));
         setPlatforms(platformsFormatted);
       } catch (err) {
@@ -51,7 +55,14 @@ function Catalog() {
     fetchPlatforms();
   }, []);
 
-  // Cargar filtros iniciales desde la URL
+  const platformAbbrMap = platforms.reduce((acc, p) => {
+    if (p.value && p.abbreviation) {
+      acc[p.value] = p.abbreviation;
+    }
+    return acc;
+  }, {});
+
+
   useEffect(() => {
     const urlLetter = searchParams.get("letter") || "ALL";
     const urlPlatform = searchParams.get("platformID[in]")?.split(",") || [];
@@ -69,14 +80,15 @@ function Catalog() {
     setTempPlatform(filters.platform);
     setReleaseDate(filters.releaseDate);
     setTempReleaseDate(filters.releaseDate);
-
-    fetchGames(filters);
+    setOffset(0);
+    setCurrentPage(1);
+    fetchGames(filters, 0, limit);
   }, []);
 
-  const fetchGames = async (filters) => {
+  const fetchGames = async (filters, pageOffset = 0, newLimit = limit) => {
     try {
       setLoading(true);
-      let query = "?complete=false";
+      let query = `?complete=false&limit=${newLimit}&offset=${pageOffset}`;
 
       if (filters.letter && filters.letter !== "ALL") {
         query += `&title[start]=${filters.letter}`;
@@ -89,10 +101,9 @@ function Catalog() {
       if (filters.releaseDate) {
         query += `&release_date[gte]=${filters.releaseDate}`;
       }
-
+      console.log(query)
       const res = await axios.get(`${config.api.games}${query}`);
-
-      const data = Array.isArray(res.data) ? res.data : [];
+      const data = Array.isArray(res.data) ? res.data : [res.data];
 
       const processedGames = data.map((game) => ({
         ...game,
@@ -100,9 +111,10 @@ function Catalog() {
       }));
 
       setGames(processedGames);
-
+      setHasMore(data.length === newLimit);
     } catch (err) {
       console.error("Error fetching games", err);
+      setHasMore(false);
     } finally {
       setLoading(false);
     }
@@ -126,7 +138,9 @@ function Catalog() {
 
     setSearchParams(newParams);
 
-    fetchGames({ letter, platform, releaseDate });
+    setOffset(0);
+    setCurrentPage(1);
+    fetchGames({ letter, platform, releaseDate }, 0, limit);
   };
 
   const handleLetterClick = (ltr) => {
@@ -146,11 +160,17 @@ function Catalog() {
     });
   };
 
+  const handlePageChange = (newPage) => {
+    const newOffset = (newPage - 1) * limit;
+    setCurrentPage(newPage);
+    setOffset(newOffset);
+    fetchGames({ letter, platform, releaseDate }, newOffset, limit);
+  };
+
   return (
     <Container className="mt-4">
       <h1 className="text-center mb-3">GSDB Catalog</h1>
 
-      {/* Selector de letras */}
       <div className="d-flex justify-content-center flex-wrap mb-3">
         <Button
           variant={tempLetter === "ALL" ? "primary" : "outline-primary"}
@@ -173,22 +193,30 @@ function Catalog() {
         ))}
       </div>
 
-      {/* Barra de filtros */}
-      <Stack direction="horizontal" gap={3} className="mb-3 flex-wrap align-items-center">
-        <FilterSelect
-          label="Platform"
-          selected={tempPlatform}
-          onChange={setTempPlatform}
-          options={platforms}
-        />
+      <Stack
+        direction="horizontal"
+        gap={3}
+        className="mb-4 flex-wrap align-items-end"
+        style={{ rowGap: "1rem" }}
+      >
+        <Form.Group style={{ minWidth: "220px" }} className="mb-0 flex-fill">
+          <FilterSelect
+            label="Platform"
+            selected={tempPlatform}
+            onChange={setTempPlatform}
+            options={platforms}
+          />
+        </Form.Group>
 
-        <FilterDate
-          label="Release Date From"
-          value={tempReleaseDate}
-          onChange={setTempReleaseDate}
-        />
+        <Form.Group style={{ minWidth: "180px" }} className="mb-0 flex-fill">
+          <FilterDate
+            label="Release Date From"
+            value={tempReleaseDate}
+            onChange={setTempReleaseDate}
+          />
+        </Form.Group>
 
-        <Form.Group>
+        <Form.Group style={{ minWidth: "160px" }} className="mb-0 flex-fill">
           <Form.Label>View</Form.Label>
           <Form.Select
             value={viewType}
@@ -199,12 +227,32 @@ function Catalog() {
           </Form.Select>
         </Form.Group>
 
-        <Button variant="primary" onClick={handleApplyFilters}>
-          Filter
-        </Button>
+        <Form.Group style={{ minWidth: "160px" }} className="mb-0 flex-fill">
+          <Form.Label>Items per page</Form.Label>
+          <Form.Select
+            value={limit}
+            onChange={(e) => {
+              const newLimit = parseInt(e.target.value);
+              setLimit(newLimit);
+              setOffset(0);
+              setCurrentPage(1);
+              fetchGames({ letter, platform, releaseDate }, 0, newLimit);
+            }}
+          >
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={40}>40</option>
+          </Form.Select>
+        </Form.Group>
+
+        <div className="d-flex align-items-end mb-0">
+          <Button variant="primary" onClick={handleApplyFilters}>
+            Filter
+          </Button>
+        </div>
       </Stack>
 
-      {/* Resultados */}
+
       {loading ? (
         <div className="text-center mt-5">
           <Spinner animation="border" />
@@ -219,8 +267,16 @@ function Catalog() {
             image: "cover",
             uploads: "nUploads",
             link: "url",
+            platforms: "platformID", 
           }}
+          platformMap={platformAbbrMap} 
+          limit={limit}
+          offset={offset}
+          currentPage={currentPage}
+          hasMore={hasMore}
+          onPageChange={handlePageChange}
         />
+
       )}
     </Container>
   );

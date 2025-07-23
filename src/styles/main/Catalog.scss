@@ -1,0 +1,34 @@
+@use '../common' as *;
+
+.btn-rounded-circle {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  transition: box-shadow 0.2s ease;
+  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  user-select: none;
+}
+
+.btn-rounded-circle:hover,
+.btn-rounded-circle:focus {
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.6);
+  border-color: #007bff;
+  text-decoration: none;
+  outline: none;
+}
+
+.filters-row {
+  .form-group {
+    margin-bottom: 0; // evitar dobles márgenes dentro del row
+  }
+}
+
+.btn-filter {
+  margin-top: auto; // alinea el botón para que quede al fondo en columnas altas
+}
+
