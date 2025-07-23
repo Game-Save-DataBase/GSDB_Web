@@ -1,61 +1,91 @@
-/* ShowGameDetails.scss 
-Estilos para esta pagina. Tiene dos secciones principales: la de la info del juego, y debajo un grid con todos los savedata.
-*/
-
 @use '../common' as *;
 
+.game-header {
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
 
-/* Estilo general del contenedor */
-.container {
-  margin-top: 20px;
-  padding: 20px;
-
-  /*........................................ Sección de información */
-  /* tiene que haber menos espacio para la imagen y mas espacio para el resto de info */
-  .game-section {
-    margin-bottom: 30px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    background-color: var(--color-foreground);
-
-    .table-data {
-      padding: 1%;
-
-      //la parte de texto centrado, muted etc la añado en el jsx porque crear mas clases para eso me parece innecesario
-      .row {
-        display: flex;
-        padding: 5px;
-
-        // align-items: center;
-        .row-element {
-          @extend .col-md-4;
-        }
-      }
-
-      /* Imagen del juego */
-      img {
-        max-width: 200px;
-        height: auto;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
-    }
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
   }
 
-  /* .......................................Sección de datos de guardado disponibles */
-  .saves-section {
-    margin-bottom: 30px;
-    padding: 1%;
-    background-color: var(--color-foreground);
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  .header-content {
+    position: relative;
+    z-index: 1;
+    color: white;
 
-    .save {
-      padding: 10px 0;
-      border-bottom: 1px solid #eee;
+    * {
+      background-color: transparent !important;
+      box-shadow: none !important;
+    }
 
-      p {
-        font-size: 1rem;
+    h1 {
+      font-size: 2.5rem;
+    }
+
+    .platform-logo {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+      border-radius: 6px;
+      padding: 2px;
+      background-color: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(4px);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .game-cover {
+      max-width: 160px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+    }
+
+    .release-date {
+      font-size: 1.1rem;
+      font-style: italic;
+      margin-bottom: 0;
+      white-space: nowrap;
+      color: white; 
+    }
+
+    .genre-container {
+      margin-top: 0.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .genre-badge {
+      background-color: var(--color-text-secondary);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      display: inline-block;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease, color 0.3s ease;
+      cursor: pointer;
+
+      &:hover {
+        background-color: var(--color-h2);
+        color: white;
+        filter: drop-shadow(0 0 3px var(--color-text-secondary));
+      }
+
+    }
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      color: white; // volver a blanco en móvil para fondo oscuro
+
+      .game-cover {
+        margin-top: 1rem;
+        max-width: 120px;
       }
     }
   }

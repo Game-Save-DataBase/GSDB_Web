@@ -51,7 +51,7 @@ function FilterSelect({ label, options, selected = [], onChange }) {
           <InputGroup className="mb-2">
             <Form.Control
               type="search"
-              placeholder={`Search ${label.toLowerCase()}...`}
+              placeholder={`Search ${label?.toLowerCase() || 'items'}...`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               autoFocus

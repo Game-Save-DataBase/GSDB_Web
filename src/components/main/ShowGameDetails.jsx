@@ -1,139 +1,278 @@
-import React, { useState, useEffect, useMemo, useCallback, useContext } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import {
+  Container,
+  Row,
+  Col,
+  Spinner,
+  Form,
+  Stack,
+  Button
+} from 'react-bootstrap';
+
 import config from '../../utils/config.js';
 import api from '../../utils/interceptor.js';
-
-import '../../styles/Common.scss';
-import '../../styles/main/ShowGameDetails.scss';
-
-import FavoriteButton from '../utils/FavoriteButton';
 import { LoadingContext } from '../../contexts/LoadingContext';
 
+import FavoriteButton from '../utils/FavoriteButton';
+import View from "../views/View.jsx";
+import FilterSelect from "../filters/FilterSelect";
+import FilterDate from "../filters/FilterDate";
+
+import '../../styles/main/ShowGameDetails.scss';
+function formatIfDate(value) {
+  const date = new Date(value);
+  if (!isNaN(date)) {
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+  return value;
+}
 function ShowGameDetails() {
   const navigate = useNavigate();
+  const { slug } = useParams();
   const { isInitialLoad, block, unblock, markAsLoaded, resetLoad } = useContext(LoadingContext);
+
   const [game, setGame] = useState(null);
   const [saveFiles, setSaveFiles] = useState([]);
-  const [gamePlatforms, setGamePlatforms] = useState([]);
-  const { slug } = useParams();
+  const [platforms, setPlatforms] = useState([]);
+  const [selectedPlatforms, setSelectedPlatforms] = useState([]);
+
+  const [postedDate, setPostedDate] = useState("");
+  const [tempPlatform, setTempPlatform] = useState([]);
+  const [tempPostedDate, setTempPostedDate] = useState("");
+
+
+  const genres = ['accion', 'aventura', 'plataformas']; //provisional
+
   useEffect(() => {
-    const loadAll = async () => {
+    setTempPlatform(selectedPlatforms);
+    setTempPostedDate(postedDate);
+  }, [selectedPlatforms, postedDate]);
+
+  useEffect(() => {
+    const fetchData = async () => {
       try {
         resetLoad();
         block();
 
-        // Redirección si el slug tiene mayúsculas
         if (slug.toLowerCase() !== slug) {
           navigate(`/g/${slug.toLowerCase()}`, { replace: true });
           return;
         }
 
-        // 1. Cargar el juego
         const { data: gameData } = await api.get(`${config.api.games}?slug=${slug}`);
-        if (!gameData) throw new Error('Juego no encontrado');
+        if (!gameData) throw new Error('Game not found');
+
         setGame(gameData);
 
-        // 2. Cargar plataformas si existen
-        let platforms = [];
-        if (gameData.platformID?.length) {
-          const { data: platformsData } = await api.get(`${config.api.platforms}?platformID[in]=${gameData.platformID.join(',')}`);
-          platforms = Array.isArray(platformsData) ? platformsData : [platformsData];
-          setGamePlatforms(platforms);
-        }
+        const platformIDs = gameData.platformID ?? [];
+        const { data: platformData } = await api.get(`${config.api.platforms}?platformID[in]=${platformIDs.join(',')}`);
+        const platformArray = Array.isArray(platformData) ? platformData : [platformData];
+        setPlatforms(platformArray);
 
-        // 3. Cargar saves
-        let { data: saves } = await api.get(`${config.api.savedatas}?saveID[in]=${gameData.saveID.join(',')}`);
-        if (!saves) saves = [];
-        saves = Array.isArray(saves) ? saves : [saves];
+        const { data: savesRaw } = await api.get(`${config.api.savedatas}?saveID[in]=${gameData.saveID.join(',')}`);
+        const saves = Array.isArray(savesRaw) ? savesRaw : [savesRaw];
 
-        const updated = await Promise.all(
-          saves.map(async sf => {
+        const enriched = await Promise.all(
+          saves.map(async (sf) => {
+            if (!sf || !sf.userID) return { ...sf, alias: "Unknown", platformName: "Unknown" };
             try {
               const { data: user } = await api.get(`${config.api.users}?userID=${sf.userID}`);
               return {
                 ...sf,
-                platformName: platforms.find(p => p.platformID === sf.platformID)?.name || `Unknown`,
-                alias: user?.alias || user?.userName || "Unknown"
+                alias: user?.alias || user?.userName || "Unknown",
+                platformName: platformArray.find(p => p.platformID === sf.platformID)?.name || 'Unknown'
               };
             } catch {
-              return {
-                ...sf,
-                platformName: "Unknown",
-                alias: "Unknown"
-              };
+              return { ...sf, alias: "Unknown", platformName: "Unknown" };
             }
           })
         );
 
-        const sorted = updated.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
+        const sorted = enriched.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
         setSaveFiles(sorted);
-
-      } catch (error) {
-        console.error("Error durante la carga de la página:", error);
+        setSelectedPlatforms(platformArray.map(p => p.platformID?.toString()));
+      } catch (err) {
+        console.error(err);
       } finally {
         markAsLoaded();
         unblock();
       }
     };
 
-    loadAll();
+    fetchData();
   }, [slug]);
 
+  const filteredSaves = saveFiles.filter(sf => {
+    const matchPlatform = tempPlatform.length
+      ? tempPlatform.includes(String(sf.platformID))
+      : true;
 
+    const matchDate = tempPostedDate
+      ? new Date(sf.postedDate) >= new Date(tempPostedDate)
+      : true;
 
-  if (isInitialLoad) return <p style={{ textAlign: 'center' }}>loading...</p>;
+    return matchPlatform && matchDate;
+  });
+  const applyFilters = () => {
+    setSelectedPlatforms(tempPlatform);
+    setPostedDate(tempPostedDate);
+  };
+
+  if (isInitialLoad || !game) {
+    return (
+      <div className="text-center mt-5">
+        <Spinner animation="border" />
+      </div>
+    );
+  }
+
+  const platformOptions = platforms.map(p => ({
+    value: p.platformID?.toString(),
+    label: p.name ?? 'Unknown',
+  }));
 
   return (
-    <div>
-      <section className='nav-section'>
-        <nav>
-          <ol>
-            <li><Link to={`/`}>Home</Link></li>
-            <li>{game?.title || 'Juego sin título'}</li>
-          </ol>
-        </nav>
-      </section>
-
-      <div className='container'>
-        <section className="game-section">
-          <div className='table-data'>
-            <div className="row">
-              <div className="row-element text-center">
-                {game && (
-                  <img
-                    src={`${game.cover}`}
-                    alt={game.title}
-                    onError={(e) => { e.target.src = `${config.api.assets}/default/game-cover`; }}
-                  />
-                )}
+    <>
+      {/* Breadcrumb */}
+      <Row>
+        <Col>
+          <nav>
+            <Link to="/">Home</Link> / <strong>{game.title}</strong>
+          </nav>
+        </Col>
+      </Row>
+      {/* Header con imagen de fondo */}
+      <div
+        className="game-header"
+        style={{
+          backgroundImage: `url(${game.screenshot || `${config.api.assets}/defaults/banner`}`,
+        }}
+      >
+        <div className="overlay" />
+        <Container className="text-white header-content py-5">
+          <Row className="align-items-center">
+            <Col md={8}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                <FavoriteButton gameID={game.gameID} />
+                <h1 className="fw-bold mb-0">{game.title}</h1>
               </div>
-              <div className='row-element text-muted'>
-                {game && <FavoriteButton gameID={game.gameID} />}
-                <p><strong>Available saves:</strong> {saveFiles.length}</p>
-                {/* <p><strong>Last update:</strong> {lastUpdate}</p> */}
-                <button type="button" className="gsdb-btn-default">Install instructions</button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="saves-section">
-
-          {saveFiles.length > 0 ? (
-            saveFiles.map(save => (
-              <div key={save.saveID} className="save">
-                <Link to={`/s/${save.saveID}`}><strong>{save.title}</strong></Link>
-                <p>
-                  <small>Uploaded by: {save.alias} - Platform: {save.platformName} </small>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                <p className="release-date">
+                  Release Date: {formatIfDate(game.release_date || 'N/A')}
                 </p>
+                <span style={{ color: '#ccc', fontWeight: 'bold', margin: '0 4px' }}>•</span>
+                <div style={{ display: 'flex', gap: '0.25rem' }}>
+                  {platforms.map((platform) => (
+                    platform.logo ? (
+                      <img
+                        className="platform-logo"
+                        key={platform.platformID}
+                        src={platform.logo}
+                        alt={platform.name}
+                        title={platform.name}
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                    ) : null
+                  ))}
+                </div>
               </div>
-            ))
-          ) : (
-            <p>No hay archivos de guardado disponibles.</p>
-          )}
-        </section>
+
+              <div className="genres-container">
+                {genres.map((genre, index) => (
+                  <span key={index} className="genre-badge">{genre}</span>
+                ))}
+              </div>
+            </Col>
+
+            <Col md={4} className="text-end">
+              <img
+                src={game.cover || `${config.api.assets}/default/game-cover`}
+                alt={`${game.title} cover`}
+                className="game-cover"
+                onError={(e) => { e.target.src = `${config.api.assets}/default/game-cover`; }}
+              />
+            </Col>
+          </Row>
+        </Container>
       </div>
-    </div>
+
+      <Container className="mt-4">
+
+
+        {/* Filtros */}
+        <Stack
+          direction="horizontal"
+          gap={3}
+          className="mb-4 flex-wrap align-items-end"
+          style={{ rowGap: "1rem" }}
+        >
+          <Form.Group style={{ minWidth: "220px" }} className="mb-0 flex-fill">
+            <FilterSelect
+              label="Platform"
+              selected={tempPlatform}
+              onChange={setTempPlatform}
+              options={platformOptions}
+            />
+          </Form.Group>
+
+          <Form.Group style={{ minWidth: "220px" }} className="mb-0 flex-fill">
+            <FilterDate
+              label="Posted Date From"
+              value={tempPostedDate}
+              onChange={setTempPostedDate}
+            />
+          </Form.Group>
+
+          <div className="d-flex align-items-end mb-0">
+            <Button variant="primary" onClick={applyFilters}>
+              Filter
+            </Button>
+          </div>
+        </Stack>
+
+
+        {/* View */}
+        <Row>
+          <Col>
+            {filteredSaves.length > 0 ? (
+              <View
+                type="card"
+                data={filteredSaves.map(sf => ({
+                  ...sf,
+                  title: sf.title,
+                  image: sf.thumbnail || game.cover,
+                  link: `/s/${sf.saveID}`,
+                  uploads: sf.alias,
+                  platforms: [sf.platformID],
+                }))}
+                renderProps={{
+                  title: "title",
+                  image: "image",
+                  link: "link",
+                  uploads: "uploads",
+                  platforms: "platforms"
+                }}
+                platformMap={platforms.reduce((acc, p) => {
+                  acc[p.platformID] = p.abbreviation || p.name;
+                  return acc;
+                }, {})}
+                limit={20}
+                offset={0}
+                currentPage={1}
+                hasMore={false}
+                onPageChange={() => { }}
+              />
+            ) : (
+              <p>No save files available for selected platforms.</p>
+            )}
+          </Col>
+        </Row>
+      </Container>
+    </>
   );
 }
 

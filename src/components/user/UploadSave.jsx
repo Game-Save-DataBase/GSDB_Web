@@ -60,7 +60,6 @@ const UploadSave = () => {
       if (!Array.isArray(data)) {
         data = [data]
       }
-
       const sorted = data.sort((a, b) => {
         const aTitle = a.title.toLowerCase();
         const bTitle = b.title.toLowerCase();
@@ -73,7 +72,6 @@ const UploadSave = () => {
         if (aIndex !== bIndex) return aIndex - bIndex;
         return aTitle.length - bTitle.length;
       });
-
       setGames(sorted);
     } catch (err) {
       console.error("Error fetching games", err);
