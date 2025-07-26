@@ -102,14 +102,18 @@ function View({
                     {renderTitle(item)}
                   </Card.Title>
 
-                  {renderProps.releaseDate && (
-                    <Card.Subtitle
-                      className="mb-1 text-muted"
-                      style={{ fontSize: "0.8rem" }}
-                    >
-                      {formatIfDate(item[renderProps.releaseDate])}
-                    </Card.Subtitle>
+                  {renderProps.description && (
+                    <Card.Text className="text-muted" style={{ fontSize: "0.75rem" }}>
+                      {item[renderProps.description]?.slice(0, 80)}...
+                    </Card.Text>
                   )}
+
+                  {renderProps.tags && Array.isArray(item[renderProps.tags]) && (
+                    <Card.Text className="text-muted mb-1" style={{ fontSize: "0.75rem" }}>
+                      {item[renderProps.tags].slice(0, 3).join(" • ")}
+                    </Card.Text>
+                  )}
+
                   {renderProps.platforms && Array.isArray(item[renderProps.platforms]) && (
                     <Card.Text className="text-muted" style={{ fontSize: "0.75rem" }}>
                       {item[renderProps.platforms]
@@ -120,15 +124,36 @@ function View({
                   )}
 
                   {renderProps.uploads !== undefined && (
-                    <Card.Text
-                      className="text-muted"
-                      style={{ fontSize: "0.75rem" }}
-                    >
-                      Uploads: {item[renderProps.uploads] ?? 0}
+                    <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
+                      By: {item[renderProps.uploads] ?? "Unknown"}
+                    </Card.Text>
+                  )}
+
+                  {renderProps.releaseDate && (
+                    <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
+                      {formatIfDate(item[renderProps.releaseDate])}
+                    </Card.Text>
+                  )}
+
+                  {renderProps.downloads !== undefined && (
+                    <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
+                      {item[renderProps.downloads]} downloads
+                    </Card.Text>
+                  )}
+                  {renderProps.user && item[renderProps.user] && (
+                    <Card.Text className="text-muted" style={{ fontSize: "0.75rem" }}>
+                      <span>By: </span>
+                      <a
+                        href={item[renderProps.user].link}
+                        style={{ color: "#4b0082", textDecoration: "none" }}
+                      >
+                        {item[renderProps.user].name}
+                      </a>
                     </Card.Text>
                   )}
 
                 </Card.Body>
+
               </Card>
             </Col>
           ))}
@@ -145,14 +170,32 @@ function View({
               elements.push(
                 <span key="releaseDate"> — {formatIfDate(item[renderProps.releaseDate])}</span>
               );
-            if (renderProps.description)
+            {
+              renderProps.description && (
+                <span key="desc"> — {item[renderProps.description]?.slice(0, 80)}...</span>
+              )
+            }
+            {
+              renderProps.tags && Array.isArray(item[renderProps.tags]) && (
+                <span key="tags"> — Tags: {item[renderProps.tags].slice(0, 3).join(", ")}</span>
+              )
+            }
+            {
+              renderProps.downloads !== undefined && (
+                <span key="downloads"> — {item[renderProps.downloads]} downloads</span>
+              )
+            }
+            if (renderProps.user && item[renderProps.user]) {
               elements.push(
-                <span key="desc"> — {item[renderProps.description]}</span>
+                <span key="user">
+                  {" "}
+                  — By:{" "}
+                  <a href={item[renderProps.user].link} style={{ color: "#4b0082" }}>
+                    {item[renderProps.user].name}
+                  </a>
+                </span>
               );
-            if (renderProps.uploads !== undefined)
-              elements.push(
-                <span key="uploads"> — Uploads: {item[renderProps.uploads] ?? 0}</span>
-              );
+            }
 
             return <ListGroup.Item key={idx}>{elements}</ListGroup.Item>;
           })}

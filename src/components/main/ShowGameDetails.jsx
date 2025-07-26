@@ -43,6 +43,8 @@ function ShowGameDetails() {
   const [postedDate, setPostedDate] = useState("");
   const [tempPlatform, setTempPlatform] = useState([]);
   const [tempPostedDate, setTempPostedDate] = useState("");
+  const [viewType, setViewType] = useState("card");
+  const [limit, setLimit] = useState(20);
 
 
   const genres = ['accion', 'aventura', 'plataformas']; //provisional
@@ -78,16 +80,16 @@ function ShowGameDetails() {
 
         const enriched = await Promise.all(
           saves.map(async (sf) => {
-            if (!sf || !sf.userID) return { ...sf, alias: "Unknown", platformName: "Unknown" };
+            if (!sf || !sf.userID) return { ...sf, userName: "Unknown", platformName: "Unknown" };
             try {
               const { data: user } = await api.get(`${config.api.users}?userID=${sf.userID}`);
               return {
                 ...sf,
-                alias: user?.alias || user?.userName || "Unknown",
+                userName: user?.userName || "Unknown",
                 platformName: platformArray.find(p => p.platformID === sf.platformID)?.name || 'Unknown'
               };
             } catch {
-              return { ...sf, alias: "Unknown", platformName: "Unknown" };
+              return { ...sf, userName: "Unknown", platformName: "Unknown" };
             }
           })
         );
@@ -226,6 +228,29 @@ function ShowGameDetails() {
               onChange={setTempPostedDate}
             />
           </Form.Group>
+          <Form.Group style={{ minWidth: "160px" }} className="mb-0 flex-fill">
+            <Form.Label>View</Form.Label>
+            <Form.Select
+              value={viewType}
+              onChange={(e) => setViewType(e.target.value)}
+            >
+              <option value="list">List</option>
+              <option value="card">Card</option>
+            </Form.Select>
+          </Form.Group>
+
+          <Form.Group style={{ minWidth: "160px" }} className="mb-0 flex-fill">
+            <Form.Label>Items per page</Form.Label>
+            <Form.Select
+              value={limit}
+              onChange={(e) => setLimit(Number(e.target.value))}
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={40}>40</option>
+            </Form.Select>
+          </Form.Group>
+
 
           <div className="d-flex align-items-end mb-0">
             <Button variant="primary" onClick={applyFilters}>
@@ -238,37 +263,44 @@ function ShowGameDetails() {
         {/* View */}
         <Row>
           <Col>
-            {filteredSaves.length > 0 ? (
-              <View
-                type="card"
-                data={filteredSaves.map(sf => ({
-                  ...sf,
-                  title: sf.title,
-                  image: sf.thumbnail || game.cover,
-                  link: `/s/${sf.saveID}`,
-                  uploads: sf.alias,
-                  platforms: [sf.platformID],
-                }))}
-                renderProps={{
-                  title: "title",
-                  image: "image",
-                  link: "link",
-                  uploads: "uploads",
-                  platforms: "platforms"
-                }}
-                platformMap={platforms.reduce((acc, p) => {
-                  acc[p.platformID] = p.abbreviation || p.name;
-                  return acc;
-                }, {})}
-                limit={20}
-                offset={0}
-                currentPage={1}
-                hasMore={false}
-                onPageChange={() => { }}
-              />
-            ) : (
-              <p>No save files available for selected platforms.</p>
-            )}
+            <View
+              type={viewType}
+              data={filteredSaves.map(sf => ({
+                ...sf,
+                title: sf.title,
+                image: game.cover,
+                link: `/s/${sf.saveID}`,
+                platforms: [sf.platformID],
+                description: sf.description,
+                postedDate: sf.postedDate,
+                downloads: sf.nDownloads ?? 0,
+                tags: sf.tags,
+                user: {
+                  name: sf.userName,
+                  link: `/u/${sf.userName}`
+                }
+              }))}
+              renderProps={{
+                title: "title",
+                image: "image",
+                link: "link",
+                platforms: "platforms",
+                description: "description",
+                releaseDate: "postedDate",
+                downloads: "downloads",
+                tags: "tags",
+                user: "user"
+              }}
+              platformMap={platforms.reduce((acc, p) => {
+                acc[p.platformID] = p.abbreviation || p.name;
+                return acc;
+              }, {})}
+              limit={limit}
+              offset={0}
+              currentPage={1}
+              hasMore={false}
+              onPageChange={() => { }}
+            />
           </Col>
         </Row>
       </Container>
