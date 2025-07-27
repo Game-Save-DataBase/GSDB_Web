@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
   Card,
   ListGroup,
@@ -7,6 +7,9 @@ import {
   Row,
   Col,
 } from "react-bootstrap";
+
+import '../../styles/views/View.scss';
+
 
 function formatIfDate(value) {
   const date = new Date(value);
@@ -56,6 +59,13 @@ function View({
     }
   };
 
+  const tagRefs = useRef([]);
+
+  const scrollTags = (el, amount) => {
+    if (el) el.scrollBy({ left: amount, behavior: "smooth" });
+  };
+
+
   return (
     <Container>
       <hr className="mb-4" />
@@ -97,41 +107,106 @@ function View({
                   </div>
                 )}
 
-                <Card.Body className="d-flex flex-column px-2 py-2">
+                <Card.Body
+                  className="d-flex flex-column px-2 py-2"
+                  style={{ minHeight: "220px", justifyContent: "space-between" }}
+                >
                   <Card.Title className="fs-6 mb-1 text-truncate">
                     {renderTitle(item)}
                   </Card.Title>
 
                   {renderProps.description && (
-                    <Card.Text className="text-muted" style={{ fontSize: "0.75rem" }}>
-                      {item[renderProps.description]?.slice(0, 80)}...
+                    <Card.Text
+                      className="text-muted"
+                      style={{ fontSize: "0.75rem", minHeight: "3.5em" }}
+                    >
+                      {(() => {
+                        const text = item[renderProps.description]?.trim();
+                        if (!text) return "No description";
+                        return text.length > 80 ? text.slice(0, 80) + "..." : text;
+                      })()}
                     </Card.Text>
                   )}
 
-                  {renderProps.tags && Array.isArray(item[renderProps.tags]) && (
-                    <Card.Text className="text-muted mb-1" style={{ fontSize: "0.75rem" }}>
-                      {item[renderProps.tags].slice(0, 3).join(" • ")}
-                    </Card.Text>
+
+                  {renderProps.tags && (
+                    (() => {
+                      const tags = Array.isArray(item[renderProps.tags]) ? item[renderProps.tags] : [];
+                      if (tags.length === 0) {
+                        return (
+                          <Card.Text className="text-muted" style={{ fontSize: "0.75rem" }}>
+                            No tags
+                          </Card.Text>
+                        );
+                      }
+
+                      return (
+                        <div className="position-relative">
+                          {tags.length >= 1 && (
+                            <button
+                              onClick={() => scrollTags(tagRefs[idx], -80)}
+                              className="scroll-btn left"
+                            >
+                              ‹
+                            </button>
+                          )}
+                          <div
+                            className="tags-scroll-container"
+                            ref={(el) => (tagRefs[idx] = el)}
+                          >
+                            {tags.map((tag, tagIdx) => (
+                              <span key={tagIdx} className="tag-pill">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                          {tags.length >= 1 && (
+                            <button
+                              onClick={() => scrollTags(tagRefs[idx], 80)}
+                              className="scroll-btn right"
+                            >
+                              ›
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })()
                   )}
+
 
                   {renderProps.platforms && Array.isArray(item[renderProps.platforms]) && (
                     <Card.Text className="text-muted" style={{ fontSize: "0.75rem" }}>
-                      {item[renderProps.platforms]
+                      <strong>Platforms</strong>: {item[renderProps.platforms]
                         .map((pid) => platformMap[pid?.toString()] || null)
                         .filter(Boolean)
                         .join(" / ")}
                     </Card.Text>
                   )}
 
+                  {renderProps.releaseDate && (
+                    <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
+                      <strong>Release date</strong>: {formatIfDate(item[renderProps.releaseDate])}
+                    </Card.Text>
+                  )}
                   {renderProps.uploads !== undefined && (
                     <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
-                      By: {item[renderProps.uploads] ?? "Unknown"}
+                      <strong>Uploads</strong>: {item[renderProps.uploads]}
+                    </Card.Text>
+                  )}
+                  {renderProps.lastUpdate && (
+                    <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
+                      <strong>Last update</strong>:{" "}
+                      {item[renderProps.lastUpdate]
+                        ? formatIfDate(item[renderProps.lastUpdate])
+                        : "N/A"}
                     </Card.Text>
                   )}
 
-                  {renderProps.releaseDate && (
+
+
+                  {renderProps.uploadDate && (
                     <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
-                      {formatIfDate(item[renderProps.releaseDate])}
+                      <strong>Upload date</strong>: {formatIfDate(item[renderProps.uploadDate])}
                     </Card.Text>
                   )}
 
@@ -142,7 +217,7 @@ function View({
                   )}
                   {renderProps.user && item[renderProps.user] && (
                     <Card.Text className="text-muted" style={{ fontSize: "0.75rem" }}>
-                      <span>By: </span>
+                      <span><strong>By:</strong>: </span>
                       <a
                         href={item[renderProps.user].link}
                         style={{ color: "#4b0082", textDecoration: "none" }}
@@ -168,28 +243,61 @@ function View({
               elements.push(<strong key="title">{renderTitle(item)}</strong>);
             if (renderProps.releaseDate)
               elements.push(
-                <span key="releaseDate"> — {formatIfDate(item[renderProps.releaseDate])}</span>
+                <span key="releaseDate"> — <strong>Release date</strong>: {formatIfDate(item[renderProps.releaseDate])}</span>
               );
-            {
-              renderProps.description && (
-                <span key="desc"> — {item[renderProps.description]?.slice(0, 80)}...</span>
-              )
+            if (renderProps.lastUpdate) {
+              elements.push(
+                <span key="lastUpdate">
+                  {" "}— <strong>Last update</strong>:{" "}
+                  {item[renderProps.lastUpdate]
+                    ? formatIfDate(item[renderProps.lastUpdate])
+                    : "N/A"}
+                </span>
+              );
             }
-            {
-              renderProps.tags && Array.isArray(item[renderProps.tags]) && (
-                <span key="tags"> — Tags: {item[renderProps.tags].slice(0, 3).join(", ")}</span>
-              )
+
+            if (renderProps.uploadDate)
+              elements.push(
+                <span key="uploadDate"> — <strong>Upload date</strong>: {formatIfDate(item[renderProps.uploadDate])}</span>
+              );
+            // if (renderProps.description) {
+            //   const desc = item[renderProps.description]?.trim();
+            //   elements.push(
+            //     <span key="desc"> — {desc ? desc.slice(0, 80) + "..." : "No description"}</span>
+            //   );
+            // }
+
+            if (renderProps.platforms && Array.isArray(item[renderProps.platforms])) {
+              const platforms = item[renderProps.platforms]
+                .map((pid) => platformMap[pid?.toString()] || null)
+                .filter(Boolean)
+                .join(" / ");
+              if (platforms) {
+                elements.push(<span key="platforms"> — <strong>Platforms</strong>: {platforms}</span>);
+              }
             }
-            {
-              renderProps.downloads !== undefined && (
+
+            if (renderProps.tags && Array.isArray(item[renderProps.tags])) {
+              elements.push(
+                <span key="tags"> — <strong>Tags</strong>: {" "}
+                  {item[renderProps.tags].slice(0, 3).map((tag, i) => (
+                    <span key={i} className="tag-badge">{tag}</span>
+                  ))}
+                </span>
+              );
+            }
+
+            if (renderProps.downloads !== undefined) {
+              elements.push(
                 <span key="downloads"> — {item[renderProps.downloads]} downloads</span>
-              )
+              );
             }
+
             if (renderProps.user && item[renderProps.user]) {
               elements.push(
                 <span key="user">
                   {" "}
-                  — By:{" "}
+                  — <strong>By</strong>:{" "}
                   <a href={item[renderProps.user].link} style={{ color: "#4b0082" }}>
                     {item[renderProps.user].name}
                   </a>

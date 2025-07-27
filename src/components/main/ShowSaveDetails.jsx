@@ -127,6 +127,9 @@ function ShowSaveDetails() {
               <Link to={`/`}>Home</Link>
             </li>
             <li>
+              <Link to={`/catalog`}>Catalog</Link>
+            </li>
+            <li>
               {relatedGame && (
                 <Link to={`/g/${relatedGame.slug}`}>
                   {`${relatedGame.title}` || 'Juego'}

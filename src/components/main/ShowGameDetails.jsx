@@ -20,6 +20,11 @@ import FilterSelect from "../filters/FilterSelect";
 import FilterDate from "../filters/FilterDate";
 
 import '../../styles/main/ShowGameDetails.scss';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowUpFromBracket } from '@fortawesome/free-solid-svg-icons';
+
+import SaveLocationsModal from '../utils/SaveLocationsModal.jsx'
+
 function formatIfDate(value) {
   const date = new Date(value);
   if (!isNaN(date)) {
@@ -46,13 +51,39 @@ function ShowGameDetails() {
   const [viewType, setViewType] = useState("card");
   const [limit, setLimit] = useState(20);
 
+  const [showInstallModal, setShowInstallModal] = useState(false);
+
+  const handleOpenInstallModal = () => setShowInstallModal(true);
+  const handleCloseInstallModal = () => setShowInstallModal(false);
+
 
   const genres = ['accion', 'aventura', 'plataformas']; //provisional
+
+  const [tags, setTags] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [tempTags, setTempTags] = useState([]);
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const { data: tagData } = await api.get(`${config.api.tags}`);
+        const tagArray = Array.isArray(tagData) ? tagData : [tagData];
+        setTags(tagArray);
+      } catch (err) {
+        console.error("Error fetching tags:", err);
+      }
+    };
+
+    fetchTags();
+  }, []);
+
+
 
   useEffect(() => {
     setTempPlatform(selectedPlatforms);
     setTempPostedDate(postedDate);
-  }, [selectedPlatforms, postedDate]);
+    setTempTags(selectedTags);
+  }, [selectedPlatforms, postedDate, selectedTags]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -78,6 +109,21 @@ function ShowGameDetails() {
         const { data: savesRaw } = await api.get(`${config.api.savedatas}?saveID[in]=${gameData.saveID.join(',')}`);
         const saves = Array.isArray(savesRaw) ? savesRaw : [savesRaw];
 
+        // Extraer tagIDs únicos de los saves
+        const tagIDs = Array.from(new Set(saves.flatMap(sf => sf.tags || []))).filter(Boolean);
+
+        // Obtener los tags
+        let tagMap = {};
+        if (tagIDs.length) {
+          const { data: tagData } = await api.get(`${config.api.tags}?tagID[in]=${tagIDs.join(',')}`);
+          const tagArray = Array.isArray(tagData) ? tagData : [tagData];
+          tagMap = tagArray.reduce((acc, tag) => {
+            acc[tag.tagID] = tag.name;
+            return acc;
+          }, {});
+        }
+
+        // Enriquecer los saves
         const enriched = await Promise.all(
           saves.map(async (sf) => {
             if (!sf || !sf.userID) return { ...sf, userName: "Unknown", platformName: "Unknown" };
@@ -86,17 +132,22 @@ function ShowGameDetails() {
               return {
                 ...sf,
                 userName: user?.userName || "Unknown",
-                platformName: platformArray.find(p => p.platformID === sf.platformID)?.name || 'Unknown'
+                platformName: platformArray.find(p => p.platformID === sf.platformID)?.name || 'Unknown',
+                tagNames: sf.tags?.map(id => tagMap[id]).filter(Boolean) || [],
               };
             } catch {
-              return { ...sf, userName: "Unknown", platformName: "Unknown" };
+              return {
+                ...sf,
+                userName: "Unknown",
+                platformName: "Unknown",
+                tagNames: sf.tags?.map(id => tagMap[id]).filter(Boolean) || [],
+              };
             }
           })
         );
 
         const sorted = enriched.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
         setSaveFiles(sorted);
-        setSelectedPlatforms(platformArray.map(p => p.platformID?.toString()));
       } catch (err) {
         console.error(err);
       } finally {
@@ -108,21 +159,41 @@ function ShowGameDetails() {
     fetchData();
   }, [slug]);
 
+
   const filteredSaves = saveFiles.filter(sf => {
-    const matchPlatform = tempPlatform.length
-      ? tempPlatform.includes(String(sf.platformID))
+    const platformIdStr = String(sf.platformID);
+
+    const matchPlatform = selectedPlatforms.length > 0
+      ? selectedPlatforms.includes(platformIdStr)
       : true;
 
-    const matchDate = tempPostedDate
-      ? new Date(sf.postedDate) >= new Date(tempPostedDate)
+    const matchDate = postedDate
+      ? new Date(sf.postedDate) >= new Date(postedDate)
       : true;
 
-    return matchPlatform && matchDate;
+    const matchTags = selectedTags.length > 0
+      ? sf.tags?.some(tag => selectedTags.includes(tag))
+      : true;
+
+    return matchPlatform && matchDate && matchTags;
   });
+
+
+
   const applyFilters = () => {
     setSelectedPlatforms(tempPlatform);
     setPostedDate(tempPostedDate);
+    setSelectedTags(tempTags);
   };
+
+  const resetFilters = () => {
+    setTempPlatform([]);
+    setTempPostedDate("");
+    setSelectedPlatforms([]);
+    setPostedDate("");
+    setSelectedTags([]);
+  };
+
 
   if (isInitialLoad || !game) {
     return (
@@ -142,9 +213,24 @@ function ShowGameDetails() {
       {/* Breadcrumb */}
       <Row>
         <Col>
-          <nav>
-            <Link to="/">Home</Link> / <strong>{game.title}</strong>
-          </nav>
+          {/* Seccion previa al encabezado con el enlace y titulo. La dejo fuera del div container de la pagina a proposito.*/}
+          <section className='nav-section'>
+            <nav>
+              <ol>
+                <li>
+                  <Link to={`/`}>Home</Link>
+                </li>
+                <li>
+                  <Link to={`/catalog`}>Catalog</Link>
+                </li>
+                <li>
+                  {game &&
+                    game.title || 'Juego desconocido'}
+                </li>
+              </ol>
+            </nav>
+          </section>
+
         </Col>
       </Row>
       {/* Header con imagen de fondo */}
@@ -188,6 +274,29 @@ function ShowGameDetails() {
                   <span key={index} className="genre-badge">{genre}</span>
                 ))}
               </div>
+              <div className="header-buttons mt-3 d-flex gap-2">
+                <Button
+                  className="upload-button"
+                  variant="success"
+                  size="lg"
+                  onClick={() => navigate(`/upload?gameID=${game.gameID}`)}
+                >
+                  <FontAwesomeIcon icon={faArrowUpFromBracket} />
+                  Upload Save
+                </Button>
+
+                {game.saveLocations && game.saveLocations.length > 0 && (
+                  <Button
+                    className='saveLocation-button'
+                    variant="info"
+                    size="lg"
+                    onClick={handleOpenInstallModal}
+                  >
+                    Savedata location
+                  </Button>
+                )}
+              </div>
+
             </Col>
 
             <Col md={4} className="text-end">
@@ -198,6 +307,7 @@ function ShowGameDetails() {
                 onError={(e) => { e.target.src = `${config.api.assets}/default/game-cover`; }}
               />
             </Col>
+
           </Row>
         </Container>
       </div>
@@ -218,6 +328,14 @@ function ShowGameDetails() {
               selected={tempPlatform}
               onChange={setTempPlatform}
               options={platformOptions}
+            />
+          </Form.Group>
+          <Form.Group style={{ minWidth: "220px" }} className="mb-0 flex-fill">
+            <FilterSelect
+              label="Tags"
+              selected={tempTags}
+              onChange={setTempTags}
+              options={tags.map(t => ({ value: t.tagID, label: t.name }))}
             />
           </Form.Group>
 
@@ -252,11 +370,15 @@ function ShowGameDetails() {
           </Form.Group>
 
 
-          <div className="d-flex align-items-end mb-0">
+          <div className="d-flex align-items-end mb-0 gap-2">
             <Button variant="primary" onClick={applyFilters}>
               Filter
             </Button>
+            <Button variant="outline-secondary" onClick={resetFilters}>
+              Clear Filters
+            </Button>
           </div>
+
         </Stack>
 
 
@@ -274,7 +396,7 @@ function ShowGameDetails() {
                 description: sf.description,
                 postedDate: sf.postedDate,
                 downloads: sf.nDownloads ?? 0,
-                tags: sf.tags,
+                tags: sf.tagNames,
                 user: {
                   name: sf.userName,
                   link: `/u/${sf.userName}`
@@ -286,7 +408,7 @@ function ShowGameDetails() {
                 link: "link",
                 platforms: "platforms",
                 description: "description",
-                releaseDate: "postedDate",
+                uploadDate: "postedDate",
                 downloads: "downloads",
                 tags: "tags",
                 user: "user"
@@ -304,6 +426,12 @@ function ShowGameDetails() {
           </Col>
         </Row>
       </Container>
+      <SaveLocationsModal
+        show={showInstallModal}
+        onHide={handleCloseInstallModal}
+        saveLocations={game.saveLocations}
+      />
+
     </>
   );
 }

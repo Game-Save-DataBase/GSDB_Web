@@ -5,8 +5,7 @@
   background-size: cover;
   background-position: center;
   min-height: 300px;
-  display: flex;
-  align-items: center;
+  display: block;
 
   .overlay {
     position: absolute;
@@ -27,6 +26,7 @@
 
     h1 {
       font-size: 2.5rem;
+      color: white;
     }
 
     .platform-logo {
@@ -50,14 +50,26 @@
       font-style: italic;
       margin-bottom: 0;
       white-space: nowrap;
-      color: white; 
+      color: white;
     }
 
-    .genre-container {
-      margin-top: 0.5rem;
+    .genres-container {
       display: flex;
       flex-wrap: wrap;
       gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .upload-button{
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: '0.5rem';
+      background-color: #198754 !important;
+    }
+    .saveLocation-button{
+      font-size: 1rem;
+      background-color: #0dcaf0 !important;
     }
 
     .genre-badge {

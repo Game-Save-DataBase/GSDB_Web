@@ -6,8 +6,10 @@ import { UserContext } from "../../contexts/UserContext";
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import '../../styles/Common.scss';
+import { useSearchParams } from "react-router-dom";
 
 const UploadSave = () => {
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useContext(UserContext);
   const [message, setMessage] = useState('');
@@ -26,6 +28,27 @@ const UploadSave = () => {
   const [tags, setTags] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
   const [platforms, setPlatforms] = useState([]);
+
+
+  useEffect(() => {
+    const gameIDFromParam = searchParams.get("gameID");
+    if (gameIDFromParam) {
+      const fetchGameById = async () => {
+        try {
+          const { data } = await api.get(`${config.api.games}?gameID=${gameIDFromParam}`);
+          if (data) {
+            const game = Array.isArray(data) ? data[0] : data;
+            setSelectedGameObj(game);
+            setSaveFile(prev => ({ ...prev, gameID: game.gameID }));
+            // También puedes disparar fetchGamesByTitle o actualizar la lista si quieres
+          }
+        } catch (err) {
+          console.error("Error fetching game by ID:", err);
+        }
+      };
+      fetchGameById();
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     // Fetch all platforms once at component load
@@ -178,6 +201,7 @@ const UploadSave = () => {
             labelKey="title"
             options={games}
             placeholder="Search for a game..."
+            selected={selectedGameObj ? [selectedGameObj] : []}
             onChange={(selected) => {
               if (selected.length > 0) {
                 const game = selected[0];
@@ -192,7 +216,8 @@ const UploadSave = () => {
               if (e && e.type === 'change') {
                 handleGameInputChange(text);
               }
-            }} renderMenuItemChildren={(option) => {
+            }}
+            renderMenuItemChildren={(option) => {
               const year = option.release_date ? new Date(option.release_date).getFullYear() : 'TBD';
               const platformNames = getPlatformAbbreviations(option.platformID || []).join(", ");
               return (
@@ -206,6 +231,7 @@ const UploadSave = () => {
             }}
             emptyLabel="No games found"
           />
+
         </div>
 
         {selectedGameObj?.platformID?.length > 0 && (

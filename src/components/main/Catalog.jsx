@@ -120,6 +120,30 @@ function Catalog() {
     }
   };
 
+  const resetFilters = () => {
+    const defaultFilters = {
+      letter: "ALL",
+      platform: [],
+      releaseDate: "",
+    };
+
+    setTempLetter("ALL");
+    setTempPlatform([]);
+    setTempReleaseDate("");
+
+    setLetter("ALL");
+    setPlatform([]);
+    setReleaseDate("");
+
+    setSearchParams(new URLSearchParams()); // Limpia la URL
+
+    setOffset(0);
+    setCurrentPage(1);
+
+    fetchGames(defaultFilters, 0, limit);
+  };
+
+
   const applyFilters = (newFilters) => {
     const { letter, platform, releaseDate } = newFilters;
 
@@ -244,12 +268,17 @@ function Catalog() {
             <option value={40}>40</option>
           </Form.Select>
         </Form.Group>
-
-        <div className="d-flex align-items-end mb-0">
+        
+        <div className="d-flex align-items-end mb-0 gap-2">
           <Button variant="primary" onClick={handleApplyFilters}>
             Filter
           </Button>
+          <Button variant="outline-secondary" onClick={resetFilters}>
+            Clear Filters
+          </Button>
         </div>
+
+
       </Stack>
 
 
@@ -264,12 +293,13 @@ function Catalog() {
           renderProps={{
             title: "title",
             releaseDate: "release_date",
+            lastUpdate: "lastUpdate",
             image: "cover",
             uploads: "nUploads",
             link: "url",
-            platforms: "platformID", 
+            platforms: "platformID",
           }}
-          platformMap={platformAbbrMap} 
+          platformMap={platformAbbrMap}
           limit={limit}
           offset={offset}
           currentPage={currentPage}

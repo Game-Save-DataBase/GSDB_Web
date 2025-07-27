@@ -1,0 +1,62 @@
+.tag-badge {
+  display: inline-block;
+  background-color: #7b2cbf; // morado
+  color: white;
+  font-size: 0.65rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  margin-right: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+    
+.bg-purple {
+  background-color: #7d3cff;
+}
+
+.overflow-auto::-webkit-scrollbar {
+  display: none;
+}
+
+.tags-scroll-container {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding: 4px 24px; // espacio para los botones
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.tag-pill {
+  padding: 4px 8px;
+  background-color: #7d3cff;
+  color: white;
+  font-size: 0.7rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 100%;
+  background: none;
+  border: none;
+  color: black;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 1;
+
+  &.left {
+    left: 0;
+  }
+
+  &.right {
+    right: 0;
+  }
+}
