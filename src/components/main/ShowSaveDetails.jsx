@@ -1,29 +1,48 @@
 import config from '../../utils/config';
 import React, { useState, useEffect, useContext } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate,  useLocation} from 'react-router-dom';
 import api from '../../utils/interceptor';
 import { LoadingContext } from '../../contexts/LoadingContext';
 import '../../styles/Common.scss';
 import '../../styles/main/ShowSaveDetails.scss';
-
+import {
+  Row,
+  Col,
+  Modal, Carousel,
+} from 'react-bootstrap';
 function ShowSaveDetails() {
   const [saveData, setSaveData] = useState({});
   const [relatedGame, setRelatedGame] = useState(null);
   const [relatedPlatform, setRelatedPlatform] = useState(null);
   const [relatedUser, setRelatedUser] = useState(null);
-  const [comments, setComments] = useState([]);
-  const [screenshots, setScreenshots] = useState([]);
   const [tags, setTags] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const location = useLocation();
+
+  const carouselImages = relatedGame ? [
+    'https://static1.pocketlintimages.com/wordpress/wp-content/uploads/141774-games-news-feature-best-screenshots-image3-fanipzqw5s.jpg',
+    'https://singleplayer.org/wp-content/uploads/2024/02/image-10.png',
+    'https://gamingbolt.com/wp-content/uploads/2013/12/1.-Assassins-Creed-4.jpg',
+    'https://interfaceingame.com/wp-content/uploads/taxonomies/genres/genres-adventure-500x281.jpg',
+  ] : [];
 
   const { id } = useParams();
   const { isInitialLoad, block, unblock, markAsLoaded, resetLoad } = useContext(LoadingContext);
+  useEffect(() => {
+    setRelatedGame(null);
+    setRelatedPlatform(null);
+    setRelatedUser(null);
+    setTags([]);
+    setSaveData({});
+  }, [id, location.key]);
 
   useEffect(() => {
     const loadAll = async () => {
       try {
         resetLoad();
         block();
-
+        console.log("loading...")
         // 1. Guardado principal
         const { data: save } = await api.get(`${config.api.savedatas}?id=${id}`);
         setSaveData(save);
@@ -58,38 +77,6 @@ function ShowSaveDetails() {
           }
         }
 
-        // 5. Comentarios + usuarios de cada uno
-        try {
-          const { data: rawComments } = await api.get(`${config.api.comments}?saveID=${id}`);
-          let commentsData = rawComments === "" ? [] : Array.isArray(rawComments) ? rawComments : [rawComments];
-
-          const updatedComments = await Promise.all(
-            commentsData.map(async (comment) => {
-              try {
-                const { data: user } = await api.get(`${config.api.users}?id=${comment.userID}`);
-                return {
-                  ...comment,
-                  userName: user?.userName || 'Usuario desconocido',
-                  alias: user?.alias || '',
-                  pfp: user?.pfp || config.paths.pfp_default
-                };
-              } catch {
-                return {
-                  ...comment,
-                  userName: 'Usuario desconocido',
-                  alias: '',
-                  pfp: config.paths.pfp_default
-                };
-              }
-            })
-          );
-
-          setComments(updatedComments);
-        } catch (err) {
-          console.error('Error cargando comentarios:', err);
-          setComments([]);
-        }
-
         // 6. Tags (si existen)
         if (save.tags && save.tags.length > 0) {
           try {
@@ -100,184 +87,198 @@ function ShowSaveDetails() {
           }
         }
 
-        // 7. Screenshots (en futuro real, aquí harías el fetch a imágenes)
-        setScreenshots([]); // Por ahora vacío
-
       } catch (err) {
         console.error('Error general al cargar el archivo de guardado:', err);
       } finally {
         markAsLoaded();
         unblock();
+        console.log("loaded...")
       }
+
     };
-
     loadAll();
-  }, [id]);
+  }, [id, location.key]);
+  // Función para abrir modal y establecer imagen activa
+  const openModalAtIndex = (index) => {
+    setActiveIndex(index);
+    setShowModal(true);
+  };
 
+  // Función para cerrar modal
+  const closeModal = () => setShowModal(false);
   if (isInitialLoad) return <p style={{ textAlign: 'center' }}>loading...</p>;
 
+  function formatFileSize(bytes) {
+    const size = bytes / 1024 / 1024;
+    return size < 1
+      ? `${(bytes / 1024).toFixed(1)} KB`
+      : `${size.toFixed(1)} MB`;
+  }
+
+  function formatDate(isoDate) {
+    if (!isoDate) return '';
+    const date = new Date(isoDate);
+    return date.toLocaleDateString('es-ES');
+  }
 
   return (
-    <div>
-      {/* Seccion previa al encabezado con el enlace y titulo. La dejo fuera del div container de la pagina a proposito.*/}
-      <section className='nav-section'>
-        <nav>
-          <ol>
-            <li>
-              <Link to={`/`}>Home</Link>
-            </li>
-            <li>
-              <Link to={`/catalog`}>Catalog</Link>
-            </li>
-            <li>
-              {relatedGame && (
-                <Link to={`/g/${relatedGame.slug}`}>
-                  {`${relatedGame.title}` || 'Juego'}
-                </Link>
-              )}
-            </li>
-            <li>
-              {saveData &&
-                saveData.title || 'Archivo de Guardado'}
-            </li>
-          </ol>
-        </nav>
-      </section>
+    <>
+      {/* Breadcrumb */}
+      <Row>
+        <Col>
+          {/* Seccion previa al encabezado con el enlace y titulo. La dejo fuera del div container de la pagina a proposito.*/}
+          <section className='nav-section'>
+            <nav>
+              <ol>
+                <li>
+                  <Link to={`/`}>Home</Link>
+                </li>
+                <li>
+                  <Link to={`/catalog`}>Catalog</Link>
+                </li>
+                <li>
+                  <Link to={`/g/${relatedGame.slug}`}>{relatedGame.title}</Link>
+                </li>
+                <li>  </li>
+              </ol>
+            </nav>
+          </section>
 
+        </Col>
+      </Row>
+      <div className="save-details">
 
-      {/* .................AQUI EMPIEZA LA PAGINA */}
-      <div className="container">
-        {/* ...................................DATA SECTION */}
-        <section className="data-section">
-          <div className='table-data'>
-            <div className="row">
-              {/* Columna izquierda: screenshotn del juego y boton de descarga */}
-              <div className="row-element text-center">
-                {relatedGame && (
+        {/* Parte superior: Título, subtítulo y descripción */}
+        <header className="save-header">
+          <div className="header-left">
+            <h1>{saveData.title || 'Untitled Save'}</h1>
+            {relatedGame && relatedPlatform && (
+              <h2 className="subtitle">
+                <Link to={`/g/${relatedGame.slug}`}>{relatedGame.title}</Link>
+                {' • '}
+                {relatedPlatform.abbreviation}
+                <img
+                  src={relatedPlatform.logo}
+                  alt={relatedPlatform.name}
+                  className="platform-logo"
+                />
+              </h2>
+            )}
+            <p className="description">
+              {saveData.description || 'No description provided.'}
+            </p>
+          </div>
+
+          <div className="header-right">
+            <button
+              className="download-button"
+              onClick={() => {
+                window.location.href = `${config.api.assets}/savedata/${id}`;
+              }}
+            >
+              Download
+            </button>
+            <div className="download-info">
+              <span className="file-size">
+                {saveData.fileSize !== undefined
+                  ? (saveData.fileSize >= 1048576
+                    ? `${(saveData.fileSize / 1048576).toFixed(2)} MB`
+                    : `${(saveData.fileSize / 1024).toFixed(2)} KB`)
+                  : 'Unknown size'}
+              </span>
+              <span className="download-count">⬇️ {saveData.nDownloads || 0}</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Tags */}
+        {tags.length > 0 && (
+          <div className="tags-container">
+            {tags.map(tag => (
+              <span key={tag._id} className="tag-badge" data-tooltip={tag.description}>{tag.name}</span>
+            ))}
+          </div>
+        )}
+
+        {/* Miniaturas */}
+        <div className="carousel-container">
+          {carouselImages.map((imgSrc, index) => (
+            <img
+              key={index}
+              src={imgSrc}
+              alt={`Thumbnail ${index + 1}`}
+              className="carousel-image"
+              onClick={() => openModalAtIndex(index)}
+              style={{ cursor: 'pointer' }}
+            />
+          ))}
+        </div>
+
+        {/* Modal con carrusel */}
+        <Modal show={showModal} onHide={closeModal} size="lg" centered>
+          <Modal.Header closeButton />
+          <Modal.Body>
+            <Carousel activeIndex={activeIndex} onSelect={setActiveIndex} interval={null}>
+              {carouselImages.map((imgSrc, idx) => (
+                <Carousel.Item key={idx}>
                   <img
-                    src={`${relatedGame.cover}`}
-                    alt={relatedGame.title}
-                    onError={(e) => { e.target.src = `${config.connection}${config.paths.gameCover_default}`; }}
+                    className="d-block w-100"
+                    src={imgSrc}
+                    alt={`Slide ${idx + 1}`}
+                    style={{ maxHeight: '500px', objectFit: 'contain' }}
                   />
-                )}
-              </div>
+                </Carousel.Item>
+              ))}
+            </Carousel>
+          </Modal.Body>
+        </Modal>
 
-              {/* Columna derecha: información del archivo */}
-              <div className='row-element text-muted'>
-                <p>
-                  <strong>Platform:</strong>{' '}
-                  {relatedPlatform ? relatedPlatform.name || 'Plataforma desconocida' : 'Plataforma desconocida'}
-                </p>
 
-                <p>
-                  <strong>File size:</strong> {saveData.filseSize || 'Tamaño sin determinar'}
-                </p>
-                <p>
-                  <strong>Submitted By:</strong> {' '}
-                  {relatedUser ? (
-                    <Link to={`/u/${relatedUser.userName}`}>
-                      {`@${relatedUser.userName}` || 'Desconocido'}
-                    </Link>
-                  ) : (
-                    'Desconocido'
-                  )}
-                </p>
-                <p>
-                  <strong>Date added:</strong> {saveData.postedDate || 'N/A'}
-                </p>
-                <p>
-                  <strong>Downloads:</strong> {saveData.nDownloads || 0}
-                </p>
-                {/* <br></br> */}
-                <p>
-                  <strong>Descripción:</strong> {saveData.description || 'Sin descripción disponible'}
-                </p>
-                {tags.length > 0 && (
-                  <div className="tags-container">
-                    {tags.map(tag => (
-                      <span key={tag._id} className="tag-badge" data-tooltip={tag.description}>{tag.name}</span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className='row'>
-              <div className='row-element text-center'>
-                <button type="button" className="gsdb-btn-default"
-                  onClick={() => {
-                    window.location.href = `${config.api.assets}/savedata/${id}`;
-                  }}>
-                  Download</button>
-              </div>
+        <div className="save-separator" />
+        {/* Información inferior */}
+        <div className="save-footer">
+          {/* Uploaded by */}
+          <div className="block uploaded-by">
+            <div className="label">Uploaded by:</div>
+            <div className="content">
+              <img
+                src={'https://i.pinimg.com/236x/ac/d1/c1/acd1c1059f69113985d167a8c1a2ecf9.jpg'}
+                alt="Uploader"
+                className="uploader-avatar"
+              />
+              <Link to={`/u/${relatedUser?.userName || ''}`} className="uploader-name">
+                @{relatedUser?.userName || 'Unknown'}
+              </Link>
             </div>
           </div>
-        </section>
 
-        {/* ...................................INFO SECTION */}
-        <section className="info-section">
-
-          {/* pestañas de las tabs */}
-          <div className='tabs-container'>
-            <ul role="tablist">
-              <li role="presentation">
-                <button className="active" data-bs-toggle="tab" data-bs-target="#comments">Comments</button>
-              </li>
-              <li role="presentation">
-                <button className={`${screenshots.length <= 0 ? 'disabled' : ''}`} data-bs-toggle="tab" data-bs-target="#screenshots">Screenshots</button>
-              </li>
-            </ul>
+          {/* Posted date */}
+          <div className="block posted-date">
+            <div className="label">Posted date:</div>
+            <div className="content">
+              {formatDate(saveData.postedDate)}
+            </div>
           </div>
 
-          {/* contenido de las tabs */}
-          {/* COMENTARIOS */}
-          <div className="tabs-content" >
-            <div className="gsdbtab show active" id="comments">
-
-              {comments && comments.length > 0 ? (
-                comments.map((comment, index) => (
-                  <div key={index} className="comment">
-                    <p>
-                      <small>{comment.postedDate}</small>
-                    </p>
-                    <img
-                      src={`${config.connection}${comment.pfp}`}
-                      alt={comment.alias || comment.userName}
-                      onError={(e) => { e.target.src = `${config.connection}${config.paths.pfp_default}`; }}
-                    />
-                    <p>
-                      <strong>{comment.alias || comment.userName}</strong>: {comment.text}
-                    </p>
-                  </div>
-                ))
-              ) : (
-                <p className="text-muted">No hay comentarios para este archivo.</p>
-              )}
+          {/* Likes */}
+          <div className="block likes-block">
+            <div className="label">Rating:</div>
+            <div className="content">
+              <button className="like-button">
+                👍 <span className="like-count">12</span>
+              </button>
+              <button className="dislike-button">
+                👎 <span className="dislike-count">3</span>
+              </button>
             </div>
-
-            {/* SCREENSHOTS */}
-            <div className="gsdbtab" id="screenshots">
-              {screenshots.length > 0 ? (
-                screenshots.map((screenshot, index) => (
-                  <img key={index}
-                    src={`${config.connection}${screenshot}`}
-                    //src={`/src/${screenshot}`} //DEBERIA COGER ESTO DE BASE DE DATOS, PERO AUN NO SE HACERLO BIEN. HASTA QUE SE ARREGLE LO COGEMOS DE LA WEB PARA EVITAR ERRORES EN CONSOLA
-                    alt={`Screenshot ${index + 1}`} className="screenshot" />
-
-                ))
-              ) : (
-                <p>No hay imágenes disponibles para este guardado.</p>
-              )}
-
-            </div>
-
-
           </div>
-        </section>
+        </div>
+
 
       </div>
-      {/* TO DO: AÑADIR MODAL PARA LAS SCREENSHOTS */}
-    </div>
+
+    </>
+
   );
 }
 

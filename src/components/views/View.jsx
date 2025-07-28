@@ -33,7 +33,7 @@ function View({
   onPageChange = () => { },
   platformMap = {},
 }) {
-  data = Array.isArray(data) ? data : data ? [data] : [];
+  data = Array.isArray(data) ? data.filter(Boolean) : data ? [data] : [];
   const renderTitle = (item) => {
     const title = item[renderProps.title];
     const link = item[renderProps.link];
@@ -281,7 +281,7 @@ function View({
               elements.push(
                 <span key="tags"> — <strong>Tags</strong>: {" "}
                   {item[renderProps.tags].slice(0, 3).map((tag, i) => (
-                    <span key={i} className="tag-badge">{tag}</span>
+                    <span key={i} className="tag-pill">{tag}</span>
                   ))}
                 </span>
               );

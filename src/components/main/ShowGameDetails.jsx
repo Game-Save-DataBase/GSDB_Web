@@ -387,21 +387,23 @@ function ShowGameDetails() {
           <Col>
             <View
               type={viewType}
-              data={filteredSaves.map(sf => ({
-                ...sf,
-                title: sf.title,
-                image: game.cover,
-                link: `/s/${sf.saveID}`,
-                platforms: [sf.platformID],
-                description: sf.description,
-                postedDate: sf.postedDate,
-                downloads: sf.nDownloads ?? 0,
-                tags: sf.tagNames,
-                user: {
-                  name: sf.userName,
-                  link: `/u/${sf.userName}`
-                }
-              }))}
+              data={filteredSaves
+                .filter(sf => sf && sf.saveID && sf.userName) // evita objetos vacíos o incompletos
+                .map(sf => ({
+                  ...sf,
+                  title: sf.title || "Untitled",
+                  image: game.cover || `${config.api.assets}/default/game-cover`,
+                  link: `/s/${sf.saveID}`,
+                  platforms: [sf.platformID],
+                  description: sf.description || "No description",
+                  postedDate: sf.postedDate,
+                  downloads: sf.nDownloads ?? 0,
+                  tags: Array.isArray(sf.tagNames) ? sf.tagNames : [],
+                  user: {
+                    name: sf.userName,
+                    link: `/u/${sf.userName}`
+                  }
+                }))}
               renderProps={{
                 title: "title",
                 image: "image",

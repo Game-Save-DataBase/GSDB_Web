@@ -3,149 +3,252 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del sav
 */
 @use '../common' as *;
 
-/* Estilo general del contenedor */
-.container {
-  margin-top: 20px;
-  padding: 20px;
-}
+.save-details {
+  max-width: auto;
+  margin: auto;
+  padding: 2rem;
 
-.container>* {
-  background-color: var(--color-background);
-  color: var(--color-text-primary);
-}
+  .save-header {
+    background-color: var(--color-foreground); 
+    padding: 1rem 2rem; 
+    border-radius: 8px; 
 
-/*........................................ Sección de información */
-/* tiene que haber menos espacio para la imagen y mas espacio para el resto de info */
-.data-section {
-  margin-bottom: 30px;
-  // background-color: #f9f9f9;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
 
-  .table-data {
-    padding: 1%;
-    background-color: var(--color-foreground);
+    .header-left {
+      max-width: 70%;
+      text-align: left;
 
-    //la parte de texto centrado, muted etc la añado en el jsx porque crear mas clases para eso me parece innecesario
-    .row {
-      display: flex;
-      padding: 5px;
+      h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.2rem;
+      }
 
-      // align-items: center;
-      .row-element {
-        @extend .col-md-4;
+      .subtitle {
+        font-size: 1.2rem;
+        color: #777;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        img.platform-logo {
+          height: 20px;
+        }
+      }
+
+      .description {
+        white-space: pre-wrap;
+        margin-top: 1rem;
+        font-size: 1rem;
+        color: #444;
       }
     }
 
-    /* Imagen del juego */
-    img {
-      max-width: 200px;
-      height: auto;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .tags-container {
-      margin-top: 0.5rem;
+    .header-right {
       display: flex;
-      flex-wrap: wrap;
+      flex-direction: column;
+      align-items: flex-end;
       gap: 0.5rem;
-    }
 
-    .tag-badge {
-      background-color: var(--color-text-secondary);
-      color: white;
-      padding: 4px 8px;
-      border-radius: 12px;
-      font-size: 0.85rem;
-      display: inline-block;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      transition: background-color 0.3s ease, color 0.3s ease;
-      cursor: pointer;
-
-      &:hover {
-        background-color: var(--color-h2);
+      .download-button {
+        padding: 0.5rem 1rem;
+        background-color: #007bff;
         color: white;
-        filter: drop-shadow(0 0 3px var(--color-text-secondary));
+        border: none;
+        border-radius: 0.4rem;
+        cursor: pointer;
+        font-weight: bold;
+
+        &:hover {
+          background-color: #0056b3;
+        }
       }
 
-      &::after {
-        content: attr(data-tooltip);
-        position: absolute;
-        bottom: 125%;
-        left: 50%;
-        transform: translateX(-50%) translateY(5px);
-        background: rgba(30, 30, 30, 0.95);
-        color: white;
-        padding: 6px 10px;
-        border-radius: 6px;
-        white-space: nowrap;
-        font-size: 0.75rem;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.3s ease, transform 0.3s ease;
-        z-index: 10;
+      .download-info {
+        margin-top: 0.4rem;
+        font-size: 0.85rem;
+        color: #888;
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+        justify-content: flex-end;
       }
-
-      &:hover::after {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-      }
-
     }
   }
+
+
+  .tags-container {
+    margin: 1.5rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-start;
+  }
+
+  .carousel-container {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+
+    .carousel-image {
+      width: 150px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 0.5rem;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  .save-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 2rem;
+
+    .block {
+      display: flex;
+      flex-direction: column;
+
+      .label {
+        font-weight: bold;
+        font-size: 0.85rem;
+        color: #666;
+        margin-bottom: 0.3rem;
+      }
+
+      .content {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.95rem;
+      }
+    }
+
+    .uploaded-by {
+      .uploader-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .uploader-name {
+        color: #007bff;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    .likes-block {
+      .content {
+        gap: 0.7rem;
+
+        button {
+          background: none;
+          border: none;
+          font-size: 1.2rem;
+          cursor: pointer;
+
+          &:hover {
+            transform: scale(1.1);
+          }
+        }
+      }
+    }
+
+    .download-block {
+      align-items: flex-end;
+
+      .download-button {
+        padding: 0.5rem 1rem;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 0.4rem;
+        cursor: pointer;
+
+        &:hover {
+          background-color: #0056b3;
+        }
+      }
+
+      .download-info {
+        margin-top: 0.4rem;
+        display: flex;
+        gap: 1rem;
+        font-size: 0.8rem;
+        color: #888;
+        justify-content: flex-end;
+      }
+    }
+  }
+
+  .save-separator {
+    height: 1px;
+    background-color: #ddd;
+    margin: 2rem 0;
+    border: none;
+  }
+
+
+
+
 }
 
 
+.tags-container {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
 
-
-/* .......................................Sección de comentarios y screenshots */
-.info-section {
-  margin-bottom: 30px;
-  padding: 1%;
-  background-color: var(--color-foreground);
-  border-radius: 10px;
+.tag-badge {
+  background-color: var(--color-text-secondary);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  display: inline-block;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  cursor: pointer;
 
-  .comment {
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
-
-    :last-child {
-      border-bottom: none;
-    }
-
-    p {
-      font-size: 1rem;
-    }
+  &:hover {
+    background-color: var(--color-h2);
+    color: white;
+    filter: drop-shadow(0 0 3px var(--color-text-secondary));
   }
 
-
-  .screenshot {
-    width: 200px;
-    height: 200px;
-    overflow: hidden;
-    /* Asegura que la imagen no se desborde */
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s, filter 0.3s;
-    /* Transición para el efecto hover */
-    padding: 5px;
-
-    /* Imagen dentro de screenshot */
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      /* Asegura que la imagen cubra el contenedor sin deformarse */
-    }
-
-    &:hover {
-      transform: scale(1.05);
-      /* Aumenta ligeramente el tamaño de la imagen */
-      filter: brightness(1.2);
-      /* Ilumina la imagen al pasar el ratón */
-      cursor: pointer;
-    }
+  &::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%) translateY(5px);
+    background: rgba(30, 30, 30, 0.95);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 10;
   }
+
+  &:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
 }
