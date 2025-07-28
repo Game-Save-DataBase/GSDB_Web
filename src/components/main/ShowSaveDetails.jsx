@@ -1,15 +1,14 @@
 import config from '../../utils/config';
 import React, { useState, useEffect, useContext } from 'react';
-import { Link, useParams, useNavigate,  useLocation} from 'react-router-dom';
+import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import api from '../../utils/interceptor';
 import { LoadingContext } from '../../contexts/LoadingContext';
 import '../../styles/Common.scss';
 import '../../styles/main/ShowSaveDetails.scss';
-import {
-  Row,
-  Col,
-  Modal, Carousel,
-} from 'react-bootstrap';
+import { Row, Col, Modal, Carousel, Form, Button, Alert, Spinner } from 'react-bootstrap';
+
+import { UserContext } from '../../contexts/UserContext';
+
 function ShowSaveDetails() {
   const [saveData, setSaveData] = useState({});
   const [relatedGame, setRelatedGame] = useState(null);
@@ -18,8 +17,7 @@ function ShowSaveDetails() {
   const [tags, setTags] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
-  const location = useLocation();
-
+  const [comments, setComments] = useState([]);
   const carouselImages = relatedGame ? [
     'https://static1.pocketlintimages.com/wordpress/wp-content/uploads/141774-games-news-feature-best-screenshots-image3-fanipzqw5s.jpg',
     'https://singleplayer.org/wp-content/uploads/2024/02/image-10.png',
@@ -29,20 +27,21 @@ function ShowSaveDetails() {
 
   const { id } = useParams();
   const { isInitialLoad, block, unblock, markAsLoaded, resetLoad } = useContext(LoadingContext);
-  useEffect(() => {
-    setRelatedGame(null);
-    setRelatedPlatform(null);
-    setRelatedUser(null);
-    setTags([]);
-    setSaveData({});
-  }, [id, location.key]);
+  const { user } = useContext(UserContext);
+  const [newComment, setNewComment] = useState('');
+  const [posting, setPosting] = useState(false);
+  const [postError, setPostError] = useState(null);
+  const [usersMap, setUsersMap] = useState({}); // <-- mapa userID => userInfo
+  const [replyingTo, setReplyingTo] = useState(null); // commentID al que se responde
+  const [replyText, setReplyText] = useState('');
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadAll = async () => {
       try {
         resetLoad();
         block();
-        console.log("loading...")
         // 1. Guardado principal
         const { data: save } = await api.get(`${config.api.savedatas}?id=${id}`);
         setSaveData(save);
@@ -87,17 +86,56 @@ function ShowSaveDetails() {
           }
         }
 
+        // Cargar comentarios y usuarios de comentarios
+        const loadCommentsAndUsers = async () => {
+          try {
+            const { data } = await api.get(`${config.api.comments}?saveID=${save.saveID}`);
+            const commentList = Array.isArray(data) ? data : [data];
+            setComments(commentList);
+
+            // Extraer userIDs únicos de comentarios
+            const uniqueUserIDsSet = new Set(commentList.map(c => c.userID).filter(Boolean));
+            let uniqueUserIDs = Array.from(uniqueUserIDsSet);
+
+            // Añadir usuario logueado al inicio si existe y no está ya
+            if (user && !uniqueUserIDs.includes(user.userID)) {
+              uniqueUserIDs.unshift(user.userID);
+            }
+
+            if (uniqueUserIDs.length === 0) {
+              setUsersMap({});
+              return;
+            }
+
+            // Fetch info usuarios
+            const { data: usersData } = await api.get(`${config.api.users}?userID[in]=${uniqueUserIDs.join(',')}`);
+            const usersArray = Array.isArray(usersData) ? usersData : [usersData];
+
+            // Crear mapa userID => userInfo
+            const map = {};
+            usersArray.forEach(u => {
+              if (u.userID) map[u.userID] = u;
+            });
+            setUsersMap(map);
+
+          } catch (error) {
+            console.warn('Error loading comments or users:', error);
+          }
+        };
+
+        await loadCommentsAndUsers();
+
+
       } catch (err) {
         console.error('Error general al cargar el archivo de guardado:', err);
       } finally {
         markAsLoaded();
         unblock();
-        console.log("loaded...")
       }
 
     };
     loadAll();
-  }, [id, location.key]);
+  }, [id, user, resetLoad, block, unblock, markAsLoaded]);
   // Función para abrir modal y establecer imagen activa
   const openModalAtIndex = (index) => {
     setActiveIndex(index);
@@ -108,18 +146,156 @@ function ShowSaveDetails() {
   const closeModal = () => setShowModal(false);
   if (isInitialLoad) return <p style={{ textAlign: 'center' }}>loading...</p>;
 
-  function formatFileSize(bytes) {
-    const size = bytes / 1024 / 1024;
-    return size < 1
-      ? `${(bytes / 1024).toFixed(1)} KB`
-      : `${size.toFixed(1)} MB`;
-  }
-
   function formatDate(isoDate) {
     if (!isoDate) return '';
     const date = new Date(isoDate);
     return date.toLocaleDateString('es-ES');
   }
+
+  const postComment = async (isReply = false, parentID = null) => {
+    const text = isReply ? replyText : newComment;
+    if (!text.trim()) return;
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    setPosting(true);
+    setPostError(null);
+
+  try {
+    const payload = {
+      text,
+      userID: user.userID,
+      saveID: saveData.saveID,
+      postedDate: new Date().toISOString(),
+      ...(isReply && parentID ? { previousComment: parentID } : {}),
+    };
+
+    console.log('Enviando comentario:', payload); // <-- AÑADIDO
+
+    await api.post(`${config.api.comments}`, payload);
+
+      // Reset
+      if (isReply) {
+        setReplyText('');
+        setReplyingTo(null);
+      } else {
+        setNewComment('');
+      }
+
+      const { data } = await api.get(`${config.api.comments}?saveID=${saveData.saveID}`);
+      const commentList = Array.isArray(data) ? data : [data];
+      setComments(commentList);
+    } catch (err) {
+      setPostError('Failed to post comment. Try again later.');
+    } finally {
+      setPosting(false);
+    }
+  };
+
+
+  const groupedComments = comments.reduce((acc, c) => {
+    const parent = c.previousComment || 'root';
+    acc[parent] = acc[parent] || [];
+    acc[parent].push(c);
+    return acc;
+  }, {});
+
+
+
+  const renderComments = (parentID = 'root', depth = 0) => {
+    const commentList = groupedComments[parentID] || [];
+
+    return commentList.map((comment, index) => {
+      const u = usersMap[comment.userID];
+      console.log(u)
+      const alias = u ? (u.alias?.trim() || u.userName) : 'Unknown';
+      const username = u ? u.userName : 'unknown';
+
+      return (
+        <div
+          key={comment.commentID || `${comment.userID}-${index}`}
+          className="mb-3"
+          style={{ marginLeft: `${depth * 20}px` }}
+        >
+          <div className="comment-item d-flex">
+            <img
+              src={`${config.api.assets}/user/${comment.userID}/pfp`}
+              alt="User profile"
+              width={40}
+              height={40}
+              className="me-2"
+              style={{ borderRadius: '50%', objectFit: 'cover' }}
+              onError={(e) => { e.target.src = '/default-avatar.png'; }}
+            />
+            <div>
+              <div className="comment-header mb-1">
+                <Link to={`/u/${username}`} className="comment-user-link">
+                  <strong>{alias}</strong> <span className="text-muted">(@{username})</span>
+                </Link>
+                <span className="comment-date ms-2 text-muted">
+                  {comment.postedDate ? new Date(comment.postedDate).toLocaleDateString('es-ES') : ''}
+                </span>
+              </div>
+              <div className="comment-text" style={{ whiteSpace: 'pre-wrap' }}>
+                {comment.text}
+              </div>
+              <Button
+                variant="link"
+                size="sm"
+                onClick={() => setReplyingTo(comment.commentID)}
+                className="mt-1 p-0"
+              >
+                Responder
+              </Button>
+              {replyingTo === comment.commentID && (
+                <Form
+                  onSubmit={e => {
+                    e.preventDefault();
+                    postComment(true, comment.commentID);
+                  }}
+                  className="mt-2"
+                >
+                  <Form.Control
+                    as="textarea"
+                    rows={2}
+                    placeholder="Escribe tu respuesta..."
+                    value={replyText}
+                    onChange={e => setReplyText(e.target.value)}
+                    disabled={posting}
+                  />
+                  <div className="mt-1">
+                    <Button
+                      type="submit"
+                      size="sm"
+                      disabled={posting || !replyText.trim()}
+                    >
+                      {posting ? 'Enviando...' : 'Responder'}
+                    </Button>{' '}
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setReplyingTo(null);
+                        setReplyText('');
+                      }}
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                </Form>
+              )}
+            </div>
+          </div>
+
+          {/* Renderizar hijos */}
+          {renderComments(comment.commentID, depth + 1)}
+        </div>
+      );
+    });
+  };
+
 
   return (
     <>
@@ -242,7 +418,7 @@ function ShowSaveDetails() {
             <div className="label">Uploaded by:</div>
             <div className="content">
               <img
-                src={'https://i.pinimg.com/236x/ac/d1/c1/acd1c1059f69113985d167a8c1a2ecf9.jpg'}
+                src={`${config.api.assets}/user/${saveData.userID}/pfp`}
                 alt="Uploader"
                 className="uploader-avatar"
               />
@@ -273,9 +449,45 @@ function ShowSaveDetails() {
             </div>
           </div>
         </div>
+      </div >
+      <div className="comments-section mt-4">
+        <h3>Comments</h3>
 
+        {comments.length === 0 || comments.filter(c => c.text && c.text.trim() !== '').length === 0 ? (
+          <p>No comments yet. Be the first one to comment!</p>
+        ) : (
+          <div className="comments-list">
+            {renderComments()}
+          </div>
+        )}
 
+        <div className="save-separator" />
+
+        <Form
+          onSubmit={e => {
+            e.preventDefault();
+            postComment();
+          }}
+          className="mb-4"
+        >
+          <Form.Group controlId="commentTextArea" className="mb-2">
+            <Form.Control
+              as="textarea"
+              rows={3}
+              placeholder="Say something!..."
+              value={newComment}
+              onChange={e => setNewComment(e.target.value)}
+              disabled={posting}
+            />
+          </Form.Group>
+          {postError && <Alert variant="danger">{postError}</Alert>}
+          <Button type="submit" disabled={posting || !newComment.trim()}>
+            {posting ? (<><Spinner animation="border" size="sm" /> Posting...</>) : 'Post Comment'}
+          </Button>
+        </Form>
       </div>
+
+
 
     </>
 

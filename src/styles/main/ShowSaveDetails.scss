@@ -9,9 +9,9 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del sav
   padding: 2rem;
 
   .save-header {
-    background-color: var(--color-foreground); 
-    padding: 1rem 2rem; 
-    border-radius: 8px; 
+    background-color: var(--color-foreground);
+    padding: 1rem 2rem;
+    border-radius: 8px;
 
     display: flex;
     justify-content: space-between;
@@ -191,18 +191,18 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del sav
     }
   }
 
-  .save-separator {
-    height: 1px;
-    background-color: #ddd;
-    margin: 2rem 0;
-    border: none;
-  }
 
 
 
 
 }
 
+.save-separator {
+  height: 1px;
+  background-color: #ddd;
+  margin: 2rem 0;
+  border: none;
+}
 
 .tags-container {
   margin-top: 0.5rem;
@@ -249,6 +249,16 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del sav
   &:hover::after {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
+  }
+
+  .comment-user-link {
+    color: var(--color-links);
+    text-decoration: none;
+    font-weight: bold;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
 }
