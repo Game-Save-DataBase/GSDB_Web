@@ -5,9 +5,14 @@ import api from '../../utils/interceptor';
 import { LoadingContext } from '../../contexts/LoadingContext';
 import '../../styles/Common.scss';
 import '../../styles/main/ShowSaveDetails.scss';
+import '../../styles/utils/FavoriteButton.scss';
+
 import { Row, Col, Modal, Carousel, Form, Button, Alert, Spinner } from 'react-bootstrap';
 
 import { UserContext } from '../../contexts/UserContext';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faThumbsDown, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 
 function ShowSaveDetails() {
   const [saveData, setSaveData] = useState({});
@@ -18,6 +23,10 @@ function ShowSaveDetails() {
   const [showModal, setShowModal] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [comments, setComments] = useState([]);
+  const [isLike, setIsLike] = useState(false);
+  const [isDislike, setIsDislike] = useState(false);
+
+
   const carouselImages = relatedGame ? [
     'https://static1.pocketlintimages.com/wordpress/wp-content/uploads/141774-games-news-feature-best-screenshots-image3-fanipzqw5s.jpg',
     'https://singleplayer.org/wp-content/uploads/2024/02/image-10.png',
@@ -126,6 +135,12 @@ function ShowSaveDetails() {
         await loadCommentsAndUsers();
 
 
+        if (user && saveData) {
+          if (saveData.likes?.includes(user.userID)) { setIsDislike(false); setIsLike(true); }
+          else if (saveData.dislikes?.includes(user.userID)) { setIsDislike(true); setIsLike(false); }
+          else { setIsDislike(false); setIsLike(false); }
+        }
+
       } catch (err) {
         console.error('Error general al cargar el archivo de guardado:', err);
       } finally {
@@ -163,18 +178,18 @@ function ShowSaveDetails() {
     setPosting(true);
     setPostError(null);
 
-  try {
-    const payload = {
-      text,
-      userID: user.userID,
-      saveID: saveData.saveID,
-      postedDate: new Date().toISOString(),
-      ...(isReply && parentID ? { previousComment: parentID } : {}),
-    };
+    try {
+      const payload = {
+        text,
+        userID: user.userID,
+        saveID: saveData.saveID,
+        postedDate: new Date().toISOString(),
+        ...(isReply && parentID ? { previousComment: parentID } : {}),
+      };
 
-    console.log('Enviando comentario:', payload); // <-- AÑADIDO
+      console.log('Enviando comentario:', payload); // <-- AÑADIDO
 
-    await api.post(`${config.api.comments}`, payload);
+      await api.post(`${config.api.comments}`, payload);
 
       // Reset
       if (isReply) {
@@ -203,6 +218,40 @@ function ShowSaveDetails() {
   }, {});
 
 
+  const handleLike = async (like) => {
+    try {
+      if (!user) {
+        navigate('/login');
+        return;
+      }
+
+      //reseteamos el estado (dar like o dislike dos veces) o si o hacemos like
+      if (isLike && like || isDislike && !like) {
+        const res = await api.put(`${config.api.savedatas}/reset-rating?id=${saveData.saveID}`);
+      } else {
+        const res = await api.put(`${config.api.savedatas}/update-rating?mode=${like ? 'like' : 'dislike'}&id=${saveData.saveID}`);
+      }
+      // Volver a obtener datos actualizados del guardado
+      const { data: updatedSave } = await api.get(`${config.api.savedatas}?id=${saveData.saveID}`);
+      setSaveData(updatedSave);
+      // Establecer estados visuales de nuevo
+      if (updatedSave.likes?.includes(user.userID)) {
+        setIsLike(true);
+        setIsDislike(false);
+      } else if (updatedSave.dislikes?.includes(user.userID)) {
+        setIsLike(false);
+        setIsDislike(true);
+      } else {
+        setIsLike(false);
+        setIsDislike(false);
+      }
+
+      console.log('like?', isLike, 'dislike?', isDislike);
+
+    } catch (error) {
+      console.error('Error updating rating:', error.response?.data || error.message);
+    }
+  };
 
   const renderComments = (parentID = 'root', depth = 0) => {
     const commentList = groupedComments[parentID] || [];
@@ -438,14 +487,24 @@ function ShowSaveDetails() {
 
           {/* Likes */}
           <div className="block likes-block">
-            <div className="label">Rating:</div>
+            <div className="label">Community rating:</div>
             <div className="content">
-              <button className="like-button">
-                👍 <span className="like-count">12</span>
+              <button
+                className={`favorite-button ${isLike ? 'favorite' : 'not-favorite'}`}
+                onClick={() => handleLike(true)}
+                aria-label={isLike ? 'Dislike upload' : 'Like upload'}
+              >
+                <FontAwesomeIcon icon={faThumbsUp} size="2x" />
               </button>
-              <button className="dislike-button">
-                👎 <span className="dislike-count">3</span>
+              <span>{saveData.likes.length}</span>
+              <button
+                className={`favorite-button ${isDislike ? 'favorite' : 'not-favorite'}`}
+                onClick={() => handleLike(false)}
+                aria-label={isDislike ? 'Dislike upload' : 'Like upload'}
+              >
+                <FontAwesomeIcon icon={faThumbsDown} size="2x" />
               </button>
+              <span>{saveData.dislikes.length}</span>
             </div>
           </div>
         </div>
