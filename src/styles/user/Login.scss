@@ -1,5 +1,5 @@
 // Login.scss
-@use '../common' as *;
+@use '../Common' as *;
 
 .login-wrapper {
     @extend .d-flex, .align-items-center, .justify-content-center;
