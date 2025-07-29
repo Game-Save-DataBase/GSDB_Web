@@ -5,7 +5,7 @@ const VITE_API_BASE_URL = isProd ? import.meta.env.VITE_API_BASE_URL : import.me
 const config = {
   port: import.meta.env.VITE_PORT,
   // connection: import.meta.env.VITE_DIR_GSDB + import.meta.env.VITE_PORT, //la conexión a localhost o a un servidor
-  connection: VITE_API_BASE_URL, //la conexión a localhost o a un servidor
+  connection: import.meta.env.VITE_API_BASE_URL, //la conexión a localhost o a un servidor
   paths: {
     assetsFolder: import.meta.env.VITE_DIR_ASSETS,
     uploads: import.meta.env.VITE_DIR_ASSETS + import.meta.env.VITE_DIR_UPLOADS,
