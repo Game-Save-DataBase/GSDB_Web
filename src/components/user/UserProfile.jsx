@@ -9,6 +9,7 @@ import { UserContext } from '../../contexts/UserContext.jsx';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowUpFromBracket, faDownload, faEye, faStar } from '@fortawesome/free-solid-svg-icons';
+import UserCertificateBadge from '../utils/UserCertificateBadge.jsx';
 
 function UserProfile() {
     const navigate = useNavigate();
@@ -143,7 +144,7 @@ function UserProfile() {
                     <div className="position-relative">
                         {/* Banner */}
                         <img
-                            src={`${config.api.assets}/user/${user.userID}/banner`}
+                            src={`${config.api.assets}/user/${user.userID}/banner?${Date.now}`}
                             onError={(e) => {
                                 e.target.onerror = null; // Evita bucles si la imagen por defecto también falla
                                 e.target.src = `${config.api.assets}/defaults/banner}`; // Ruta de imagen por defecto
@@ -160,7 +161,7 @@ function UserProfile() {
                         {/* Imagen de perfil */}
                         <div className="position-absolute top-100 start-0 translate-middle-y ms-3">
                             <img
-                                src={`${config.api.assets}/user/${user.userID}/pfp`}
+                                src={`${config.api.assets}/user/${user.userID}/pfp?${Date.now}`}
                                 onError={(e) => {
                                     e.target.onerror = null; // Evita bucles si la imagen por defecto también falla
                                     e.target.src = `${config.api.assets}/defaults/pfp}`; // Ruta de imagen por defecto
@@ -181,6 +182,7 @@ function UserProfile() {
                             <div>
                                 <h4>{user.alias || user.userName}</h4>
                                 <small>@{user.userName.toLowerCase()}</small>
+                                <UserCertificateBadge user={user} />
                             </div>
                             {(!loggedUser || (user && loggedUser && user._id !== loggedUser._id)) && (
                                 // <button className="btn btn-primary" onClick={handleFollow}>Follow</button>

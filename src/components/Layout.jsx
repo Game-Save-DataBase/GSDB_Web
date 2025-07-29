@@ -56,7 +56,7 @@ const Layout = ({ children }) => {
                     aria-expanded="false"
                   >
                     <img
-                      src={`${config.api.assets}/user/${loggedUser.userID}/pfp`}
+                      src={`${config.api.assets}/user/${loggedUser.userID}/pfp?${Date.now()}`}
                       alt="Profile"
                       className="rounded-circle"
                       style={{ width: "30px", height: "30px", objectFit: "cover", marginRight: "10px" }}

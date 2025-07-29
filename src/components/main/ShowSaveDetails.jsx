@@ -43,6 +43,7 @@ function ShowSaveDetails() {
   const [usersMap, setUsersMap] = useState({}); // <-- mapa userID => userInfo
   const [replyingTo, setReplyingTo] = useState(null); // commentID al que se responde
   const [replyText, setReplyText] = useState('');
+  const isUploader = user && saveData.userID === user.userID;
 
   const navigate = useNavigate();
 
@@ -187,8 +188,6 @@ function ShowSaveDetails() {
         ...(isReply && parentID ? { previousComment: parentID } : {}),
       };
 
-      console.log('Enviando comentario:', payload); // <-- AÑADIDO
-
       await api.post(`${config.api.comments}`, payload);
 
       // Reset
@@ -246,7 +245,6 @@ function ShowSaveDetails() {
         setIsDislike(false);
       }
 
-      console.log('like?', isLike, 'dislike?', isDislike);
 
     } catch (error) {
       console.error('Error updating rating:', error.response?.data || error.message);
@@ -258,7 +256,6 @@ function ShowSaveDetails() {
 
     return commentList.map((comment, index) => {
       const u = usersMap[comment.userID];
-      console.log(u)
       const alias = u ? (u.alias?.trim() || u.userName) : 'Unknown';
       const username = u ? u.userName : 'unknown';
 
@@ -490,21 +487,24 @@ function ShowSaveDetails() {
             <div className="label">Community rating:</div>
             <div className="content">
               <button
-                className={`favorite-button ${isLike ? 'favorite' : 'not-favorite'}`}
-                onClick={() => handleLike(true)}
+                className={`favorite-button ${isLike ? 'favorite' : 'not-favorite'} ${user?.userID === saveData.userID ? 'disabled' : ''}`}
+                onClick={() => user?.userID !== saveData.userID && handleLike(true)}
                 aria-label={isLike ? 'Dislike upload' : 'Like upload'}
+                disabled={user?.userID === saveData.userID}
               >
                 <FontAwesomeIcon icon={faThumbsUp} size="2x" />
               </button>
               <span>{saveData.likes.length}</span>
               <button
-                className={`favorite-button ${isDislike ? 'favorite' : 'not-favorite'}`}
-                onClick={() => handleLike(false)}
+                className={`favorite-button ${isDislike ? 'favorite' : 'not-favorite'} ${user?.userID === saveData.userID ? 'disabled' : ''}`}
+                onClick={() => user?.userID !== saveData.userID && handleLike(false)}
                 aria-label={isDislike ? 'Dislike upload' : 'Like upload'}
+                disabled={user?.userID === saveData.userID}
               >
                 <FontAwesomeIcon icon={faThumbsDown} size="2x" />
               </button>
               <span>{saveData.dislikes.length}</span>
+
             </div>
           </div>
         </div>
