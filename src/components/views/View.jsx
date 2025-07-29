@@ -80,36 +80,17 @@ function View({
               style={{ flex: "0 0 20%", maxWidth: "20%" }}
               className="px-2"
             >
-              <Card
-                className="h-100 shadow-sm d-flex flex-column"
-                style={{
-                  height: "360px",
-                  overflow: "hidden",
-                }}
-              >
+              <Card className="h-100 shadow-sm d-flex flex-column">
                 {renderProps.image && (
-                  <div
-                    style={{
-                      height: "360px",
-                      width: "100%",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <Card.Img
-                      variant="top"
-                      src={item[renderProps.image]}
-                      style={{
-                        height: "100%",
-                        width: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  </div>
+                  <Card.Img
+                    variant="top"
+                    src={item[renderProps.image]}
+                    className="game-cover"
+                  />
                 )}
-
                 <Card.Body
                   className="d-flex flex-column px-2 py-2"
-                  style={{ minHeight: "220px", justifyContent: "space-between" }}
+                  // style={{ minHeight: "220px", justifyContent: "space-between" }}
                 >
                   <Card.Title className="fs-6 mb-1 text-truncate">
                     {renderTitle(item)}
@@ -118,7 +99,7 @@ function View({
                   {renderProps.description && (
                     <Card.Text
                       className="text-muted"
-                      style={{ fontSize: "0.75rem", minHeight: "3.5em" }}
+                      // style={{ fontSize: "0.75rem", minHeight: "3.5em" }}
                     >
                       {(() => {
                         const text = item[renderProps.description]?.trim();
