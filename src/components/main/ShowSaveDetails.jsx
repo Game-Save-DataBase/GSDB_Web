@@ -3,17 +3,18 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import api from '../../utils/interceptor';
 import { LoadingContext } from '../../contexts/LoadingContext';
+import JSZip from "jszip";
 import '../../styles/Common.scss';
 import '../../styles/main/ShowSaveDetails.scss';
 import '../../styles/utils/FavoriteButton.scss';
 
-import { Row, Col, Modal, Carousel, Form, Button, Alert, Spinner } from 'react-bootstrap';
+import { Row, Col, Form, Button, Alert, Spinner } from 'react-bootstrap';
 
 import { UserContext } from '../../contexts/UserContext';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsDown, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
-
+import ImageCarouselModal from '../utils/ImageCarouselModal';
 function ShowSaveDetails() {
   const [saveData, setSaveData] = useState({});
   const [relatedGame, setRelatedGame] = useState(null);
@@ -25,14 +26,7 @@ function ShowSaveDetails() {
   const [comments, setComments] = useState([]);
   const [isLike, setIsLike] = useState(false);
   const [isDislike, setIsDislike] = useState(false);
-
-
-  const carouselImages = relatedGame ? [
-    'https://static1.pocketlintimages.com/wordpress/wp-content/uploads/141774-games-news-feature-best-screenshots-image3-fanipzqw5s.jpg',
-    'https://singleplayer.org/wp-content/uploads/2024/02/image-10.png',
-    'https://gamingbolt.com/wp-content/uploads/2013/12/1.-Assassins-Creed-4.jpg',
-    'https://interfaceingame.com/wp-content/uploads/taxonomies/genres/genres-adventure-500x281.jpg',
-  ] : [];
+  const [carouselImages, setCarouselImages] = useState([]);
 
   const { id } = useParams();
   const { isInitialLoad, block, unblock, markAsLoaded, resetLoad } = useContext(LoadingContext);
@@ -95,6 +89,22 @@ function ShowSaveDetails() {
             console.warn('Error cargando tags');
           }
         }
+        // Cargar imágenes del ZIP
+        try {
+          const res = await api.get(`${config.api.assets}/savedata/${id}/scr`, { responseType: "arraybuffer" });
+          const zip = await JSZip.loadAsync(res.data);
+
+          const imagePromises =  Object.keys(zip.files).map(async (filename) => {
+            const blob = await zip.files[filename].async("blob");
+            return URL.createObjectURL(blob);
+          });
+
+          const images = await Promise.all(imagePromises);
+          setCarouselImages(images);
+        } catch (err) {
+          console.warn("No se pudieron cargar las imágenes del carrusel:", err);
+        }
+
 
         // Cargar comentarios y usuarios de comentarios
         const loadCommentsAndUsers = async () => {
@@ -436,24 +446,13 @@ function ShowSaveDetails() {
           ))}
         </div>
 
-        {/* Modal con carrusel */}
-        <Modal show={showModal} onHide={closeModal} size="lg" centered>
-          <Modal.Header closeButton />
-          <Modal.Body>
-            <Carousel activeIndex={activeIndex} onSelect={setActiveIndex} interval={null}>
-              {carouselImages.map((imgSrc, idx) => (
-                <Carousel.Item key={idx}>
-                  <img
-                    className="d-block w-100"
-                    src={imgSrc}
-                    alt={`Slide ${idx + 1}`}
-                    style={{ maxHeight: '500px', objectFit: 'contain' }}
-                  />
-                </Carousel.Item>
-              ))}
-            </Carousel>
-          </Modal.Body>
-        </Modal>
+        <ImageCarouselModal
+          show={showModal}
+          onClose={closeModal}
+          images={carouselImages}
+          activeIndex={activeIndex}
+          setActiveIndex={setActiveIndex}
+        />
 
 
         <div className="save-separator" />

@@ -392,6 +392,7 @@ function ShowGameDetails() {
                 .map(sf => ({
                   ...sf,
                   title: sf.title || "Untitled",
+                  // image: `${config.api.assets}/savedata/${sf.saveID}/scr/main` || game.cover || `${config.api.assets}/default/game-cover`,
                   image: game.cover || `${config.api.assets}/default/game-cover`,
                   link: `/s/${sf.saveID}`,
                   platforms: [sf.platformID],

@@ -80,134 +80,140 @@ function View({
               style={{ flex: "0 0 20%", maxWidth: "20%" }}
               className="px-2"
             >
-              <Card className="h-100 shadow-sm d-flex flex-column">
+              <Card className="custom-card shadow-sm">
                 {renderProps.image && (
-                  <Card.Img
-                    variant="top"
-                    src={item[renderProps.image]}
-                    className="game-cover"
-                  />
-                )}
-                <Card.Body
-                  className="d-flex flex-column px-2 py-2"
-                  // style={{ minHeight: "220px", justifyContent: "space-between" }}
-                >
-                  <Card.Title className="fs-6 mb-1 text-truncate">
-                    {renderTitle(item)}
-                  </Card.Title>
-
-                  {renderProps.description && (
-                    <Card.Text
-                      className="text-muted"
-                      // style={{ fontSize: "0.75rem", minHeight: "3.5em" }}
-                    >
-                      {(() => {
-                        const text = item[renderProps.description]?.trim();
-                        if (!text) return "No description";
-                        return text.length > 80 ? text.slice(0, 80) + "..." : text;
-                      })()}
-                    </Card.Text>
-                  )}
-
-
-                  {renderProps.tags && (
-                    (() => {
-                      const tags = Array.isArray(item[renderProps.tags]) ? item[renderProps.tags] : [];
-                      if (tags.length === 0) {
-                        return (
-                          <Card.Text className="text-muted" style={{ fontSize: "0.75rem" }}>
-                            No tags
-                          </Card.Text>
-                        );
-                      }
-
-                      return (
-                        <div className="position-relative">
-                          {tags.length >= 1 && (
-                            <button
-                              onClick={() => scrollTags(tagRefs[idx], -80)}
-                              className="scroll-btn left"
-                            >
-                              ‹
-                            </button>
-                          )}
-                          <div
-                            className="tags-scroll-container"
-                            ref={(el) => (tagRefs[idx] = el)}
-                          >
-                            {tags.map((tag, tagIdx) => (
-                              <span key={tagIdx} className="tag-pill">
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                          {tags.length >= 1 && (
-                            <button
-                              onClick={() => scrollTags(tagRefs[idx], 80)}
-                              className="scroll-btn right"
-                            >
-                              ›
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })()
-                  )}
-
-
-                  {renderProps.platforms && Array.isArray(item[renderProps.platforms]) && (
-                    <Card.Text className="text-muted" style={{ fontSize: "0.75rem" }}>
-                      <strong>Platforms</strong>: {item[renderProps.platforms]
-                        .map((pid) => platformMap[pid?.toString()] || null)
-                        .filter(Boolean)
-                        .join(" / ")}
-                    </Card.Text>
-                  )}
-
-                  {renderProps.releaseDate && (
-                    <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
-                      <strong>Release date</strong>: {formatIfDate(item[renderProps.releaseDate])}
-                    </Card.Text>
-                  )}
-                  {renderProps.uploads !== undefined && (
-                    <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
-                      <strong>Uploads</strong>: {item[renderProps.uploads]}
-                    </Card.Text>
-                  )}
-                  {renderProps.lastUpdate && (
-                    <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
-                      <strong>Last update</strong>:{" "}
-                      {item[renderProps.lastUpdate]
-                        ? formatIfDate(item[renderProps.lastUpdate])
-                        : "N/A"}
-                    </Card.Text>
-                  )}
-
-
-
-                  {renderProps.uploadDate && (
-                    <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
-                      <strong>Upload date</strong>: {formatIfDate(item[renderProps.uploadDate])}
-                    </Card.Text>
-                  )}
-
-                  {renderProps.downloads !== undefined && (
-                    <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
-                      {item[renderProps.downloads]} downloads
-                    </Card.Text>
-                  )}
-                  {renderProps.user && item[renderProps.user] && (
-                    <Card.Text className="text-muted" style={{ fontSize: "0.75rem" }}>
-                      <span><strong>By:</strong>: </span>
-                      <a
-                        href={item[renderProps.user].link}
-                        style={{ color: "#4b0082", textDecoration: "none" }}
-                      >
-                        {item[renderProps.user].name}
+                  <div className="view-game-cover-container">
+                    {item[renderProps.link] ? (
+                      <a href={item[renderProps.link]} style={{ display: "block" }}>
+                        <img
+                          src={item[renderProps.image]}
+                          alt={item[renderProps.title] || "cover"}
+                          className="view-game-cover"
+                        />
                       </a>
-                    </Card.Text>
-                  )}
+                    ) : (
+                      <img
+                        src={item[renderProps.image]}
+                        alt={item[renderProps.title] || "cover"}
+                        className="view-game-cover"
+                      />
+                    )}
+                  </div>
+                )}
+                <Card.Body className="card-body-scaled">
+                  <div className="card-body-content">
+                    <Card.Title className="fs-6 mb-1 text-truncate">
+                      {renderTitle(item)}
+                    </Card.Title>
 
+                    {renderProps.description && (
+                      <Card.Text className="text-muted">
+                        {(() => {
+                          const text = item[renderProps.description]?.trim();
+                          if (!text) return "No description";
+                          return text.length > 80 ? text.slice(0, 80) + "..." : text;
+                        })()}
+                      </Card.Text>
+                    )}
+
+                    {renderProps.tags && (
+                      (() => {
+                        const tags = Array.isArray(item[renderProps.tags]) ? item[renderProps.tags] : [];
+                        if (tags.length === 0) {
+                          return (
+                            <Card.Text className="text-muted" style={{ fontSize: "0.75rem" }}>
+                              No tags
+                            </Card.Text>
+                          );
+                        }
+
+                        return (
+                          <div className="position-relative">
+                            {tags.length >= 1 && (
+                              <button
+                                onClick={() => scrollTags(tagRefs[idx], -80)}
+                                className="scroll-btn left"
+                              >
+                                ‹
+                              </button>
+                            )}
+                            <div
+                              className="tags-scroll-container"
+                              ref={(el) => (tagRefs[idx] = el)}
+                            >
+                              {tags.map((tag, tagIdx) => (
+                                <span key={tagIdx} className="tag-pill">
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                            {tags.length >= 1 && (
+                              <button
+                                onClick={() => scrollTags(tagRefs[idx], 80)}
+                                className="scroll-btn right"
+                              >
+                                ›
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })()
+                    )}
+
+
+                    {renderProps.platforms && Array.isArray(item[renderProps.platforms]) && (
+                      <Card.Text className="text-muted" style={{ fontSize: "0.75rem" }}>
+                        <strong>Platforms</strong>: {item[renderProps.platforms]
+                          .map((pid) => platformMap[pid?.toString()] || null)
+                          .filter(Boolean)
+                          .join(" / ")}
+                      </Card.Text>
+                    )}
+
+                    {renderProps.releaseDate && (
+                      <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
+                        <strong>Release date</strong>: {formatIfDate(item[renderProps.releaseDate])}
+                      </Card.Text>
+                    )}
+                    {renderProps.uploads !== undefined && (
+                      <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
+                        <strong>Uploads</strong>: {item[renderProps.uploads]}
+                      </Card.Text>
+                    )}
+                    {renderProps.lastUpdate && (
+                      <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
+                        <strong>Last update</strong>:{" "}
+                        {item[renderProps.lastUpdate]
+                          ? formatIfDate(item[renderProps.lastUpdate])
+                          : "N/A"}
+                      </Card.Text>
+                    )}
+
+
+
+                    {renderProps.uploadDate && (
+                      <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
+                        <strong>Upload date</strong>: {formatIfDate(item[renderProps.uploadDate])}
+                      </Card.Text>
+                    )}
+
+                    {renderProps.downloads !== undefined && (
+                      <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
+                        {item[renderProps.downloads]} downloads
+                      </Card.Text>
+                    )}
+                    {renderProps.user && item[renderProps.user] && (
+                      <Card.Text className="text-muted" style={{ fontSize: "0.75rem" }}>
+                        <span><strong>By:</strong>: </span>
+                        <a
+                          href={item[renderProps.user].link}
+                          style={{ color: "#4b0082", textDecoration: "none" }}
+                        >
+                          {item[renderProps.user].name}
+                        </a>
+                      </Card.Text>
+                    )}
+                  </div>
                 </Card.Body>
 
               </Card>
