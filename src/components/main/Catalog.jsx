@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import axios from "axios";
 import config from "../../utils/config.js";
+import api from '../../utils/interceptor';
 
 import {
   Container,
@@ -40,7 +40,7 @@ function Catalog() {
   useEffect(() => {
     const fetchPlatforms = async () => {
       try {
-        const res = await axios.get(`${config.api.platforms}?limit=500`);
+        const res = await api.get(`${config.api.platforms}?limit=500`);
         const data = Array.isArray(res.data) ? res.data : [];
         const platformsFormatted = data.map((p) => ({
           value: p.platformID?.toString() ?? "",
@@ -102,7 +102,7 @@ function Catalog() {
         query += `&release_date[gte]=${filters.releaseDate}`;
       }
       console.log(query)
-      const res = await axios.get(`${config.api.games}${query}`);
+      const res = await api.get(`${config.api.games}${query}`);
       const data = Array.isArray(res.data) ? res.data : [res.data];
 
       const processedGames = data.map((game) => ({
@@ -268,7 +268,7 @@ function Catalog() {
             <option value={40}>40</option>
           </Form.Select>
         </Form.Group>
-        
+
         <div className="d-flex align-items-end mb-0 gap-2">
           <Button variant="primary" onClick={handleApplyFilters}>
             Filter
@@ -295,6 +295,7 @@ function Catalog() {
             releaseDate: "release_date",
             lastUpdate: "lastUpdate",
             image: "cover",
+            errorImage: `${config.api.assets}/default/game-cover`,
             uploads: "nUploads",
             link: "url",
             platforms: "platformID",

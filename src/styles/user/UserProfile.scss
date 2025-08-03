@@ -25,12 +25,19 @@
       margin-right: 30px;
     }
 
-    
+
   }
+
   .user-bio {
     white-space: pre-line;
   }
 
+  .user-profile-container {
+    max-width: 900px; // limita el ancho total
+    font-size: 0.9rem; // texto más pequeño
+    transform: scale(0.95); // opcional: reduce todo un poco
+    transform-origin: top center; // punto de origen para el escalado
+  }
 
 
 }

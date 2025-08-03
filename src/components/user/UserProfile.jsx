@@ -1,34 +1,66 @@
-import config from "../../utils/config"
-import React, { useState, useContext, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import api from '../../utils/interceptor';
-import '../../styles/user/UserProfile.scss';
-import VerticalCard from '../utils/VerticalCard.jsx';
-import UserFollowButton from '../utils/UserFollowButton.jsx';
-import { UserContext } from '../../contexts/UserContext.jsx';
-
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowUpFromBracket, faDownload, faEye, faStar } from '@fortawesome/free-solid-svg-icons';
-import UserCertificateBadge from '../utils/UserCertificateBadge.jsx';
+import config from "../../utils/config";
+import React, { useState, useContext, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import api from "../../utils/interceptor";
+import { UserContext } from "../../contexts/UserContext.jsx";
+import UserFollowButton from "../utils/UserFollowButton.jsx";
+import UserCertificateBadge from "../utils/UserCertificateBadge.jsx";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+    faArrowUpFromBracket,
+    faDownload,
+    faEye,
+    faStar,
+} from "@fortawesome/free-solid-svg-icons";
+import {
+    Container,
+    Row,
+    Col,
+    Spinner,
+    Form,
+    Stack,
+    Button
+} from 'react-bootstrap';
+import "../../styles/user/UserProfile.scss";
+import FilterSelect from "../filters/FilterSelect";
+import FilterDate from "../filters/FilterDate";
+import View from "../views/View.jsx";
 
 function UserProfile() {
     const navigate = useNavigate();
-    const [user, setUser] = useState(null); //null porque aun no ha cargado
-    const [uploadedSaves, setUploadedSaves] = useState([]); //saves subidos por el usuario
-    const [reviewedSaves, setReviewedSaves] = useState([]); //saves revisados por el usuario
-    const [favGames, setFavGames] = useState([]); //juegos favoritos del usuario
-    const [notFound, setNotFound] = useState(false); //el usuario puede ser nulo pero existir ya que aún está cargando, entonces mantenemos una variable bool para cuando NO exista
     const { userNameParam } = useParams();
     const { user: loggedUser } = useContext(UserContext);
 
+    const [user, setUser] = useState(null);
+    const [uploadedSaves, setUploadedSaves] = useState([]);
+    const [reviewedSaves, setReviewedSaves] = useState([]);
+    const [favGames, setFavGames] = useState([]);
+    const [notFound, setNotFound] = useState(false);
+
+    //filtros para los favsaves
+    const [favGamesPlatforms, setFavGamesPlatforms] = useState([]);
+    const [selectedFavGamesPlatforms, setSelectedFavGamesPlatforms] = useState([]);
+    const [selectedGameDate, setSelectedGameDate] = useState("");
+    const [favGamesViewType, setFavGamesViewType] = useState("card");
+    const [favGamesLimit, setFavGamesLimit] = useState(5);
+    const [filteredFavGames, setFilteredFavGames] = useState([]);
+    const platformAbbrMap = favGamesPlatforms.reduce((acc, p) => {
+        if (p.value && p.abbreviation) {
+            acc[p.value] = p.abbreviation;
+        }
+        return acc;
+    }, {});
+
     useEffect(() => {
-        //carga el usuario a mostrar
         const fetchUser = async () => {
             try {
-                const userResponse = await api.get(`${config.api.users}?userName=${userNameParam.toLowerCase()}`);
-                // redirige para tener una pretty url si el nombre esta escrito mal (mayus y minus)
+                const userResponse = await api.get(
+                    `${config.api.users}?userName=${userNameParam.toLowerCase()}`
+                );
+
+                // Corrige URL si tiene mayúsculas/minúsculas distintas
                 if (userResponse.data.userName !== userNameParam) {
-                    navigate(`/u/${userResponse.data.userName}`, { replace: true }); //replace se usa para que navigate no añada una nueva url al historial sino que la cambie
+                    navigate(`/u/${userResponse.data.userName}`, { replace: true });
                     return;
                 }
 
@@ -38,14 +70,67 @@ function UserProfile() {
                 setUser(null);
                 setNotFound(true);
             }
-
-        };//fetchUser
+        };
 
         fetchUser();
-    }, [userNameParam]); //solo ejecuta el useEffect cuando cambie el id
+    }, [userNameParam, navigate]);
 
+    if (notFound) {
+        return <p className="text-center mt-5">Usuario no encontrado.</p>;
+    }
 
     useEffect(() => {
+        const fetchGames = async () => {
+            if (user.favGames.length <= 0) {
+                setFavGames([]);
+                setFavGamesPlatforms([]);
+            } else {
+                let favGamesIds = Array.isArray(user.favGames) ? user.favGames : [user.favGames];
+
+                try {
+                    const gameResponse = await api.get(`${config.api.games}?gameID[in]=${favGamesIds.join(',')}&complete=false&external=false&limit=500`)
+                    if (!gameResponse.data) {
+                        setFavGames([]);
+                        setFavGamesPlatforms([]);
+                        return;
+                    }
+                    let gamesData = Array.isArray(gameResponse.data) ? gameResponse.data : [gameResponse.data];
+                    setFavGames(gamesData.map((game) => ({
+                        ...game,
+                        url: `/g/${game.slug}`,
+                    })));
+
+                    try {
+                        const gamePlatformsID = [
+                            ...new Set(
+                                gamesData.flatMap(game => game.platformID || [])
+                            )
+                        ];
+                        if (gamePlatformsID.length === 0) {
+                            setFavGamesPlatforms([]);
+                            return;
+                        }
+                        const res = await api.get(`${config.api.platforms}?platformID[in]=${gamePlatformsID}&limit=500`);
+                        const data = Array.isArray(res.data) ? res.data : [];
+                        const platformsFormatted = data.map((p) => ({
+                            value: p.platformID?.toString() ?? "",
+                            label: p.name ?? "",
+                            abbreviation: p.abbreviation ?? "",
+                        }));
+                        setFavGamesPlatforms(platformsFormatted);
+                    } catch (err) {
+                        console.error("Error fetching platforms", err);
+                        setFavGamesPlatforms([]);
+                    }
+                } catch (err) {
+                    console.log(`Error fetching favorite games user ${user.userID}:`, err);
+                    setFavGames([]);
+                    setFavGamesPlatforms([]);
+                }
+
+            }
+        }
+
         const fetchSaves = async () => {
             if (user.uploads.length <= 0) {
                 setUploadedSaves([]);
@@ -54,29 +139,23 @@ function UserProfile() {
                     //filtramos todos los saves subidos por el usuario       
                     const savesResponse = await api.get(`${config.api.savedatas}?saveID[in]=${user.uploads.join(',')}`)
                     const savesResponseData = Array.isArray(savesResponse.data) ? savesResponse.data : [savesResponse.data];
-                    //vitaminamos cada uplaod con su imagen (viene del juego) y nombre de la plataforma
+                    //vitaminamos cada uplaod con su imagen 
                     const updatedUploads = await Promise.all(
-                        (savesResponseData || []).map(async (save) => {
+                        savesResponseData.map(async (save) => {
                             try {
                                 const gameResponse = await api.get(`${config.api.games}?gameID=${save.gameID}`);
-                                if (!gameResponse.data) {
-                                    return {
-                                        ...save,
-                                        save_img: `${config.api.assets}/defaults/game-cover`
-
-                                    };
-                                }
+                                if (!gameResponse.data) { throw ("No game fetched"); }
                                 return {
                                     ...save,
-                                    save_img: gameResponse.data.cover
-
+                                    save_img: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
+                                    save_img_error: gameResponse.data.cover || `${config.api.assets}/defaults/game-cover`
                                 };
                             } catch (err) {
                                 console.log(`Error fetching game image for save ${save.saveID}:`, err);
                                 return {
                                     ...save,
-                                    save_img: `${config.api.assets}/defaults/game-cover`
-
+                                    save_img: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
+                                    save_img_error: `${config.api.assets}/defaults/game-cover`
                                 };
                             }
                         })
@@ -91,37 +170,54 @@ function UserProfile() {
             }
         };
 
-        const fetchGames = async () => {
-            let favGamesIds = user?.favGames;
-            if (!favGamesIds) {
-                setFavGames([]);
-                return;
-            }
-            if (!Array.isArray(favGamesIds)) {
-                favGamesIds = [favGamesIds];
-            }
-            try {
-                const gameResponse = await api.get(`${config.api.games}?gameID[in]=${favGamesIds.join(',')}&complete=false&external=false&limit=500`)
-                if (!gameResponse.data) {
-                    setFavGames([]);
-                    return;
-                }
-                let gamesData = gameResponse.data;
-                if (!Array.isArray(gamesData)) {
-                    gamesData = [gamesData];
-                }
-                setFavGames(gamesData);
-            } catch (err) {
-                console.log(`Error fetching favorite games user ${user.userID}:`, err);
-            }
-        }
 
 
         const fetchReviews = async () => {
-            try {
-                setReviewedSaves([])
-            } catch (err) {
-                console.log(`Error fetching reviews from user ${user.userID}:`, err);
+            const reviewsIDs = [...user.likes, ...user.dislikes];
+            if (reviewsIDs.length <= 0) {
+                setReviewedSaves([]);
+            } else {
+                try {
+                    //filtramos todos los saves reviewados    
+                    const savesResponse = await api.get(`${config.api.savedatas}?saveID[in]=${reviewsIDs.join(',')}`)
+                    const savesResponseData = Array.isArray(savesResponse.data) ? savesResponse.data : [savesResponse.data];
+                    //vitaminamos cada uplaod con su imagen y el nombre de usuario
+                    const updatedReviews = await Promise.all(
+                        savesResponseData.map(async (save) => {
+                            let gameData = {};
+                            let userData = {};
+
+                            // Fetch del juego
+                            try {
+                                const gameResponse = await api.get(`${config.api.games}?gameID=${save.gameID}`);
+                                gameData = gameResponse.data || {};
+                            } catch (err) {
+                                console.log(`Error fetching game for save ${save.saveID}:`, err);
+                            }
+
+                            // Fetch del usuario
+                            try {
+                                const userResponse = await api.get(`${config.api.users}?userID=${save.userID}`);
+                                userData = userResponse.data || {};
+                            } catch (err) {
+                                console.log(`Error fetching user for save ${save.saveID}:`, err);
+                            }
+
+                            return {
+                                ...save,
+                                save_img: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
+                                save_img_error: gameData.cover || `${config.api.assets}/defaults/game-cover`,
+                                username: userData.userName || "unknown"
+                            };
+                        })
+                    );
+
+                    setReviewedSaves(updatedReviews);
+
+                } catch (err) {
+                    console.log("Error fetching saves from user", err);
+                    setReviewedSaves([]);
+                }
             }
         }
 
@@ -132,14 +228,34 @@ function UserProfile() {
 
     }, [user]);
 
-    if (notFound) {
-        //TO DO: hacer mas bonita la pagina de usuario inexistente
-        return <p>Usuario no encontrado.</p>;
-    }
+
+    useEffect(() => {
+        let filtered = [...favGames];
+
+        // Filtrar por plataformas si hay alguna seleccionada
+        if (selectedFavGamesPlatforms.length > 0) {
+            filtered = filtered.filter(game =>
+                game.platformID?.some(pid => selectedFavGamesPlatforms.includes(pid.toString()))
+            );
+        }
+
+        // Filtrar por fecha si hay rango
+        // Filtrar por fecha si hay rango
+        if (selectedGameDate) {
+            filtered = filtered.filter(game => {
+                const releaseDate = new Date(game.release_date);
+                const selectedDate = new Date(selectedGameDate);
+                return releaseDate >= selectedDate;
+            });
+        }
+
+        setFilteredFavGames(filtered);
+    }, [favGames, selectedFavGamesPlatforms, selectedGameDate]);
+
 
     return (
         <div className="user-profile">
-            {user ? (
+            {user && (
                 <>
                     <div className="position-relative">
                         {/* Banner */}
@@ -202,10 +318,6 @@ function UserProfile() {
                                     <FontAwesomeIcon icon={faEye} />
                                     <span>{`${reviewedSaves.length}`}</span>
                                 </div>
-                                <FontAwesomeIcon icon={faStar} />
-                                <FontAwesomeIcon icon={faStar} />
-                                <FontAwesomeIcon icon={faStar} />
-                                <FontAwesomeIcon icon={faStar} />
                             </div>
                             <div>
                                 <div>{`${user.followers.length} followers`}</div>
@@ -220,69 +332,89 @@ function UserProfile() {
 
                     <hr />
                     <h2>Favorite games</h2>
-                    {favGames.length === 0 ? (
-                        <p>No favorite games!</p>
-                    ) : (
-                        <div className="horizontal-scroll">
-                            {favGames.map(game => (
-                                <div key={game.gameID}>
-                                    <VerticalCard
-                                        image={`${game.cover}`}
-                                        image_default={`${config.api.assets}/defaults/game-cover`}
-                                        title={game.title}
-                                        cLink={`/g/${game.slug}`}
-                                        platformID={game.platformID}
-                                    />
-                                </div>
-                            ))}
-                        </div>)}
-                    <h2>Latest uploads</h2>
-                    {uploadedSaves.length === 0 ? (
-                        <p>No uploaded saves</p>
-                    ) : (
-                        <div className="horizontal-scroll">
-                            {uploadedSaves.map(save => (
-                                <div key={save.saveID}>
-                                    <VerticalCard
-                                        image={`${save.save_img}`}
-                                        image_default={`${config.api.assets}/defaults/game-cover`}
-                                        title={save.title}
-                                        description={save.description}
-                                        cLink={`/s/${save.saveID}`}
-                                        platformID={save.platformID}
-                                        rating={save.rating || "0"}
-                                    />
-                                </div>
-                            ))}
-                        </div>)}
-                    <h2>Latest reviews</h2>
-                    {reviewedSaves.length === 0 ? (
-                        <p>No reviews!</p>
-                    ) : (
-                        <div className="horizontal-scroll">
-                            {reviewedSaves.map(save => (
-                                <div key={save.saveID}>
-                                    <VerticalCard
-                                        image={`${save.save_img}`}
-                                        image_default={`${config.api.assets}/defaults/game-cover`}
-                                        title={save.title}
-                                        description={save.description}
-                                        cLink={`/s/${save.saveID}`}
-                                        platformID={save.platformID}
-                                        rating={save.rating || "0"}
-                                        username={save.userName}
-                                        userLink={`/u/${save.userName}`}
-                                    />
-                                </div>
-                            ))}
-                        </div>)}
+                    <Container className="user-profile-container mt-4">
+
+                        <Stack
+                            direction="horizontal"
+                            gap={3}
+                            className="mb-4 flex-wrap align-items-end"
+                            style={{ rowGap: "1rem" }}
+                        >
+                            <Form.Group style={{ minWidth: "220px" }} className="mb-0 flex-fill">
+                                <FilterSelect
+                                    label="Platform"
+                                    selected={selectedFavGamesPlatforms}
+                                    onChange={setSelectedFavGamesPlatforms}
+                                    options={favGamesPlatforms}
+                                />
+                            </Form.Group>
+
+                            <Form.Group style={{ minWidth: "180px" }} className="mb-0 flex-fill">
+                                <FilterDate
+                                    label="Release Date From"
+                                    value={selectedGameDate}
+                                    onChange={setSelectedGameDate}
+                                />
+                            </Form.Group>
+
+                            <Form.Group style={{ minWidth: "160px" }} className="mb-0 flex-fill">
+                                <Form.Label>View</Form.Label>
+                                <Form.Select
+                                    value={favGamesViewType}
+                                    onChange={(e) => setFavGamesViewType(e.target.value)}
+                                >
+                                    <option value="list">List</option>
+                                    <option value="card">Card</option>
+                                </Form.Select>
+                            </Form.Group>
+
+                            <Form.Group style={{ minWidth: "160px" }} className="mb-0 flex-fill">
+                                <Form.Label>Items per page</Form.Label>
+                                <Form.Select
+                                    value={favGamesLimit}
+                                    onChange={(e) => {
+                                        const newLimit = parseInt(e.target.value);
+                                        setFavGamesLimit(newLimit);
+                                    }}
+                                >
+                                    <option value={5}>5</option>
+                                    <option value={10}>10</option>
+                                    <option value={20}>20</option>
+                                    <option value={40}>40</option>
+                                </Form.Select>
+                            </Form.Group>
+
+                        </Stack>
+                        {/* View */}
+                        <Row>
+                            <Col>
+                                <View
+                                    type={favGamesViewType}
+                                    data={filteredFavGames}
+                                    renderProps={{
+                                        title: "title",
+                                        image: "cover",
+                                        errorImage: `${config.api.assets}/default/game-cover`,
+                                        link: "url",
+                                        platforms: "platformID",
+                                    }}
+                                    platformMap={platformAbbrMap}
+                                    limit={favGamesLimit}
+                                    offset={0}
+                                    currentPage={1}
+                                    hasMore={false}
+                                    onPageChange={() => { }}
+                                />
+                            </Col>
+                        </Row>
+                    </Container>
+
+
+
 
                 </>
-            ) : (
-                <p> </p>
-            )
-            }
-        </div >
+            )}
+        </div>
     );
 }
 
