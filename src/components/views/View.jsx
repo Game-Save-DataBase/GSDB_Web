@@ -89,6 +89,7 @@ function View({
                           src={item[renderProps.image]}
                           alt={item[renderProps.title] || "cover"}
                           className="view-game-cover"
+                          onError={(e) => { e.currentTarget.src = item[renderProps.errorImage]}}
                         />
                       </a>
                     ) : (
@@ -96,6 +97,7 @@ function View({
                         src={item[renderProps.image]}
                         alt={item[renderProps.title] || "cover"}
                         className="view-game-cover"
+                          onError={(e) => { e.currentTarget.src = item[renderProps.errorImage]}}
                       />
                     )}
                   </div>
