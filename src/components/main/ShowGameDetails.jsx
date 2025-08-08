@@ -392,7 +392,8 @@ function ShowGameDetails() {
                 .map(sf => ({
                   ...sf,
                   title: sf.title || "Untitled",
-                  image: game.cover || `${config.api.assets}/default/game-cover`,
+                  image: `${config.api.assets}/savedata/${sf.saveID}/scr/main`,
+                  errorImage: game.cover || `${config.api.assets}/default/game-cover`,
                   link: `/s/${sf.saveID}`,
                   platforms: [sf.platformID],
                   description: sf.description || "No description",
@@ -407,6 +408,7 @@ function ShowGameDetails() {
               renderProps={{
                 title: "title",
                 image: "image",
+                errorImage: "errorImage",
                 link: "link",
                 platforms: "platforms",
                 description: "description",

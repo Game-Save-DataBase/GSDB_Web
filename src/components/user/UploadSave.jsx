@@ -1,34 +1,34 @@
-import config from "../../utils/config";
-import React, { useState, useContext, useEffect, useRef } from "react";
-import api from "../../utils/interceptor";
-import { useNavigate } from "react-router-dom";
-import { UserContext } from "../../contexts/UserContext";
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Form, Button } from 'react-bootstrap';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
-import '../../styles/Common.scss';
-import { useSearchParams } from "react-router-dom";
+import config from '../../utils/config';
+import api from '../../utils/interceptor';
+import ImageCarouselModal from '../utils/ImageCarouselModal';
+import '../../styles/user/UploadSave.scss';
 
-const UploadSave = () => {
+function NewSavePage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user } = useContext(UserContext);
-  const [message, setMessage] = useState('');
-  const [saveFile, setSaveFile] = useState({
-    title: "",
-    gameID: "",
-    platformID: "",
-    description: "",
-    file: null,
-    tags: ""
-  });
-
+  const [title, setTitle] = useState('');
   const [games, setGames] = useState([]);
-  const searchTimeout = useRef(null);
   const [selectedGameObj, setSelectedGameObj] = useState(null);
+  const [platforms, setPlatforms] = useState([]);
+  const [selectedPlatform, setSelectedPlatform] = useState(null);
+  const [platformAbbreviation, setPlatformAbbreviation] = useState('');
+  const [description, setDescription] = useState('');
   const [tags, setTags] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
-  const [platforms, setPlatforms] = useState([]);
 
+  const [saveFile, setSaveFile] = useState(null); // archivo save
+  const [screenshots, setScreenshots] = useState([]); // archivos screenshots
+  const [previewUrls, setPreviewUrls] = useState([]); // URLs para preview + carrusel
+
+  const [showModal, setShowModal] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const searchTimeout = useRef(null);
 
   useEffect(() => {
     const gameIDFromParam = searchParams.get("gameID");
@@ -40,7 +40,6 @@ const UploadSave = () => {
             const game = Array.isArray(data) ? data[0] : data;
             setSelectedGameObj(game);
             setSaveFile(prev => ({ ...prev, gameID: game.gameID }));
-            // También puedes disparar fetchGamesByTitle o actualizar la lista si quieres
           }
         } catch (err) {
           console.error("Error fetching game by ID:", err);
@@ -50,8 +49,20 @@ const UploadSave = () => {
     }
   }, [searchParams]);
 
+  // Actualizar URLs de preview cuando cambien screenshots
   useEffect(() => {
-    // Fetch all platforms once at component load
+    if (screenshots.length === 0) {
+      setPreviewUrls([]);
+      return;
+    }
+    const urls = screenshots.map(file => URL.createObjectURL(file));
+    setPreviewUrls(urls);
+
+    // Liberar URLs antiguos cuando cambien screenshots
+    return () => urls.forEach(url => URL.revokeObjectURL(url));
+  }, [screenshots]);
+
+  useEffect(() => {
     const fetchPlatforms = async () => {
       try {
         const { data } = await api.get(`${config.api.platforms}?limit=200`);
@@ -71,22 +82,29 @@ const UploadSave = () => {
         console.error("Error fetching tags", err);
       }
     };
-
     fetchPlatforms();
     fetchTags();
+
   }, []);
 
+  const getPlatformAbbreviations = (platformIDs) => {
+    return platforms
+      .filter(p => platformIDs.includes(p.platformID))
+      .map(p => p.abbreviation)
+      .filter(Boolean)
+      .join(", ");
+  };
+
   const fetchGamesByTitle = async (query) => {
-    const normalizedQuery = query.trim().toLowerCase(); // limpieza
+    const normalizedQuery = query.trim().toLowerCase();
     try {
       let { data } = await api.get(`${config.api.games}?limit=35&complete=false&title[like]=${encodeURIComponent(query)}`);
       if (!Array.isArray(data)) {
-        data = [data]
+        data = [data];
       }
       const sorted = data.sort((a, b) => {
         const aTitle = a.title.toLowerCase();
         const bTitle = b.title.toLowerCase();
-
         const aIndex = aTitle.indexOf(normalizedQuery);
         const bIndex = bTitle.indexOf(normalizedQuery);
 
@@ -103,9 +121,7 @@ const UploadSave = () => {
 
   const handleGameInputChange = (query) => {
     const trimmedQuery = query.trim();
-
     clearTimeout(searchTimeout.current);
-
     if (trimmedQuery.length >= 2) {
       searchTimeout.current = setTimeout(() => {
         fetchGamesByTitle(trimmedQuery);
@@ -115,216 +131,306 @@ const UploadSave = () => {
     }
   };
 
-  const getPlatformAbbreviations = (platformIDs) => {
-    return platforms
-      .filter(p => platformIDs.includes(p.platformID))
-      .map(p => p.abbreviation)
-      .filter(Boolean);
-  };
+  // Actualizar abreviatura y plataforma seleccionada al cambiar el juego
+  useEffect(() => {
+    if (selectedGameObj) {
+      if (selectedGameObj.platformID && selectedGameObj.platformID.length > 0) {
+        const abbreviations = getPlatformAbbreviations(selectedGameObj.platformID);
+        setPlatformAbbreviation(abbreviations);
+      } else {
+        setPlatformAbbreviation('');
+      }
+      // Reiniciar plataforma seleccionada cuando cambie el juego
+      setSelectedPlatform(null);
+    } else {
+      setPlatformAbbreviation('');
+      setSelectedPlatform(null);
+    }
+  }, [selectedGameObj]);
 
-  const onChange = (e) => {
-    setSaveFile({ ...saveFile, [e.target.name]: e.target.value });
-  };
+  // Actualizar la abreviatura cuando cambie la plataforma seleccionada
+  useEffect(() => {
+    if (selectedPlatform) {
+      setPlatformAbbreviation(selectedPlatform.abbreviation || '');
+    } else if (selectedGameObj) {
+      const abbreviations = getPlatformAbbreviations(selectedGameObj.platformID || []);
+      setPlatformAbbreviation(abbreviations);
+    } else {
+      setPlatformAbbreviation('');
+    }
+  }, [selectedPlatform, selectedGameObj]);
 
   const onFileChange = (e) => {
     const file = e.target.files[0];
-    setSaveFile({ ...saveFile, file });
+    setSaveFile(file);
   };
+
+  const onScreenshotsChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 4) {
+      alert("You can only select up to 4 screenshots.");
+      e.target.value = null;
+      setScreenshots([]);
+    } else {
+      setScreenshots(files);
+    }
+  };
+
+  const openModalAtIndex = (index) => {
+    setActiveIndex(index);
+    setShowModal(true);
+  };
+
+  const closeModal = () => setShowModal(false);
+
 
   const onSubmit = async (e) => {
     e.preventDefault();
     try {
-      const formData = new FormData();
       const messages = [];
 
-      if (saveFile.title === "") messages.push("You must provide a title for the save file.");
-      if (saveFile.gameID === "") messages.push("You must select a game.");
-      if (!saveFile.file) messages.push("You must upload a save file.");
+      if (!title.trim()) messages.push("You must provide a title for the save file.");
+      if (!selectedGameObj || !selectedGameObj.gameID) messages.push("You must select a game.");
+      if (!selectedPlatform || !selectedPlatform.platformID) messages.push("You must select a platform.");
+      if (!saveFile) messages.push("You must upload a save file.");
 
-      if (messages.length > 0) throw new Error(messages.join(" "));
+      if (messages.length > 0) {
+        throw new Error(messages.join(" "));
+      }
 
-      formData.append("title", saveFile.title);
-      formData.append("gameID", saveFile.gameID);
-      formData.append("description", saveFile.description);
-      formData.append("userID", user.userID);
-      formData.append("file", saveFile.file);
-      formData.append("platformID", saveFile.platformID);
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("gameID", selectedGameObj.gameID);
+      formData.append("platformID", selectedPlatform.platformID);
+      formData.append("description", description || "");
+      formData.append("file", saveFile);
+
+      screenshots.forEach(img => formData.append("screenshots", img));
       selectedTags.forEach(tag => formData.append("tags[]", tag.tagID));
 
       const res = await api.post(`${config.api.savedatas}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      setSaveFile({ title: "", gameID: "", description: "", file: null, tags: "" });
-      setSelectedTags([]);
+      // Limpiar el formulario tras subir
+      setTitle("");
       setSelectedGameObj(null);
-      navigate(`/s/${res.data.saveID}`);
+      setSelectedPlatform(null);
+      setDescription("");
+      setSaveFile(null);
+      setScreenshots([]);
+      setSelectedTags([]);
+      setPreviewUrls([]);
 
+      navigate(`/s/${res.data.saveID}`);
     } catch (err) {
       console.error("Error in CreateSaveFile!", err);
-      const backendMessage = err.response?.data?.message;
-      const fallback = err.message || "An error has occurred.";
-      setMessage(backendMessage || fallback);
+      alert(err.message || "An error has occurred.");
     }
   };
 
+
   return (
-    <div className="container mt-5">
-      <h2 className="mb-4">Upload Save File</h2>
+    <>
+      <h2 style={{ textAlign: "center" }}>Upload save file to GSDB</h2>
+      <div className="save-details">
+        <header className="save-header">
+          <div className="header-left">
 
-      {message && (
-        <div className="alert alert-danger" role="alert">
-          {message}
-        </div>
-      )}
+            <h3>Save title <span style={{ color: 'red' }}>*</span></h3>
+            <Form.Control
+              type="text"
+              placeholder="Save title..."
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="mb-2"
+            />
 
-      <form onSubmit={onSubmit} className="p-4 border rounded shadow-sm bg-light">
-        <div className="mb-3">
-          <label className="form-label">File</label>
-          <input type="file" className="form-control" onChange={onFileChange} />
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label">Save Title</label>
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Name of the save file"
-            name="title"
-            value={saveFile.title}
-            onChange={onChange}
-          />
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label">Game</label>
-          <Typeahead
-            id="game-search"
-            labelKey="title"
-            options={games}
-            placeholder="Search for a game..."
-            selected={selectedGameObj ? [selectedGameObj] : []}
-            onChange={(selected) => {
-              if (selected.length > 0) {
-                const game = selected[0];
-                setSelectedGameObj(game);
-                setSaveFile(prev => ({ ...prev, gameID: game.gameID }));
-              } else {
-                setSelectedGameObj(null);
-                setSaveFile(prev => ({ ...prev, gameID: "" }));
-              }
-            }}
-            onInputChange={(text, e) => {
-              if (e && e.type === 'change') {
-                handleGameInputChange(text);
-              }
-            }}
-            renderMenuItemChildren={(option) => {
-              const year = option.release_date ? new Date(option.release_date).getFullYear() : 'TBD';
-              const platformNames = getPlatformAbbreviations(option.platformID || []).join(", ");
-              return (
-                <div>
-                  <strong>{option.title}</strong>{" "}
-                  <span className="text-muted">
-                    ({year}{platformNames ? `) [${platformNames}]` : ")"}
-                  </span>
-                </div>
-              );
-            }}
-            emptyLabel="No games found"
-          />
-
-        </div>
-
-        {selectedGameObj?.platformID?.length > 0 && (
-          <div className="mb-3">
-            <label className="form-label">Platform</label>
-            <Typeahead
-              id="platform-select"
-              labelKey="name"
-              options={platforms.filter(p => selectedGameObj.platformID.includes(p.platformID))}
-              placeholder="Select a platform..."
-              onChange={(selected) => {
-                if (selected.length > 0) {
-                  const platform = selected[0];
-                  setSaveFile(prev => ({ ...prev, platformID: platform.platformID }));
-                } else {
-                  setSaveFile(prev => ({ ...prev, platformID: "" }));
+            <h3>Game & platform <span style={{ color: 'red' }}>*</span></h3>
+            <div className="subtitle">
+              <Typeahead
+                id="game-search"
+                labelKey="title"
+                options={games}
+                placeholder="Search for a game..."
+                selected={selectedGameObj ? [selectedGameObj] : []}
+                onChange={(selected) => {
+                  if (selected.length > 0) {
+                    setSelectedGameObj(selected[0]);
+                  } else {
+                    setSelectedGameObj(null);
+                  }
+                }}
+                onInputChange={(text, e) => {
+                  if (e && e.type === 'change') {
+                    handleGameInputChange(text);
+                  }
+                }}
+                renderMenuItemChildren={(option) => {
+                  const year = option.release_date ? new Date(option.release_date).getFullYear() : 'TBD';
+                  const platformNames = getPlatformAbbreviations(option.platformID || []);
+                  return (
+                    <div>
+                      <strong>{option.title}</strong>{" "}
+                      <span className="text-muted">
+                        ({year}{platformNames ? `) [${platformNames}]` : ")"}
+                      </span>
+                    </div>
+                  );
+                }}
+                emptyLabel="No games found"
+                className="mb-2"
+                inputProps={{ style: { backgroundColor: 'white', fontSize: '1.1rem' } }}
+              />
+              {' • '}
+              <Typeahead
+                id="platform-select"
+                labelKey="name"
+                options={selectedGameObj?.platformID?.length > 0
+                  ? platforms.filter(p => selectedGameObj.platformID.includes(p.platformID))
+                  : []
                 }
-              }}
-              selected={
-                platforms
-                  .filter(p => selectedGameObj.platformID.includes(p.platformID))
-                  .filter(p => p.platformID === saveFile.platformID)
-              }
-              multiple={false}
-              renderMenuItemChildren={(option) => (
-                <div className="d-flex align-items-center">
-                  {option.logo && (
-                    <img
-                      src={option.logo}
-                      alt={`${option.name} logo`}
-                      style={{ height: "24px", width: "24px", objectFit: "contain", marginRight: "8px" }}
-                    />
-                  )}
-                  <span>
-                    {option.name}
-                    {option.abbreviation ? ` [${option.abbreviation}]` : ""}
-                  </span>
-                </div>
-              )}
-            />
-          </div>
-        )}
-
-
-
-        {selectedGameObj?.cover && (
-          <div className="mb-3 text-center">
-            <img
-              src={selectedGameObj.cover}
-              alt={`${selectedGameObj.title} cover`}
-              style={{ maxHeight: "250px", objectFit: "contain" }}
-              className="img-fluid rounded shadow-sm"
-            />
-          </div>
-        )}
-
-        <div className="mb-3">
-          <label className="form-label">Tags</label>
-          <Typeahead
-            id="tags-select"
-            labelKey="name"
-            multiple
-            options={tags}
-            placeholder="Select one or more tags..."
-            onChange={(selected) => setSelectedTags(selected)}
-            selected={selectedTags}
-            renderMenuItemChildren={(option) => (
-              <div>
-                <strong>{option.name}</strong>
-                {option.description && <div className="text-muted small">{option.description}</div>}
+                placeholder="Select a platform..."
+                selected={selectedPlatform ? [selectedPlatform] : []}
+                onChange={(selected) => {
+                  if (selected.length > 0) {
+                    setSelectedPlatform(selected[0]);
+                  } else {
+                    setSelectedPlatform(null);
+                  }
+                }}
+                renderMenuItemChildren={(option) => (
+                  <div className="d-flex align-items-center">
+                    {option.logo && (
+                      <img
+                        src={option.logo}
+                        alt={`${option.name} logo`}
+                        style={{ height: "40px", width: "40px", objectFit: "contain", marginRight: "8px" }}
+                      />
+                    )}
+                    <span>
+                      {option.name}
+                      {option.abbreviation ? ` [${option.abbreviation}]` : ""}
+                    </span>
+                  </div>
+                )}
+                className="mb-2"
+                multiple={false}
+                disabled={!selectedGameObj} // 🔹 Bloqueado si no hay juego
+                inputProps={{ style: { backgroundColor: 'white', fontSize: '1.1rem' } }}
+              />
+              <div style={{
+                height: '40px',
+                width: '40px',
+                marginLeft: '8px',
+                display: 'inline-block',
+                verticalAlign: 'middle',
+              }}>
+                {selectedPlatform ? (
+                  <img
+                    src={selectedPlatform.logo}
+                    alt="Platform logo"
+                    style={{ height: '40px', width: '40px', objectFit: 'contain' }}
+                  />
+                ) : (
+                  <div style={{ width: '40px', height: '40px', backgroundColor: 'transparent' }} />
+                )}
               </div>
-            )}
+
+            </div>
+
+            <h3>Description</h3>
+            <Form.Control
+              as="textarea"
+              rows={3}
+              placeholder="Save description..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="mt-2"
+            />
+
+
+            <h3>Tags</h3>
+            <div className="mb-3">
+              <Typeahead
+                id="tags-select"
+                labelKey="name"
+                multiple
+                options={tags}
+                placeholder="Select one or more tags..."
+                onChange={(selected) => setSelectedTags(selected)}
+                selected={selectedTags}
+                renderMenuItemChildren={(option) => (
+                  <div>
+                    <strong>{option.name}</strong>
+                    {option.description && <div className="text-muted small">{option.description}</div>}
+                  </div>
+                )}
+              />
+            </div>
+          </div>
+
+          <div className="header-right">
+            <img
+              src={selectedGameObj?.cover || `${config.api.assets}/defaults/game-cover`}
+              alt="Game cover"
+            />
+          </div>
+
+        </header>
+
+        <div className='save-separator'></div>
+
+        <h3>Save file <span style={{ color: 'red' }}>*</span></h3>
+        <div className="mb-3">
+          <Form.Control
+            type="file"
+            onChange={onFileChange}
           />
         </div>
 
+        <h3>Screenshots</h3>
         <div className="mb-3">
-          <label className="form-label">Description (optional)</label>
-          <textarea
-            className="form-control"
-            placeholder="Add a description of the save file"
-            name="description"
-            value={saveFile.description}
-            onChange={onChange}
-            rows="3"
-          ></textarea>
+          <Form.Control
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={onScreenshotsChange}
+          />
         </div>
 
-        <button type="submit" className="btn btn-primary">Upload</button>
-      </form>
-    </div>
-  );
-};
 
-export default UploadSave;
+        {/* CARRUSEL CON PREVIEW DE IMÁGENES */}
+        <div className="carousel-container">
+          {previewUrls.map((url, index) => (
+            <img
+              key={index}
+              src={url}
+              alt={`Screenshot preview ${index + 1}`}
+              className="carousel-image"
+              onClick={() => openModalAtIndex(index)}
+              style={{ cursor: 'pointer' }}
+
+            />
+          ))}
+        </div>
+
+        <ImageCarouselModal
+          show={showModal}
+          onClose={closeModal}
+          images={previewUrls}
+          activeIndex={activeIndex}
+          setActiveIndex={setActiveIndex}
+        />
+
+        <div className="mt-4 text-center">
+          <Button variant="primary" onClick={onSubmit}>
+            Upload Save File
+          </Button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+export default NewSavePage;

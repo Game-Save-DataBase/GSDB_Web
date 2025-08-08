@@ -1,0 +1,106 @@
+.save-details {
+  .save-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; // centrar verticalmente el contenido
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    background-color: var(--color-foreground);
+
+    .header-left {
+      flex: 0 0 75%;
+      max-width: 75%;
+      text-align: left;
+    }
+
+    .header-right {
+      flex: 0 0 25%;
+      max-width: 25%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding-left: 2rem;
+      padding-right: 2rem;
+      box-sizing: border-box;
+      height: 100%;
+    }
+
+    .header-right img {
+      max-width: 100%;
+      max-height: 200px;
+      height: auto;
+      width: auto;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+      display: block;
+      margin: auto;
+      object-fit: contain;
+    }
+  }
+
+  .subtitle {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .rbt {
+      flex: 1 1 auto; // que cada typeahead crezca para ocupar espacio
+      min-width: 180px; // mínimo para que no quede muy pequeño
+    }
+
+  }
+}
+
+.carousel-container {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+
+  .carousel-image {
+    width: 150px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+  }
+}
+
+.carousel-container {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+
+  .carousel-image {
+    width: 150px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+  }
+}
+
+.rbt-menu .dropdown-menu>.rbt-menu-item>div {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: transform 0.5s ease;
+  display: block;
+  max-width: 100%;
+  cursor: pointer;
+  position: relative;
+}
+
+.rbt-menu .dropdown-menu>.rbt-menu-item:hover>div {
+  transform: translateX(-50%);
+}
+
+.save-separator {
+  height: 1px;
+  background-color: #ddd;
+  margin: 2rem 0;
+  border: none;
+}
