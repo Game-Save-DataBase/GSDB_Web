@@ -162,7 +162,9 @@ const UploadSave = () => {
 
     } catch (err) {
       console.error("Error in CreateSaveFile!", err);
-      setMessage(err.message || "An error has occurred.");
+      const backendMessage = err.response?.data?.message;
+      const fallback = err.message || "An error has occurred.";
+      setMessage(backendMessage || fallback);
     }
   };
 

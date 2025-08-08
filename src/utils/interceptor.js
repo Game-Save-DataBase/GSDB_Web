@@ -6,7 +6,7 @@ import history from './history'; // <- history propio ya que no podemos usar rea
 // Crear una instancia personalizada de axios
 const api = axios.create({
     baseURL: config.connection, // URL base de la API
-    timeout: 5000,  // Configura un timeout si lo necesitas
+    timeout: 60000,  // Configura un timeout si lo necesitas
     withCredentials:true,
 });
 api.defaults.withCredentials = true; //para las cookies de sesion
