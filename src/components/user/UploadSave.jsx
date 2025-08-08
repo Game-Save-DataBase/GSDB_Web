@@ -208,7 +208,8 @@ function NewSavePage() {
       screenshots.forEach(img => formData.append("screenshots", img));
       selectedTags.forEach(tag => formData.append("tags[]", tag.tagID));
 
-      const res = await api.post(`${config.api.savedatas}`, formData, {
+      
+      const res = await api.post(`${config.api.savedatas}/temp`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -222,7 +223,9 @@ function NewSavePage() {
       setSelectedTags([]);
       setPreviewUrls([]);
 
-      navigate(`/s/${res.data.saveID}`);
+      //navigate(`/s/${res.data.saveID}`);
+      navigate(`/`);
+
     } catch (err) {
       console.error("Error in CreateSaveFile!", err);
       alert(err.message || "An error has occurred.");
