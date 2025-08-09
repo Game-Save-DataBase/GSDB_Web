@@ -52,6 +52,10 @@ function ShowSaveDetails() {
         // 1. Guardado principal
         const { data: save } = await api.get(`${config.api.savedatas}?id=${id}`);
         setSaveData(save);
+        if (!save) {
+          navigate('/notfound?s', { replace: true });
+          return;
+        }
 
         // 2. Juego relacionado
         if (save.gameID) {
@@ -355,7 +359,7 @@ function ShowSaveDetails() {
     });
   };
 
-  if (isInitialLoad || !relatedGame || !saveData ) {
+  if (isInitialLoad || !relatedGame || !saveData) {
     return (
       <div className="text-center mt-5">
         <Spinner animation="border" />

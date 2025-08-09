@@ -28,6 +28,7 @@ import UserProfile from "./components/user/UserProfile.jsx";
 import Home from "./components/misc/Home.jsx"
 import About from "./components/misc/About.jsx"
 import FAQ from "./components/misc/FAQ.jsx"
+import NotFound from "./components/misc/NotFound.jsx"
 
 // Routes
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -47,6 +48,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <Route path="/user-area" element={<Layout><UserArea /></Layout>} />
             <Route path="/u/:userNameParam" element={<Layout><UserProfile /></Layout>} />
             <Route path="/test" element={<Layout><Test /></Layout>} />
+            <Route path="*" element={<Layout><NotFound /></Layout>} />
           </Routes>
         </UserProvider>
       </LoadingProvider>

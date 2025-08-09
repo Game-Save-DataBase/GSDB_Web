@@ -149,6 +149,10 @@ function ShowGameDetails() {
         const sorted = enriched.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
         setSaveFiles(sorted);
       } catch (err) {
+        if (!game) {
+          navigate('/notfound?g', { replace: true });
+          return;
+        }
         console.error(err);
       } finally {
         markAsLoaded();

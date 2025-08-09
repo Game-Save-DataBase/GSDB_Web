@@ -10,6 +10,7 @@ import {
     faArrowUpFromBracket,
     faDownload,
     faEye,
+    faPen,
     faStar,
 } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -101,7 +102,7 @@ function UserProfile() {
                 const userResponse = await api.get(
                     `${config.api.users}?userName=${userNameParam.toLowerCase()}`
                 );
-
+                if(!userResponse.data) throw Error()
                 // Corrige URL si tiene mayúsculas/minúsculas distintas
                 if (userResponse.data.userName !== userNameParam) {
                     navigate(`/u/${userResponse.data.userName}`, { replace: true });
@@ -111,8 +112,12 @@ function UserProfile() {
                 setUser(userResponse.data);
             } catch (err) {
                 console.log("user not found");
-                setUser(null);
                 setNotFound(true);
+                setUser(null);
+                if (!user) {
+                    navigate('/notfound?u', { replace: true });
+                    return;
+                }
             }
         };
 
@@ -466,7 +471,7 @@ function UserProfile() {
                                     objectFit: 'cover',
                                 }}
                             />
-                            <Button
+                            {loggedUser && loggedUser.userID === user.userID && (<Button
                                 variant="light"
                                 size="sm"
                                 onClick={() => navigate("/user-area")}
@@ -474,9 +479,10 @@ function UserProfile() {
                                 style={{
                                     transform: "translate(20%, 20%)",
                                     padding: "0.4rem",
-                                    backgroundColor: "white",
                                 }}
-                            ></Button>
+                            >
+                                <FontAwesomeIcon icon={faPen} />
+                            </Button>)}
                         </div>
                     </div>
                     {/* ---------------------------------------------------------------------------------------------- */}
@@ -744,8 +750,9 @@ function UserProfile() {
 
 
                 </>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }
 
