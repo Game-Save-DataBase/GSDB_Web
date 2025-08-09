@@ -15,6 +15,8 @@ import { UserContext } from '../../contexts/UserContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsDown, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 import ImageCarouselModal from '../utils/ImageCarouselModal';
+import FavoriteButton from '../utils/FavoriteButton';
+
 function ShowSaveDetails() {
   const [saveData, setSaveData] = useState({});
   const [relatedGame, setRelatedGame] = useState(null);
@@ -94,7 +96,7 @@ function ShowSaveDetails() {
           const res = await api.get(`${config.api.assets}/savedata/${id}/scr`, { responseType: "arraybuffer" });
           const zip = await JSZip.loadAsync(res.data);
 
-          const imagePromises =  Object.keys(zip.files).map(async (filename) => {
+          const imagePromises = Object.keys(zip.files).map(async (filename) => {
             const blob = await zip.files[filename].async("blob");
             return URL.createObjectURL(blob);
           });
@@ -383,7 +385,10 @@ function ShowSaveDetails() {
         {/* Parte superior: Título, subtítulo y descripción */}
         <header className="save-header">
           <div className="header-left">
-            <h1>{saveData.title || 'Untitled Save'}</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FavoriteButton saveID={saveData.saveID} style={{ width: '24px', height: '24px' }} />
+              <h1 style={{ margin: 0 }}>{saveData.title || 'Untitled Save'}</h1>
+            </div>
             {relatedGame && relatedPlatform && (
               <h2 className="subtitle">
                 <Link to={`/g/${relatedGame.slug}`}>{relatedGame.title}</Link>
@@ -410,6 +415,7 @@ function ShowSaveDetails() {
             >
               Download
             </button>
+
             <div className="download-info">
               <span className="file-size">
                 {saveData.fileSize !== undefined

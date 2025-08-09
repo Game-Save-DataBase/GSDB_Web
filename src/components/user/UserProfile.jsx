@@ -19,7 +19,9 @@ import {
     Spinner,
     Form,
     Stack,
-    Button
+    Button,
+    Tabs,
+    Tab
 } from 'react-bootstrap';
 import "../../styles/user/UserProfile.scss";
 import FilterSelect from "../filters/FilterSelect";
@@ -36,20 +38,62 @@ function UserProfile() {
     const [reviewedSaves, setReviewedSaves] = useState([]);
     const [favGames, setFavGames] = useState([]);
     const [notFound, setNotFound] = useState(false);
+    const [tags, setTags] = useState([]);
 
-    //filtros para los favsaves
+    //filtros para los favGames
     const [favGamesPlatforms, setFavGamesPlatforms] = useState([]);
     const [selectedFavGamesPlatforms, setSelectedFavGamesPlatforms] = useState([]);
     const [selectedGameDate, setSelectedGameDate] = useState("");
     const [favGamesViewType, setFavGamesViewType] = useState("card");
     const [favGamesLimit, setFavGamesLimit] = useState(5);
     const [filteredFavGames, setFilteredFavGames] = useState([]);
-    const platformAbbrMap = favGamesPlatforms.reduce((acc, p) => {
+    const favGamesPlatformAbbrMap = favGamesPlatforms.reduce((acc, p) => {
         if (p.value && p.abbreviation) {
             acc[p.value] = p.abbreviation;
         }
         return acc;
     }, {});
+    //filtros para los uploads
+    const [uploadsPlatforms, setUploadsPlatforms] = useState([]);
+    const [selectedUploadsPlatforms, setSelectedUploadsPlatforms] = useState([]);
+    const [selectedUploadsTags, setSelectedUploadsTags] = useState([]);
+    const [selectedUploadsDate, setSelectedUploadsDate] = useState("");
+    const [uploadsViewType, setUploadsViewType] = useState("card");
+    const [uploadsLimit, setUploadsLimit] = useState(5);
+    const [filteredUploads, setFilteredUploads] = useState([]);
+    const uploadsPlatformAbbrMap = uploadsPlatforms.reduce((acc, p) => {
+        if (p.value && p.abbreviation) {
+            acc[p.value] = p.abbreviation;
+        }
+        return acc;
+    }, {});
+        //filtros para los reviews
+    const [reviewsPlatforms, setReviewsPlatforms] = useState([]);
+    const [selectedReviewsPlatforms, setSelectedReviewsPlatforms] = useState([]);
+    const [selectedReviewsTags, setSelectedReviewsTags] = useState([]);
+    const [selectedReviewsDate, setSelectedReviewsDate] = useState("");
+    const [reviewsViewType, setReviewsViewType] = useState("card");
+    const [reviewsLimit, setReviewsLimit] = useState(5);
+    const [filteredReviews, setFilteredReviews] = useState([]);
+    const reviewsPlatformAbbrMap = reviewsPlatforms.reduce((acc, p) => {
+        if (p.value && p.abbreviation) {
+            acc[p.value] = p.abbreviation;
+        }
+        return acc;
+    }, {});
+    useEffect(() => {
+        const fetchTags = async () => {
+            try {
+                const { data: tagData } = await api.get(`${config.api.tags}`);
+                const tagArray = Array.isArray(tagData) ? tagData : [tagData];
+                setTags(tagArray);
+            } catch (err) {
+                console.error("Error fetching tags:", err);
+            }
+        };
+
+        fetchTags();
+    }, []);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -134,12 +178,24 @@ function UserProfile() {
         const fetchSaves = async () => {
             if (user.uploads.length <= 0) {
                 setUploadedSaves([]);
+                setUploadsPlatforms([]);
             } else {
                 try {
                     //filtramos todos los saves subidos por el usuario       
                     const savesResponse = await api.get(`${config.api.savedatas}?saveID[in]=${user.uploads.join(',')}`)
                     const savesResponseData = Array.isArray(savesResponse.data) ? savesResponse.data : [savesResponse.data];
-                    //vitaminamos cada uplaod con su imagen 
+                    const tagIDs = Array.from(new Set(savesResponseData.flatMap(sf => sf.tags || []))).filter(Boolean);
+                    // Obtener los tags
+                    let tagMap = {};
+                    if (tagIDs.length) {
+                        const { data: tagData } = await api.get(`${config.api.tags}?tagID[in]=${tagIDs.join(',')}`);
+                        const tagArray = Array.isArray(tagData) ? tagData : [tagData];
+                        tagMap = tagArray.reduce((acc, tag) => {
+                            acc[tag.tagID] = tag.name;
+                            return acc;
+                        }, {});
+                    }
+                    //vitaminamos cada uplaod
                     const updatedUploads = await Promise.all(
                         savesResponseData.map(async (save) => {
                             try {
@@ -148,24 +204,51 @@ function UserProfile() {
                                 return {
                                     ...save,
                                     save_img: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
-                                    save_img_error: gameResponse.data.cover || `${config.api.assets}/defaults/game-cover`
+                                    save_img_error: gameResponse.data.cover || `${config.api.assets}/defaults/game-cover`,
+                                    tagNames: save.tags?.map(id => tagMap[id]).filter(Boolean) || [],
+                                    link: `/s/${save.saveID}`
                                 };
                             } catch (err) {
                                 console.log(`Error fetching game image for save ${save.saveID}:`, err);
                                 return {
                                     ...save,
                                     save_img: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
-                                    save_img_error: `${config.api.assets}/defaults/game-cover`
+                                    save_img_error: `${config.api.assets}/defaults/game-cover`,
+                                    tagNames: save.tags?.map(id => tagMap[id]).filter(Boolean) || [],
+                                    link: `/s/${save.saveID}`
                                 };
                             }
                         })
 
                     )
-                    setUploadedSaves(updatedUploads);
+                    const sorted = updatedUploads.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
+                    setUploadedSaves(sorted);
+
+                    const platformIDs = [...new Set(updatedUploads.map(save => save.platformID).filter(Boolean))];
+                    if (platformIDs.length > 0) {
+                        try {
+                            const res = await api.get(
+                                `${config.api.platforms}?platformID[in]=${platformIDs.join(',')}&limit=500`
+                            );
+                            const data = Array.isArray(res.data) ? res.data : [res.data];
+                            const platformsFormatted = data.map((p) => ({
+                                value: p.platformID?.toString() ?? "",
+                                label: p.name ?? "",
+                                abbreviation: p.abbreviation ?? "",
+                            }));
+                            setUploadsPlatforms(platformsFormatted);
+                        } catch (err) {
+                            console.error("Error fetching upload platforms", err);
+                            setUploadsPlatforms([]);
+                        }
+                    } else {
+                        setUploadsPlatforms([]);
+                    }
 
                 } catch (err) {
                     console.log("Error fetching saves from user", err);
                     setUploadedSaves([]);
+                    setUploadsPlatforms([]);
                 }
             }
         };
@@ -181,6 +264,17 @@ function UserProfile() {
                     //filtramos todos los saves reviewados    
                     const savesResponse = await api.get(`${config.api.savedatas}?saveID[in]=${reviewsIDs.join(',')}`)
                     const savesResponseData = Array.isArray(savesResponse.data) ? savesResponse.data : [savesResponse.data];
+                    const tagIDs = Array.from(new Set(savesResponseData.flatMap(sf => sf.tags || []))).filter(Boolean);
+                    // Obtener los tags
+                    let tagMap = {};
+                    if (tagIDs.length) {
+                        const { data: tagData } = await api.get(`${config.api.tags}?tagID[in]=${tagIDs.join(',')}`);
+                        const tagArray = Array.isArray(tagData) ? tagData : [tagData];
+                        tagMap = tagArray.reduce((acc, tag) => {
+                            acc[tag.tagID] = tag.name;
+                            return acc;
+                        }, {});
+                    }
                     //vitaminamos cada uplaod con su imagen y el nombre de usuario
                     const updatedReviews = await Promise.all(
                         savesResponseData.map(async (save) => {
@@ -207,16 +301,42 @@ function UserProfile() {
                                 ...save,
                                 save_img: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
                                 save_img_error: gameData.cover || `${config.api.assets}/defaults/game-cover`,
-                                username: userData.userName || "unknown"
+                                user: {
+                                    name: userData.userName || "unknown",
+                                    link: `/u/${userData.userName}`
+                                },
+                                tagNames: save.tags?.map(id => tagMap[id]).filter(Boolean) || [],
+                                link: `/s/${save.saveID}`
                             };
                         })
                     );
-
-                    setReviewedSaves(updatedReviews);
+                    const sorted = updatedReviews.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
+                    setReviewedSaves(sorted);
+                    const platformIDs = [...new Set(updatedReviews.map(save => save.platformID).filter(Boolean))];
+                    if (platformIDs.length > 0) {
+                        try {
+                            const res = await api.get(
+                                `${config.api.platforms}?platformID[in]=${platformIDs.join(',')}&limit=500`
+                            );
+                            const data = Array.isArray(res.data) ? res.data : [res.data];
+                            const platformsFormatted = data.map((p) => ({
+                                value: p.platformID?.toString() ?? "",
+                                label: p.name ?? "",
+                                abbreviation: p.abbreviation ?? "",
+                            }));
+                            setReviewsPlatforms(platformsFormatted);
+                        } catch (err) {
+                            console.error("Error fetching upload platforms", err);
+                            setReviewsPlatforms([]);
+                        }
+                    } else {
+                        setReviewsPlatforms([]);
+                    }
 
                 } catch (err) {
                     console.log("Error fetching saves from user", err);
                     setReviewedSaves([]);
+                    setReviewsPlatforms([]);
                 }
             }
         }
@@ -252,6 +372,62 @@ function UserProfile() {
         setFilteredFavGames(filtered);
     }, [favGames, selectedFavGamesPlatforms, selectedGameDate]);
 
+    useEffect(() => {
+        let filtered = [...uploadedSaves];
+
+        // Filtrar por plataformas si hay alguna seleccionada
+        if (selectedUploadsPlatforms.length > 0) {
+            filtered = filtered.filter(sf =>
+                [sf.platformID]?.some(pid => selectedUploadsPlatforms.includes(pid.toString()))
+            );
+        }
+        //por tags
+        if (selectedUploadsTags.length > 0) {
+            //como tags esta guardado como strings en savedata....
+            const selectedStr = selectedUploadsTags.map(t => t.toString().trim().toLowerCase());
+            filtered = filtered.filter(sf =>
+                sf.tags?.some(pid => selectedStr.includes(pid.toString()))
+            );
+        }
+        // Filtrar por fecha si hay rango
+        if (selectedUploadsDate) {
+            filtered = filtered.filter(sf => {
+                const uDate = new Date(sf.release_date);
+                const selectedDate = new Date(selectedUploadsDate);
+                return uDate >= selectedDate;
+            });
+        }
+
+        setFilteredUploads(filtered);
+    }, [uploadedSaves, selectedUploadsPlatforms, selectedUploadsDate, selectedUploadsTags]);
+
+    useEffect(() => {
+        let filtered = [...reviewedSaves];
+        // Filtrar por plataformas si hay alguna seleccionada
+        if (selectedReviewsPlatforms.length > 0) {
+            filtered = filtered.filter(sf =>
+                [sf.platformID]?.some(pid => selectedReviewsPlatforms.includes(pid.toString()))
+            );
+        }
+        //por tags
+        if (selectedReviewsTags.length > 0) {
+            //como tags esta guardado como strings en savedata....
+            const selectedStr = selectedReviewsTags.map(t => t.toString().trim().toLowerCase());
+            filtered = filtered.filter(sf =>
+                sf.tags?.some(pid => selectedStr.includes(pid.toString()))
+            );
+        }
+        // Filtrar por fecha si hay rango
+        if (selectedReviewsDate) {
+            filtered = filtered.filter(sf => {
+                const uDate = new Date(sf.release_date);
+                const selectedDate = new Date(selectedReviewsDate);
+                return uDate >= selectedDate;
+            });
+        }
+
+        setFilteredReviews(filtered);
+    }, [reviewedSaves, selectedReviewsPlatforms, selectedReviewsDate, selectedReviewsTags]);
 
     return (
         <div className="user-profile">
@@ -330,85 +506,229 @@ function UserProfile() {
                         {`${user.bio}`}
                     </div>
 
-                    <hr />
-                    <h2>Favorite games</h2>
-                    <Container className="user-profile-container mt-4">
 
-                        <Stack
-                            direction="horizontal"
-                            gap={3}
-                            className="mb-4 flex-wrap align-items-end"
-                            style={{ rowGap: "1rem" }}
-                        >
-                            <Form.Group style={{ minWidth: "220px" }} className="mb-0 flex-fill">
-                                <FilterSelect
-                                    label="Platform"
-                                    selected={selectedFavGamesPlatforms}
-                                    onChange={setSelectedFavGamesPlatforms}
-                                    options={favGamesPlatforms}
-                                />
-                            </Form.Group>
-
-                            <Form.Group style={{ minWidth: "180px" }} className="mb-0 flex-fill">
-                                <FilterDate
-                                    label="Release Date From"
-                                    value={selectedGameDate}
-                                    onChange={setSelectedGameDate}
-                                />
-                            </Form.Group>
-
-                            <Form.Group style={{ minWidth: "160px" }} className="mb-0 flex-fill">
-                                <Form.Label>View</Form.Label>
-                                <Form.Select
-                                    value={favGamesViewType}
-                                    onChange={(e) => setFavGamesViewType(e.target.value)}
+                    <Tabs defaultActiveKey="favGames" id="user-profile-tabs" className="mb-3">
+                        {/* Pestaña 1: Favorite games */}
+                        <Tab eventKey="favGames" title="Favorite Games">
+                            <Container className="user-profile-container mt-4">
+                                <Stack
+                                    direction="horizontal"
+                                    gap={3}
+                                    className="mb-4 flex-wrap align-items-end"
+                                    style={{ rowGap: "1rem" }}
                                 >
-                                    <option value="list">List</option>
-                                    <option value="card">Card</option>
-                                </Form.Select>
-                            </Form.Group>
+                                    <Form.Group style={{ minWidth: "220px" }} className="mb-0 flex-fill">
+                                        <FilterSelect
+                                            label="Platform"
+                                            selected={selectedFavGamesPlatforms}
+                                            onChange={setSelectedFavGamesPlatforms}
+                                            options={favGamesPlatforms}
+                                        />
+                                    </Form.Group>
 
-                            <Form.Group style={{ minWidth: "160px" }} className="mb-0 flex-fill">
-                                <Form.Label>Items per page</Form.Label>
-                                <Form.Select
-                                    value={favGamesLimit}
-                                    onChange={(e) => {
-                                        const newLimit = parseInt(e.target.value);
-                                        setFavGamesLimit(newLimit);
-                                    }}
+                                    <Form.Group style={{ minWidth: "180px" }} className="mb-0 flex-fill">
+                                        <FilterDate
+                                            label="Release Date From"
+                                            value={selectedGameDate}
+                                            onChange={setSelectedGameDate}
+                                        />
+                                    </Form.Group>
+
+                                    <Form.Group style={{ minWidth: "160px" }} className="mb-0 flex-fill">
+                                        <Form.Label>View</Form.Label>
+                                        <Form.Select
+                                            value={favGamesViewType}
+                                            onChange={(e) => setFavGamesViewType(e.target.value)}
+                                        >
+                                            <option value="list">List</option>
+                                            <option value="card">Card</option>
+                                        </Form.Select>
+                                    </Form.Group>
+
+                                    <Form.Group style={{ minWidth: "160px" }} className="mb-0 flex-fill">
+                                        <Form.Label>Items per page</Form.Label>
+                                        <Form.Select
+                                            value={favGamesLimit}
+                                            onChange={(e) => {
+                                                const newLimit = parseInt(e.target.value);
+                                                setFavGamesLimit(newLimit);
+                                            }}
+                                        >
+                                            <option value={5}>5</option>
+                                            <option value={10}>10</option>
+                                            <option value={20}>20</option>
+                                            <option value={40}>40</option>
+                                        </Form.Select>
+                                    </Form.Group>
+                                </Stack>
+
+                                {/* View */}
+                                <Row>
+                                    <Col>
+                                        <View
+                                            type={favGamesViewType}
+                                            data={filteredFavGames}
+                                            renderProps={{
+                                                title: "title",
+                                                releaseDate: "release_date",
+                                                lastUpdate: "lastUpdate",
+                                                uploads: "nUploads",
+                                                image: "cover",
+                                                errorImage: `${config.api.assets}/default/game-cover`,
+                                                link: "url",
+                                                platforms: "platformID",
+                                            }}
+                                            platformMap={favGamesPlatformAbbrMap}
+                                            limit={favGamesLimit}
+                                            offset={0}
+                                            currentPage={1}
+                                            hasMore={false}
+                                            onPageChange={() => { }}
+                                        />
+                                    </Col>
+                                </Row>
+                            </Container>
+                        </Tab>
+
+                        {/* Uploads */}
+                        <Tab eventKey="uploads" title="Uploads">
+                            <Container className="user-profile-container mt-4">
+                                <Stack
+                                    direction="horizontal"
+                                    gap={3}
+                                    className="mb-4 flex-wrap align-items-end"
+                                    style={{ rowGap: "1rem" }}
                                 >
-                                    <option value={5}>5</option>
-                                    <option value={10}>10</option>
-                                    <option value={20}>20</option>
-                                    <option value={40}>40</option>
-                                </Form.Select>
-                            </Form.Group>
+                                    <Form.Group style={{ minWidth: "200px" }} className="mb-0 flex-fill">
+                                        <FilterSelect label="Platform" selected={selectedUploadsPlatforms} onChange={setSelectedUploadsPlatforms} options={uploadsPlatforms} />
+                                    </Form.Group>
+                                    <Form.Group style={{ minWidth: "200px" }} className="mb-0 flex-fill">
+                                        <FilterSelect label="Tags" selected={selectedUploadsTags} onChange={setSelectedUploadsTags} options={tags.map(t => ({ value: t.tagID, label: t.name }))} />
+                                    </Form.Group>
+                                    <Form.Group style={{ minWidth: "180px" }} className="mb-0 flex-fill">
+                                        <FilterDate label="Posted date" value={selectedUploadsDate} onChange={setSelectedUploadsDate} />
+                                    </Form.Group>
 
-                        </Stack>
-                        {/* View */}
-                        <Row>
-                            <Col>
-                                <View
-                                    type={favGamesViewType}
-                                    data={filteredFavGames}
-                                    renderProps={{
-                                        title: "title",
-                                        image: "cover",
-                                        errorImage: `${config.api.assets}/default/game-cover`,
-                                        link: "url",
-                                        platforms: "platformID",
-                                    }}
-                                    platformMap={platformAbbrMap}
-                                    limit={favGamesLimit}
-                                    offset={0}
-                                    currentPage={1}
-                                    hasMore={false}
-                                    onPageChange={() => { }}
-                                />
-                            </Col>
-                        </Row>
-                    </Container>
+                                    <Form.Group style={{ minWidth: "160px" }} className="mb-0 flex-fill">
+                                        <Form.Label>View</Form.Label>
+                                        <Form.Select value={uploadsViewType} onChange={(e) => setUploadsViewType(e.target.value)}>
+                                            <option value="list">List</option>
+                                            <option value="card">Card</option>
+                                        </Form.Select>
+                                    </Form.Group>
 
+                                    <Form.Group style={{ minWidth: "160px" }} className="mb-0 flex-fill">
+                                        <Form.Label>Items per page</Form.Label>
+                                        <Form.Select value={uploadsLimit} onChange={(e) => {
+                                            const newLimit = parseInt(e.target.value);
+                                            setUploadsLimit(newLimit);
+                                        }}
+                                        >
+                                            <option value={5}>5</option>
+                                            <option value={10}>10</option>
+                                            <option value={20}>20</option>
+                                            <option value={40}>40</option>
+                                        </Form.Select>
+                                    </Form.Group>
+                                </Stack>
+
+                                {/* View */}
+                                <Row>
+                                    <Col>
+                                        <View type={uploadsViewType} data={filteredUploads}
+                                            renderProps={{
+                                                title: "title",
+                                                image: "save_img",
+                                                errorImage: "save_img_error",
+                                                link: "link",
+                                                platforms: "platformID",
+                                                tags: "tagNames",
+                                                downloads: "nDownloads",
+                                                description: "description",
+                                                uploadDate: "postedDate"
+                                            }}
+                                            platformMap={uploadsPlatformAbbrMap} limit={uploadsLimit} offset={0} currentPage={1} hasMore={false} onPageChange={() => { }}
+                                        />
+                                    </Col>
+                                </Row>
+                            </Container>
+                        </Tab>
+
+                        {/* ultimos valorados */}
+                        <Tab eventKey="reviews" title="Reviews">
+                            <Container className="user-profile-container mt-4">
+                                <Stack
+                                    direction="horizontal"
+                                    gap={3}
+                                    className="mb-4 flex-wrap align-items-end"
+                                    style={{ rowGap: "1rem" }}
+                                >
+                                    <Form.Group style={{ minWidth: "200px" }} className="mb-0 flex-fill">
+                                        <FilterSelect label="Platform" selected={selectedReviewsPlatforms} onChange={setSelectedReviewsPlatforms} options={reviewsPlatforms} />
+                                    </Form.Group>
+                                    <Form.Group style={{ minWidth: "200px" }} className="mb-0 flex-fill">
+                                        <FilterSelect label="Tags" selected={selectedReviewsTags} onChange={setSelectedReviewsTags} options={tags.map(t => ({ value: t.tagID, label: t.name }))} />
+                                    </Form.Group>
+                                    <Form.Group style={{ minWidth: "180px" }} className="mb-0 flex-fill">
+                                        <FilterDate label="Posted date" value={selectedReviewsDate} onChange={setSelectedReviewsDate} />
+                                    </Form.Group>
+
+                                    <Form.Group style={{ minWidth: "160px" }} className="mb-0 flex-fill">
+                                        <Form.Label>View</Form.Label>
+                                        <Form.Select value={reviewsViewType} onChange={(e) => setReviewsViewType(e.target.value)}>
+                                            <option value="list">List</option>
+                                            <option value="card">Card</option>
+                                        </Form.Select>
+                                    </Form.Group>
+
+                                    <Form.Group style={{ minWidth: "160px" }} className="mb-0 flex-fill">
+                                        <Form.Label>Items per page</Form.Label>
+                                        <Form.Select value={reviewsLimit} onChange={(e) => {
+                                            const newLimit = parseInt(e.target.value);
+                                            setReviewsLimit(newLimit);
+                                        }}
+                                        >
+                                            <option value={5}>5</option>
+                                            <option value={10}>10</option>
+                                            <option value={20}>20</option>
+                                            <option value={40}>40</option>
+                                        </Form.Select>
+                                    </Form.Group>
+                                </Stack>
+
+                                {/* View */}
+                                <Row>
+                                    <Col>
+                                        <View type={reviewsViewType} data={filteredReviews}
+                                            renderProps={{
+                                                title: "title",
+                                                image: "save_img",
+                                                errorImage: "save_img_error",
+                                                link: "link",
+                                                platforms: "platformID",
+                                                tags: "tagNames",
+                                                downloads: "nDownloads",
+                                                description: "description",
+                                                uploadDate: "postedDate",
+                                                user: "user"
+                                            }}
+                                            platformMap={reviewsPlatformAbbrMap} limit={reviewsLimit} offset={0} currentPage={1} hasMore={false} onPageChange={() => { }}
+                                        />
+                                    </Col>
+                                </Row>
+                            </Container>
+                        </Tab>
+
+                        {/* fav saves */}
+                        <Tab eventKey="favsaves" title="Favorite save files">
+                        </Tab>
+
+                        {/* download history */}
+                        <Tab eventKey="history" title="Download history">
+                        </Tab>
+
+
+                    </Tabs>
 
 
 
