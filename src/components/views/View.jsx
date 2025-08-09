@@ -37,7 +37,6 @@ function View({
   const renderTitle = (item) => {
     const title = item[renderProps.title];
     const link = item[renderProps.link];
-
     return link ? (
       <a href={link} style={{ textDecoration: "none", color: "#4b0082" }}>
         <strong>{title}</strong>
@@ -63,6 +62,7 @@ function View({
 
   const scrollTags = (el, amount) => {
     if (el) el.scrollBy({ left: amount, behavior: "smooth" });
+
   };
 
 
@@ -89,7 +89,7 @@ function View({
                           src={item[renderProps.image]}
                           alt={item[renderProps.title] || "cover"}
                           className="view-game-cover"
-                          onError={(e) => { e.currentTarget.src = item[renderProps.errorImage]}}
+                          onError={(e) => { e.currentTarget.src = item[renderProps.errorImage] }}
                         />
                       </a>
                     ) : (
@@ -97,7 +97,7 @@ function View({
                         src={item[renderProps.image]}
                         alt={item[renderProps.title] || "cover"}
                         className="view-game-cover"
-                          onError={(e) => { e.currentTarget.src = item[renderProps.errorImage]}}
+                        onError={(e) => { e.currentTarget.src = item[renderProps.errorImage] }}
                       />
                     )}
                   </div>
@@ -112,7 +112,7 @@ function View({
                       <Card.Text className="text-muted">
                         {(() => {
                           const text = item[renderProps.description]?.trim();
-                          if (!text) return "No description";
+                          if (!text || text === "") return "No description";
                           return text.length > 80 ? text.slice(0, 80) + "..." : text;
                         })()}
                       </Card.Text>
@@ -163,9 +163,9 @@ function View({
                     )}
 
 
-                    {renderProps.platforms && Array.isArray(item[renderProps.platforms]) && (
+                    {renderProps.platforms && (
                       <Card.Text className="text-muted" style={{ fontSize: "0.75rem" }}>
-                        <strong>Platforms</strong>: {item[renderProps.platforms]
+                        <strong>Platforms</strong>: {(Array.isArray(item[renderProps.platforms]) ? item[renderProps.platforms] : [item[renderProps.platforms]])
                           .map((pid) => platformMap[pid?.toString()] || null)
                           .filter(Boolean)
                           .join(" / ")}
