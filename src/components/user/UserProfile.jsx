@@ -67,7 +67,7 @@ function UserProfile() {
         }
         return acc;
     }, {});
-        //filtros para los reviews
+    //filtros para los reviews
     const [reviewsPlatforms, setReviewsPlatforms] = useState([]);
     const [selectedReviewsPlatforms, setSelectedReviewsPlatforms] = useState([]);
     const [selectedReviewsTags, setSelectedReviewsTags] = useState([]);
@@ -466,6 +466,17 @@ function UserProfile() {
                                     objectFit: 'cover',
                                 }}
                             />
+                            <Button
+                                variant="light"
+                                size="sm"
+                                onClick={() => navigate("/user-area")}
+                                className="position-absolute bottom-0 end-0 rounded-circle border"
+                                style={{
+                                    transform: "translate(20%, 20%)",
+                                    padding: "0.4rem",
+                                    backgroundColor: "white",
+                                }}
+                            ></Button>
                         </div>
                     </div>
                     {/* ---------------------------------------------------------------------------------------------- */}

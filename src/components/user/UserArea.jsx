@@ -13,7 +13,7 @@ function UserArea() {
 
   useEffect(() => {
     if (!loading && !loggedUser) {
-      navigate('/login');
+      navigate('/login', {replace:true});
     }
   }, [loading, loggedUser, navigate]);
 

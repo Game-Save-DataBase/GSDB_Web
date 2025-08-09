@@ -43,6 +43,7 @@ function ShowSaveDetails() {
 
   const navigate = useNavigate();
 
+
   useEffect(() => {
     const loadAll = async () => {
       try {
@@ -354,7 +355,13 @@ function ShowSaveDetails() {
     });
   };
 
-
+  if (isInitialLoad || !relatedGame || !saveData ) {
+    return (
+      <div className="text-center mt-5">
+        <Spinner animation="border" />
+      </div>
+    );
+  }
   return (
     <>
       {/* Breadcrumb */}
@@ -371,11 +378,7 @@ function ShowSaveDetails() {
                   <Link to={`/catalog`}>Catalog</Link>
                 </li>
                 <li>
-                  {relatedGame ? (
-                    <Link to={`/g/${relatedGame.slug}`}>{relatedGame.title}</Link>
-                  ) : (
-                    <span>Loading...</span>
-                  )}
+                  <Link to={`/g/${relatedGame.slug}`}>{relatedGame.title}</Link>
                 </li>
                 <li>  </li>
               </ol>
