@@ -102,7 +102,7 @@ function UserProfile() {
                 const userResponse = await api.get(
                     `${config.api.users}?userName=${userNameParam.toLowerCase()}`
                 );
-                if(!userResponse.data) throw Error()
+                if (!userResponse.data) throw Error()
                 // Corrige URL si tiene mayúsculas/minúsculas distintas
                 if (userResponse.data.userName !== userNameParam) {
                     navigate(`/u/${userResponse.data.userName}`, { replace: true });
@@ -737,12 +737,12 @@ function UserProfile() {
                         </Tab>
 
                         {/* fav saves */}
-                        <Tab eventKey="favsaves" title="Favorite save files">
-                        </Tab>
+                        {loggedUser && loggedUser.userID === user.userID && (<Tab eventKey="favsaves" title="Favorite save files">
+                        </Tab>)}
 
                         {/* download history */}
-                        <Tab eventKey="history" title="Download history">
-                        </Tab>
+                        {loggedUser && loggedUser.userID === user.userID && (<Tab eventKey="history" title="Download history">
+                        </Tab>)}
 
 
                     </Tabs>
