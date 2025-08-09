@@ -371,7 +371,11 @@ function ShowSaveDetails() {
                   <Link to={`/catalog`}>Catalog</Link>
                 </li>
                 <li>
-                  <Link to={`/g/${relatedGame.slug}`}>{relatedGame.title}</Link>
+                  {relatedGame ? (
+                    <Link to={`/g/${relatedGame.slug}`}>{relatedGame.title}</Link>
+                  ) : (
+                    <span>Loading...</span>
+                  )}
                 </li>
                 <li>  </li>
               </ol>
