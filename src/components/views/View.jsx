@@ -69,7 +69,7 @@ function View({
 
   return (
     <Container>
-      <hr className="mb-4" />
+      <hr className="container mb-4" />
 
       {data.length === 0 ? (
         <p className="text-center text-muted">No results found.</p>
@@ -77,9 +77,7 @@ function View({
         <Row className="g-4 justify-content-start">
           {data.map((item, idx) => (
             <Col
-              key={idx}
-              style={{ flex: "0 0 20%", maxWidth: "20%" }}
-              className="px-2"
+              key={idx} xs={6} sm={4} md={3} lg={2} className="px-2"
             >
               <Card className="custom-card shadow-sm">
                 {renderProps.image && (

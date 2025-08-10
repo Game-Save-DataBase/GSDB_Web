@@ -527,7 +527,7 @@ function UserProfile() {
                     <Tabs defaultActiveKey="favGames" id="user-profile-tabs" className="mb-3">
                         {/* Pestaña 1: Favorite games */}
                         <Tab eventKey="favGames" title="Favorite Games">
-                            <Container className="user-profile-container mt-4">
+                            <Container className="mt-4">
                                 <Stack
                                     direction="horizontal"
                                     gap={3}
@@ -609,7 +609,7 @@ function UserProfile() {
 
                         {/* Uploads */}
                         <Tab eventKey="uploads" title="Uploads">
-                            <Container className="user-profile-container mt-4">
+                            <Container className=" mt-4">
                                 <Stack
                                     direction="horizontal"
                                     gap={3}
@@ -673,7 +673,7 @@ function UserProfile() {
 
                         {/* ultimos valorados */}
                         <Tab eventKey="reviews" title="Reviews">
-                            <Container className="user-profile-container mt-4">
+                            <Container className=" mt-4">
                                 <Stack
                                     direction="horizontal"
                                     gap={3}
