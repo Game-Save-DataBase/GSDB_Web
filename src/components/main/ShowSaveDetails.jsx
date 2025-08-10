@@ -40,6 +40,7 @@ function ShowSaveDetails() {
   const [replyingTo, setReplyingTo] = useState(null); // commentID al que se responde
   const [replyText, setReplyText] = useState('');
   const isUploader = user && saveData.userID === user.userID;
+  const [hiddenReplies, setHiddenReplies] = useState({});
 
   const navigate = useNavigate();
 
@@ -174,10 +175,16 @@ function ShowSaveDetails() {
     setActiveIndex(index);
     setShowModal(true);
   };
+  const toggleReplies = (commentID) => {
+    setHiddenReplies(prev => ({
+      ...prev,
+      [commentID]: !prev[commentID],
+    }));
+  };
 
   // Función para cerrar modal
   const closeModal = () => setShowModal(false);
-  if (isInitialLoad) return <p style={{ textAlign: 'center' }}>loading...</p>;
+  if (isInitialLoad) return <p style={{ textAlign: 'center' }}></p>;
 
   function formatDate(isoDate) {
     if (!isoDate) return '';
@@ -267,7 +274,6 @@ function ShowSaveDetails() {
       console.error('Error updating rating:', error.response?.data || error.message);
     }
   };
-
   const renderComments = (parentID = 'root', depth = 0) => {
     const commentList = groupedComments[parentID] || [];
 
@@ -275,6 +281,9 @@ function ShowSaveDetails() {
       const u = usersMap[comment.userID];
       const alias = u ? (u.alias?.trim() || u.userName) : 'Unknown';
       const username = u ? u.userName : 'unknown';
+
+      const hasReplies = (groupedComments[comment.commentID] || []).length > 0;
+      const repliesHidden = hiddenReplies[comment.commentID];
 
       return (
         <div
@@ -310,15 +319,27 @@ function ShowSaveDetails() {
                 onClick={() => setReplyingTo(comment.commentID)}
                 className="mt-1 p-0"
               >
-                Responder
+                Reply
               </Button>
+
+              {hasReplies && (
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={() => toggleReplies(comment.commentID)}
+                  className="mt-1 p-0 ms-2"
+                >
+                  {repliesHidden ? 'Show replies' : 'Hide replies'}
+                </Button>
+              )}
+
               {replyingTo === comment.commentID && (
                 <Form
                   onSubmit={e => {
                     e.preventDefault();
                     postComment(true, comment.commentID);
                   }}
-                  className="mt-2"
+                  className="mt-2 reply-form"
                 >
                   <Form.Control
                     as="textarea"
@@ -334,7 +355,7 @@ function ShowSaveDetails() {
                       size="sm"
                       disabled={posting || !replyText.trim()}
                     >
-                      {posting ? 'Enviando...' : 'Responder'}
+                      {posting ? 'Sending...' : 'Reply'}
                     </Button>{' '}
                     <Button
                       variant="secondary"
@@ -352,12 +373,13 @@ function ShowSaveDetails() {
             </div>
           </div>
 
-          {/* Renderizar hijos */}
-          {renderComments(comment.commentID, depth + 1)}
+          {/* Renderizar hijos solo si no están ocultos */}
+          {!repliesHidden && renderComments(comment.commentID, depth + 1)}
         </div>
       );
     });
   };
+
 
   if (isInitialLoad || !relatedGame || !saveData) {
     return (

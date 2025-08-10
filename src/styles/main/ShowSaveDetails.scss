@@ -243,14 +243,22 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del sav
     transform: translateX(-50%) translateY(0);
   }
 
-  .comment-user-link {
-    color: var(--color-links);
-    text-decoration: none;
-    font-weight: bold;
+}
 
-    &:hover {
-      text-decoration: underline;
-    }
+.comment-user-link {
+  color: var(--color-links);
+  text-decoration: none;
+  font-weight: bold;
+
+  &:hover {
+    text-decoration: underline;
   }
-
+}
+.reply-form {
+  width: 50vw; /* ancho total de la ventana */
+  max-width: 50vw;
+  position: relative; 
+  box-sizing: border-box;
+  padding: 10px 20px; 
+  z-index: 10;
 }
