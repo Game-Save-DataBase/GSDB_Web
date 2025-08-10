@@ -47,6 +47,9 @@ function UserProfile() {
     const [selectedGameDate, setSelectedGameDate] = useState("");
     const [favGamesViewType, setFavGamesViewType] = useState("card");
     const [favGamesLimit, setFavGamesLimit] = useState(5);
+    const [favGamesCurrentPage, setFavGamesCurrentPage] = useState(1);
+    const [favGamesOffset, setFavGamesOffset] = useState(0);
+    const [favGamesHasMore, setFavGamesHasMore] = useState(false);
     const [filteredFavGames, setFilteredFavGames] = useState([]);
     const favGamesPlatformAbbrMap = favGamesPlatforms.reduce((acc, p) => {
         if (p.value && p.abbreviation) {
@@ -61,6 +64,9 @@ function UserProfile() {
     const [selectedUploadsDate, setSelectedUploadsDate] = useState("");
     const [uploadsViewType, setUploadsViewType] = useState("card");
     const [uploadsLimit, setUploadsLimit] = useState(5);
+    const [uploadsCurrentPage, setUploadsCurrentPage] = useState(1);
+    const [uploadsOffset, setUploadsOffset] = useState(0);
+    const [uploadsHasMore, setUploadsHasMore] = useState(false);
     const [filteredUploads, setFilteredUploads] = useState([]);
     const uploadsPlatformAbbrMap = uploadsPlatforms.reduce((acc, p) => {
         if (p.value && p.abbreviation) {
@@ -75,6 +81,9 @@ function UserProfile() {
     const [selectedReviewsDate, setSelectedReviewsDate] = useState("");
     const [reviewsViewType, setReviewsViewType] = useState("card");
     const [reviewsLimit, setReviewsLimit] = useState(5);
+    const [reviewsCurrentPage, setReviewsCurrentPage] = useState(1);
+    const [reviewsOffset, setReviewsOffset] = useState(0);
+    const [reviewsHasMore, setReviewsHasMore] = useState(false);
     const [filteredReviews, setFilteredReviews] = useState([]);
     const reviewsPlatformAbbrMap = reviewsPlatforms.reduce((acc, p) => {
         if (p.value && p.abbreviation) {
@@ -128,225 +137,241 @@ function UserProfile() {
         return <p className="text-center mt-5">Usuario no encontrado.</p>;
     }
 
-    useEffect(() => {
-        const fetchGames = async () => {
-            if (user.favGames.length <= 0) {
+    const fetchGames = async () => {
+        if (!user || !Array.isArray(user.favGames) || user.favGames.length === 0) {
+            setFavGames([]);
+            setFavGamesPlatforms([]);
+        } else {
+            const paginatedFavGameIDs = user.favGames.slice(favGamesOffset, favGamesOffset + favGamesLimit);
+
+            if (paginatedFavGameIDs.length === 0) {
                 setFavGames([]);
                 setFavGamesPlatforms([]);
-            } else {
-                let favGamesIds = Array.isArray(user.favGames) ? user.favGames : [user.favGames];
+                return;
+            }
+            try {
+                const gameResponse = await api.get(`${config.api.games}?gameID[in]=${paginatedFavGameIDs.join(',')}&complete=false&external=false&limit=${favGamesLimit}`)
+                if (!gameResponse.data) {
+                    setFavGames([]);
+                    setFavGamesPlatforms([]);
+                    setFavGamesHasMore(false)
+                    return;
+                }
+                setFavGamesHasMore(gameResponse.data.length === favGamesLimit);
+
+                let gamesData = Array.isArray(gameResponse.data) ? gameResponse.data : [gameResponse.data];
+                setFavGames(gamesData.map((game) => ({
+                    ...game,
+                    url: `/g/${game.slug}`,
+                })));
 
                 try {
-                    const gameResponse = await api.get(`${config.api.games}?gameID[in]=${favGamesIds.join(',')}&complete=false&external=false&limit=500`)
-                    if (!gameResponse.data) {
-                        setFavGames([]);
+                    const gamePlatformsID = [
+                        ...new Set(
+                            gamesData.flatMap(game => game.platformID || [])
+                        )
+                    ];
+                    if (gamePlatformsID.length === 0) {
                         setFavGamesPlatforms([]);
                         return;
                     }
-                    let gamesData = Array.isArray(gameResponse.data) ? gameResponse.data : [gameResponse.data];
-                    setFavGames(gamesData.map((game) => ({
-                        ...game,
-                        url: `/g/${game.slug}`,
-                    })));
+                    const res = await api.get(`${config.api.platforms}?platformID[in]=${gamePlatformsID}&limit=500`);
+                    const data = Array.isArray(res.data) ? res.data : [];
+                    const platformsFormatted = data.map((p) => ({
+                        value: p.platformID?.toString() ?? "",
+                        label: p.name ?? "",
+                        abbreviation: p.abbreviation ?? "",
+                    }));
+                    setFavGamesPlatforms(platformsFormatted);
+                } catch (err) {
+                    console.error("Error fetching platforms", err);
+                    setFavGamesPlatforms([]);
+                }
+            } catch (err) {
+                console.log(`Error fetching favorite games user ${user.userID}:`, err);
+                setFavGames([]);
+                setFavGamesPlatforms([]);
+            }
 
-                    try {
-                        const gamePlatformsID = [
-                            ...new Set(
-                                gamesData.flatMap(game => game.platformID || [])
-                            )
-                        ];
-                        if (gamePlatformsID.length === 0) {
-                            setFavGamesPlatforms([]);
-                            return;
+        }
+    }
+
+    const fetchSaves = async () => {
+        if (user.uploads.length <= 0) {
+            setUploadedSaves([]);
+            setUploadsPlatforms([]);
+        } else {
+            try {
+                //filtramos todos los saves subidos por el usuario       
+                const savesResponse = await api.get(`${config.api.savedatas}?saveID[in]=${user.uploads.join(',')}`)
+                const savesResponseData = Array.isArray(savesResponse.data) ? savesResponse.data : [savesResponse.data];
+                const tagIDs = Array.from(new Set(savesResponseData.flatMap(sf => sf.tags || []))).filter(Boolean);
+                // Obtener los tags
+                let tagMap = {};
+                if (tagIDs.length) {
+                    const { data: tagData } = await api.get(`${config.api.tags}?tagID[in]=${tagIDs.join(',')}`);
+                    const tagArray = Array.isArray(tagData) ? tagData : [tagData];
+                    tagMap = tagArray.reduce((acc, tag) => {
+                        acc[tag.tagID] = tag.name;
+                        return acc;
+                    }, {});
+                }
+                //vitaminamos cada uplaod
+                const updatedUploads = await Promise.all(
+                    savesResponseData.map(async (save) => {
+                        try {
+                            const gameResponse = await api.get(`${config.api.games}?gameID=${save.gameID}`);
+                            if (!gameResponse.data) { throw ("No game fetched"); }
+                            return {
+                                ...save,
+                                save_img: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
+                                save_img_error: gameResponse.data.cover || `${config.api.assets}/defaults/game-cover`,
+                                tagNames: save.tags?.map(id => tagMap[id]).filter(Boolean) || [],
+                                link: `/s/${save.saveID}`
+                            };
+                        } catch (err) {
+                            console.log(`Error fetching game image for save ${save.saveID}:`, err);
+                            return {
+                                ...save,
+                                save_img: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
+                                save_img_error: `${config.api.assets}/defaults/game-cover`,
+                                tagNames: save.tags?.map(id => tagMap[id]).filter(Boolean) || [],
+                                link: `/s/${save.saveID}`
+                            };
                         }
-                        const res = await api.get(`${config.api.platforms}?platformID[in]=${gamePlatformsID}&limit=500`);
-                        const data = Array.isArray(res.data) ? res.data : [];
+                    })
+
+                )
+                const sorted = updatedUploads.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
+                setUploadedSaves(sorted);
+
+                const platformIDs = [...new Set(updatedUploads.map(save => save.platformID).filter(Boolean))];
+                if (platformIDs.length > 0) {
+                    try {
+                        const res = await api.get(
+                            `${config.api.platforms}?platformID[in]=${platformIDs.join(',')}&limit=500`
+                        );
+                        const data = Array.isArray(res.data) ? res.data : [res.data];
                         const platformsFormatted = data.map((p) => ({
                             value: p.platformID?.toString() ?? "",
                             label: p.name ?? "",
                             abbreviation: p.abbreviation ?? "",
                         }));
-                        setFavGamesPlatforms(platformsFormatted);
+                        setUploadsPlatforms(platformsFormatted);
                     } catch (err) {
-                        console.error("Error fetching platforms", err);
-                        setFavGamesPlatforms([]);
-                    }
-                } catch (err) {
-                    console.log(`Error fetching favorite games user ${user.userID}:`, err);
-                    setFavGames([]);
-                    setFavGamesPlatforms([]);
-                }
-
-            }
-        }
-
-        const fetchSaves = async () => {
-            if (user.uploads.length <= 0) {
-                setUploadedSaves([]);
-                setUploadsPlatforms([]);
-            } else {
-                try {
-                    //filtramos todos los saves subidos por el usuario       
-                    const savesResponse = await api.get(`${config.api.savedatas}?saveID[in]=${user.uploads.join(',')}`)
-                    const savesResponseData = Array.isArray(savesResponse.data) ? savesResponse.data : [savesResponse.data];
-                    const tagIDs = Array.from(new Set(savesResponseData.flatMap(sf => sf.tags || []))).filter(Boolean);
-                    // Obtener los tags
-                    let tagMap = {};
-                    if (tagIDs.length) {
-                        const { data: tagData } = await api.get(`${config.api.tags}?tagID[in]=${tagIDs.join(',')}`);
-                        const tagArray = Array.isArray(tagData) ? tagData : [tagData];
-                        tagMap = tagArray.reduce((acc, tag) => {
-                            acc[tag.tagID] = tag.name;
-                            return acc;
-                        }, {});
-                    }
-                    //vitaminamos cada uplaod
-                    const updatedUploads = await Promise.all(
-                        savesResponseData.map(async (save) => {
-                            try {
-                                const gameResponse = await api.get(`${config.api.games}?gameID=${save.gameID}`);
-                                if (!gameResponse.data) { throw ("No game fetched"); }
-                                return {
-                                    ...save,
-                                    save_img: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
-                                    save_img_error: gameResponse.data.cover || `${config.api.assets}/defaults/game-cover`,
-                                    tagNames: save.tags?.map(id => tagMap[id]).filter(Boolean) || [],
-                                    link: `/s/${save.saveID}`
-                                };
-                            } catch (err) {
-                                console.log(`Error fetching game image for save ${save.saveID}:`, err);
-                                return {
-                                    ...save,
-                                    save_img: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
-                                    save_img_error: `${config.api.assets}/defaults/game-cover`,
-                                    tagNames: save.tags?.map(id => tagMap[id]).filter(Boolean) || [],
-                                    link: `/s/${save.saveID}`
-                                };
-                            }
-                        })
-
-                    )
-                    const sorted = updatedUploads.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
-                    setUploadedSaves(sorted);
-
-                    const platformIDs = [...new Set(updatedUploads.map(save => save.platformID).filter(Boolean))];
-                    if (platformIDs.length > 0) {
-                        try {
-                            const res = await api.get(
-                                `${config.api.platforms}?platformID[in]=${platformIDs.join(',')}&limit=500`
-                            );
-                            const data = Array.isArray(res.data) ? res.data : [res.data];
-                            const platformsFormatted = data.map((p) => ({
-                                value: p.platformID?.toString() ?? "",
-                                label: p.name ?? "",
-                                abbreviation: p.abbreviation ?? "",
-                            }));
-                            setUploadsPlatforms(platformsFormatted);
-                        } catch (err) {
-                            console.error("Error fetching upload platforms", err);
-                            setUploadsPlatforms([]);
-                        }
-                    } else {
+                        console.error("Error fetching upload platforms", err);
                         setUploadsPlatforms([]);
                     }
-
-                } catch (err) {
-                    console.log("Error fetching saves from user", err);
-                    setUploadedSaves([]);
+                } else {
                     setUploadsPlatforms([]);
                 }
-            }
-        };
 
-
-
-        const fetchReviews = async () => {
-            const reviewsIDs = [...user.likes, ...user.dislikes];
-            if (reviewsIDs.length <= 0) {
-                setReviewedSaves([]);
-            } else {
-                try {
-                    //filtramos todos los saves reviewados    
-                    const savesResponse = await api.get(`${config.api.savedatas}?saveID[in]=${reviewsIDs.join(',')}`)
-                    const savesResponseData = Array.isArray(savesResponse.data) ? savesResponse.data : [savesResponse.data];
-                    const tagIDs = Array.from(new Set(savesResponseData.flatMap(sf => sf.tags || []))).filter(Boolean);
-                    // Obtener los tags
-                    let tagMap = {};
-                    if (tagIDs.length) {
-                        const { data: tagData } = await api.get(`${config.api.tags}?tagID[in]=${tagIDs.join(',')}`);
-                        const tagArray = Array.isArray(tagData) ? tagData : [tagData];
-                        tagMap = tagArray.reduce((acc, tag) => {
-                            acc[tag.tagID] = tag.name;
-                            return acc;
-                        }, {});
-                    }
-                    //vitaminamos cada uplaod con su imagen y el nombre de usuario
-                    const updatedReviews = await Promise.all(
-                        savesResponseData.map(async (save) => {
-                            let gameData = {};
-                            let userData = {};
-
-                            // Fetch del juego
-                            try {
-                                const gameResponse = await api.get(`${config.api.games}?gameID=${save.gameID}`);
-                                gameData = gameResponse.data || {};
-                            } catch (err) {
-                                console.log(`Error fetching game for save ${save.saveID}:`, err);
-                            }
-
-                            // Fetch del usuario
-                            try {
-                                const userResponse = await api.get(`${config.api.users}?userID=${save.userID}`);
-                                userData = userResponse.data || {};
-                            } catch (err) {
-                                console.log(`Error fetching user for save ${save.saveID}:`, err);
-                            }
-
-                            return {
-                                ...save,
-                                save_img: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
-                                save_img_error: gameData.cover || `${config.api.assets}/defaults/game-cover`,
-                                user: {
-                                    name: userData.userName || "unknown",
-                                    link: `/u/${userData.userName}`
-                                },
-                                tagNames: save.tags?.map(id => tagMap[id]).filter(Boolean) || [],
-                                link: `/s/${save.saveID}`
-                            };
-                        })
-                    );
-                    const sorted = updatedReviews.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
-                    setReviewedSaves(sorted);
-                    const platformIDs = [...new Set(updatedReviews.map(save => save.platformID).filter(Boolean))];
-                    if (platformIDs.length > 0) {
-                        try {
-                            const res = await api.get(
-                                `${config.api.platforms}?platformID[in]=${platformIDs.join(',')}&limit=500`
-                            );
-                            const data = Array.isArray(res.data) ? res.data : [res.data];
-                            const platformsFormatted = data.map((p) => ({
-                                value: p.platformID?.toString() ?? "",
-                                label: p.name ?? "",
-                                abbreviation: p.abbreviation ?? "",
-                            }));
-                            setReviewsPlatforms(platformsFormatted);
-                        } catch (err) {
-                            console.error("Error fetching upload platforms", err);
-                            setReviewsPlatforms([]);
-                        }
-                    } else {
-                        setReviewsPlatforms([]);
-                    }
-
-                } catch (err) {
-                    console.log("Error fetching saves from user", err);
-                    setReviewedSaves([]);
-                    setReviewsPlatforms([]);
-                }
+            } catch (err) {
+                console.log("Error fetching saves from user", err);
+                setUploadedSaves([]);
+                setUploadsPlatforms([]);
             }
         }
+    };
+
+    const fetchReviews = async () => {
+        const reviewsIDs = [...user.likes, ...user.dislikes];
+        if (reviewsIDs.length <= 0) {
+            setReviewedSaves([]);
+        } else {
+            try {
+                //filtramos todos los saves reviewados    
+                const savesResponse = await api.get(`${config.api.savedatas}?saveID[in]=${reviewsIDs.join(',')}`)
+                const savesResponseData = Array.isArray(savesResponse.data) ? savesResponse.data : [savesResponse.data];
+                const tagIDs = Array.from(new Set(savesResponseData.flatMap(sf => sf.tags || []))).filter(Boolean);
+                // Obtener los tags
+                let tagMap = {};
+                if (tagIDs.length) {
+                    const { data: tagData } = await api.get(`${config.api.tags}?tagID[in]=${tagIDs.join(',')}`);
+                    const tagArray = Array.isArray(tagData) ? tagData : [tagData];
+                    tagMap = tagArray.reduce((acc, tag) => {
+                        acc[tag.tagID] = tag.name;
+                        return acc;
+                    }, {});
+                }
+                //vitaminamos cada uplaod con su imagen y el nombre de usuario
+                const updatedReviews = await Promise.all(
+                    savesResponseData.map(async (save) => {
+                        let gameData = {};
+                        let userData = {};
+
+                        // Fetch del juego
+                        try {
+                            const gameResponse = await api.get(`${config.api.games}?gameID=${save.gameID}`);
+                            gameData = gameResponse.data || {};
+                        } catch (err) {
+                            console.log(`Error fetching game for save ${save.saveID}:`, err);
+                        }
+
+                        // Fetch del usuario
+                        try {
+                            const userResponse = await api.get(`${config.api.users}?userID=${save.userID}`);
+                            userData = userResponse.data || {};
+                        } catch (err) {
+                            console.log(`Error fetching user for save ${save.saveID}:`, err);
+                        }
+
+                        return {
+                            ...save,
+                            save_img: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
+                            save_img_error: gameData.cover || `${config.api.assets}/defaults/game-cover`,
+                            user: {
+                                name: userData.userName || "unknown",
+                                link: `/u/${userData.userName}`
+                            },
+                            tagNames: save.tags?.map(id => tagMap[id]).filter(Boolean) || [],
+                            link: `/s/${save.saveID}`
+                        };
+                    })
+                );
+                const sorted = updatedReviews.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
+                setReviewedSaves(sorted);
+                const platformIDs = [...new Set(updatedReviews.map(save => save.platformID).filter(Boolean))];
+                if (platformIDs.length > 0) {
+                    try {
+                        const res = await api.get(
+                            `${config.api.platforms}?platformID[in]=${platformIDs.join(',')}&limit=500`
+                        );
+                        const data = Array.isArray(res.data) ? res.data : [res.data];
+                        const platformsFormatted = data.map((p) => ({
+                            value: p.platformID?.toString() ?? "",
+                            label: p.name ?? "",
+                            abbreviation: p.abbreviation ?? "",
+                        }));
+                        setReviewsPlatforms(platformsFormatted);
+                    } catch (err) {
+                        console.error("Error fetching upload platforms", err);
+                        setReviewsPlatforms([]);
+                    }
+                } else {
+                    setReviewsPlatforms([]);
+                }
+
+            } catch (err) {
+                console.log("Error fetching saves from user", err);
+                setReviewedSaves([]);
+                setReviewsPlatforms([]);
+            }
+        }
+    }
 
 
+    useEffect(() => {
+        if (user) { fetchGames(); }
+    }, [favGamesLimit, favGamesOffset])
+    useEffect(() => {
+        if (user) { fetchReviews(); }
+    }, [reviewsLimit, reviewsOffset])
+    useEffect(() => {
+        if (user) { fetchSaves(); }
+    }, [uploadsLimit, uploadsOffset])
+
+    useEffect(() => {
         if (user) { fetchSaves(); }
         if (user) { fetchGames(); }
         if (user) { fetchReviews(); }
@@ -433,6 +458,31 @@ function UserProfile() {
 
         setFilteredReviews(filtered);
     }, [reviewedSaves, selectedReviewsPlatforms, selectedReviewsDate, selectedReviewsTags]);
+
+
+    //se vuelve a la primera pagina cuando se cambia el limit, para evitar errores
+    useEffect(() => {
+        setFavGamesCurrentPage(1);
+    }, [favGamesLimit]);
+    // cada vez que cambien limit o currentPage, recalculamos offset
+    useEffect(() => {
+        setFavGamesOffset((favGamesCurrentPage - 1) * favGamesLimit);
+    }, [favGamesCurrentPage, favGamesLimit]);
+    //se vuelve a la primera pagina cuando se cambia el limit, para evitar errores
+    useEffect(() => {
+        setUploadsCurrentPage(1);
+    }, [uploadsLimit]);
+    // cada vez que cambien limit o currentPage, recalculamos offset
+    useEffect(() => {
+        setUploadsOffset((uploadsCurrentPage - 1) * favGamesLimit);
+    }, [uploadsCurrentPage, uploadsLimit]);
+    useEffect(() => {
+        setReviewsCurrentPage(1);
+    }, [reviewsLimit]);
+    // cada vez que cambien limit o currentPage, recalculamos offset
+    useEffect(() => {
+        setReviewsOffset((reviewsCurrentPage - 1) * reviewsLimit);
+    }, [reviewsCurrentPage, reviewsLimit]);
 
     return (
         <div className="user-profile">
@@ -597,10 +647,10 @@ function UserProfile() {
                                             }}
                                             platformMap={favGamesPlatformAbbrMap}
                                             limit={favGamesLimit}
-                                            offset={0}
-                                            currentPage={1}
-                                            hasMore={false}
-                                            onPageChange={() => { }}
+                                            offset={favGamesOffset}
+                                            currentPage={favGamesCurrentPage}
+                                            hasMore={favGamesHasMore}
+                                            onPageChange={(page) => setFavGamesCurrentPage(page)}
                                         />
                                     </Col>
                                 </Row>
@@ -664,7 +714,7 @@ function UserProfile() {
                                                 description: "description",
                                                 uploadDate: "postedDate"
                                             }}
-                                            platformMap={uploadsPlatformAbbrMap} limit={uploadsLimit} offset={0} currentPage={1} hasMore={false} onPageChange={() => { }}
+                                            platformMap={uploadsPlatformAbbrMap} limit={uploadsLimit} offset={uploadsOffset} currentPage={uploadsCurrentPage} hasMore={uploadsHasMore} onPageChange={(page) => setUploadsCurrentPage(page)}
                                         />
                                     </Col>
                                 </Row>
@@ -729,7 +779,7 @@ function UserProfile() {
                                                 uploadDate: "postedDate",
                                                 user: "user"
                                             }}
-                                            platformMap={reviewsPlatformAbbrMap} limit={reviewsLimit} offset={0} currentPage={1} hasMore={false} onPageChange={() => { }}
+                                            platformMap={reviewsPlatformAbbrMap} limit={reviewsLimit} offset={reviewsOffset} currentPage={reviewsCurrentPage} hasMore={reviewsHasMore} onPageChange={(page) => setReviewsCurrentPage(page)}
                                         />
                                     </Col>
                                 </Row>
