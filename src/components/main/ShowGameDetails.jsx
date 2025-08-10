@@ -199,8 +199,10 @@ function ShowGameDetails() {
       ? new Date(sf.postedDate) >= new Date(postedDate)
       : true;
 
-    const matchTags = selectedTags.length > 0
-      ? sf.tags?.some(tag => selectedTags.includes(tag))
+    const selectedTagsStr = selectedTags.map(t => t.toString().trim().toLowerCase());
+
+    const matchTags = selectedTagsStr.length > 0
+      ? sf.tags?.some(tag => selectedTagsStr.includes(tag?.toString()))
       : true;
 
     return matchPlatform && matchDate && matchTags;
@@ -350,7 +352,7 @@ function ShowGameDetails() {
           className="mb-4 flex-wrap align-items-end"
           style={{ rowGap: "1rem" }}
         >
-          <Form.Group style={{ minWidth: "220px" }} className="mb-0 flex-fill">
+          <Form.Group style={{ minWidth: "200px" }} className="mb-0 flex-fill">
             <FilterSelect
               label="Platform"
               selected={tempPlatform}
@@ -358,7 +360,7 @@ function ShowGameDetails() {
               options={platformOptions}
             />
           </Form.Group>
-          <Form.Group style={{ minWidth: "220px" }} className="mb-0 flex-fill">
+          <Form.Group style={{ minWidth: "200px" }} className="mb-0 flex-fill">
             <FilterSelect
               label="Tags"
               selected={tempTags}
@@ -367,7 +369,7 @@ function ShowGameDetails() {
             />
           </Form.Group>
 
-          <Form.Group style={{ minWidth: "220px" }} className="mb-0 flex-fill">
+          <Form.Group style={{ minWidth: "200px" }} className="mb-0 flex-fill">
             <FilterDate
               label="Posted Date From"
               value={tempPostedDate}
