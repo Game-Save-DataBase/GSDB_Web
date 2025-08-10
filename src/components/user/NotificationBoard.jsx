@@ -20,7 +20,7 @@ const NotificationBoard = () => {
       } catch (err) {
         console.error('Error actualizando notificaciones:', err);
       }
-    }, 30000);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, [user]); // se reinicia si cambia el usuario
