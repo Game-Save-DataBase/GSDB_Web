@@ -36,6 +36,9 @@ function UserProfile() {
 
     const [user, setUser] = useState(null);
     const [uploadedSaves, setUploadedSaves] = useState([]);
+    const [nUploads, setNUploads] = useState(0);
+    const [nDownloads, setNDownloads] = useState(0);
+    const [nReviews, setNReviews] = useState(0);
     const [reviewedSaves, setReviewedSaves] = useState([]);
     const [favGames, setFavGames] = useState([]);
     const [notFound, setNotFound] = useState(false);
@@ -142,7 +145,8 @@ function UserProfile() {
             setFavGames([]);
             setFavGamesPlatforms([]);
         } else {
-            const paginatedFavGameIDs = user.favGames.slice(favGamesOffset, favGamesOffset + favGamesLimit);
+            const favgamesreversed = [...user.favGames].reverse()
+            const paginatedFavGameIDs = [...favgamesreversed].slice(favGamesOffset, favGamesOffset + favGamesLimit);
 
             if (paginatedFavGameIDs.length === 0) {
                 setFavGames([]);
@@ -150,6 +154,7 @@ function UserProfile() {
                 return;
             }
             try {
+                //TO DO SORT EN EL BACKEND, ORDENAR POR GAMEID
                 const gameResponse = await api.get(`${config.api.games}?gameID[in]=${paginatedFavGameIDs.join(',')}&complete=false&external=false&limit=${favGamesLimit}`)
                 if (!gameResponse.data) {
                     setFavGames([]);
@@ -164,7 +169,7 @@ function UserProfile() {
                     ...game,
                     url: `/g/${game.slug}`,
                 })));
-
+                console.log(gamesData);
                 try {
                     const gamePlatformsID = [
                         ...new Set(
@@ -201,10 +206,44 @@ function UserProfile() {
             setUploadedSaves([]);
             setUploadsPlatforms([]);
         } else {
+            const paginatedUploadsIDs = user.uploads.sort((a, b) => b - a).slice(uploadsOffset, uploadsOffset + uploadsLimit);
+            if (paginatedUploadsIDs.length === 0) {
+                setUploadedSaves([]);
+                setUploadsPlatforms([]);
+                return;
+            }
             try {
-                //filtramos todos los saves subidos por el usuario       
-                const savesResponse = await api.get(`${config.api.savedatas}?saveID[in]=${user.uploads.join(',')}`)
+                //pillamos lo primero todas las plataformas para filtrar si no se han pillado antes. Despues pillaremos los saves paginando
+                if (uploadsPlatforms.length <= 0) {
+                    //filtramos todos los saves subidos por el usuario       
+                    const res = await api.get(`${config.api.savedatas}?saveID[in]=${user.uploads.join(',')}`)
+                    const resData = Array.isArray(res.data) ? res.data : [res.data];
+                    setNUploads(resData.length);
+                    const platformIDs = [...new Set(resData.map(save => save.platformID).filter(Boolean))];
+                    if (platformIDs.length > 0) {
+                        try {
+                            const res = await api.get(
+                                `${config.api.platforms}?platformID[in]=${platformIDs.join(',')}&limit=500`
+                            );
+                            const data = Array.isArray(res.data) ? res.data : [res.data];
+                            const platformsFormatted = data.map((p) => ({
+                                value: p.platformID?.toString() ?? "",
+                                label: p.name ?? "",
+                                abbreviation: p.abbreviation ?? "",
+                            }));
+                            setUploadsPlatforms(platformsFormatted);
+                        } catch (err) {
+                            console.error("Error fetching upload platforms", err);
+                            setUploadsPlatforms([]);
+                        }
+                    } else {
+                        setUploadsPlatforms([]);
+                    }
+                }
+                //filtramos todos los saves subidos por el usuario paginando     
+                const savesResponse = await api.get(`${config.api.savedatas}?saveID[in]=${paginatedUploadsIDs.join(',')}`)
                 const savesResponseData = Array.isArray(savesResponse.data) ? savesResponse.data : [savesResponse.data];
+                setUploadsHasMore(savesResponseData.length === uploadsLimit);
                 const tagIDs = Array.from(new Set(savesResponseData.flatMap(sf => sf.tags || []))).filter(Boolean);
                 // Obtener los tags
                 let tagMap = {};
@@ -242,30 +281,7 @@ function UserProfile() {
                     })
 
                 )
-                const sorted = updatedUploads.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
-                setUploadedSaves(sorted);
-
-                const platformIDs = [...new Set(updatedUploads.map(save => save.platformID).filter(Boolean))];
-                if (platformIDs.length > 0) {
-                    try {
-                        const res = await api.get(
-                            `${config.api.platforms}?platformID[in]=${platformIDs.join(',')}&limit=500`
-                        );
-                        const data = Array.isArray(res.data) ? res.data : [res.data];
-                        const platformsFormatted = data.map((p) => ({
-                            value: p.platformID?.toString() ?? "",
-                            label: p.name ?? "",
-                            abbreviation: p.abbreviation ?? "",
-                        }));
-                        setUploadsPlatforms(platformsFormatted);
-                    } catch (err) {
-                        console.error("Error fetching upload platforms", err);
-                        setUploadsPlatforms([]);
-                    }
-                } else {
-                    setUploadsPlatforms([]);
-                }
-
+                setUploadedSaves(updatedUploads);
             } catch (err) {
                 console.log("Error fetching saves from user", err);
                 setUploadedSaves([]);
@@ -278,11 +294,45 @@ function UserProfile() {
         const reviewsIDs = [...user.likes, ...user.dislikes];
         if (reviewsIDs.length <= 0) {
             setReviewedSaves([]);
+            setReviewsPlatforms([]);
         } else {
+            const paginatedReviewsIDs = reviewsIDs.sort((a, b) => b - a).slice(reviewsOffset, reviewsOffset + reviewsLimit);
+            if (paginatedReviewsIDs.length === 0) {
+                setReviewedSaves([]);
+                setReviewsPlatforms([]);
+                return;
+            }
             try {
+                //pillamos lo primero todas las plataformas para filtrar si no se han pillado antes. Despues pillaremos los saves paginando
+                if (reviewsPlatforms.length <= 0) {
+                    const res = await api.get(`${config.api.savedatas}?saveID[in]=${reviewsIDs.join(',')}`)
+                    const resData = Array.isArray(res.data) ? res.data : [res.data];
+                    setNReviews(resData.length);
+                    const platformIDs = [...new Set(resData.map(save => save.platformID).filter(Boolean))];
+                    if (platformIDs.length > 0) {
+                        try {
+                            const res = await api.get(
+                                `${config.api.platforms}?platformID[in]=${platformIDs.join(',')}&limit=500`
+                            );
+                            const data = Array.isArray(res.data) ? res.data : [res.data];
+                            const platformsFormatted = data.map((p) => ({
+                                value: p.platformID?.toString() ?? "",
+                                label: p.name ?? "",
+                                abbreviation: p.abbreviation ?? "",
+                            }));
+                            setReviewsPlatforms(platformsFormatted);
+                        } catch (err) {
+                            console.error("Error fetching upload platforms", err);
+                            setReviewsPlatforms([]);
+                        }
+                    } else {
+                        setReviewsPlatforms([]);
+                    }
+                }
                 //filtramos todos los saves reviewados    
-                const savesResponse = await api.get(`${config.api.savedatas}?saveID[in]=${reviewsIDs.join(',')}`)
+                const savesResponse = await api.get(`${config.api.savedatas}?saveID[in]=${paginatedReviewsIDs.join(',')}`)
                 const savesResponseData = Array.isArray(savesResponse.data) ? savesResponse.data : [savesResponse.data];
+                setReviewsHasMore(savesResponseData.length === uploadsLimit);
                 const tagIDs = Array.from(new Set(savesResponseData.flatMap(sf => sf.tags || []))).filter(Boolean);
                 // Obtener los tags
                 let tagMap = {};
@@ -329,29 +379,7 @@ function UserProfile() {
                         };
                     })
                 );
-                const sorted = updatedReviews.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
-                setReviewedSaves(sorted);
-                const platformIDs = [...new Set(updatedReviews.map(save => save.platformID).filter(Boolean))];
-                if (platformIDs.length > 0) {
-                    try {
-                        const res = await api.get(
-                            `${config.api.platforms}?platformID[in]=${platformIDs.join(',')}&limit=500`
-                        );
-                        const data = Array.isArray(res.data) ? res.data : [res.data];
-                        const platformsFormatted = data.map((p) => ({
-                            value: p.platformID?.toString() ?? "",
-                            label: p.name ?? "",
-                            abbreviation: p.abbreviation ?? "",
-                        }));
-                        setReviewsPlatforms(platformsFormatted);
-                    } catch (err) {
-                        console.error("Error fetching upload platforms", err);
-                        setReviewsPlatforms([]);
-                    }
-                } else {
-                    setReviewsPlatforms([]);
-                }
-
+                setReviewedSaves(updatedReviews);
             } catch (err) {
                 console.log("Error fetching saves from user", err);
                 setReviewedSaves([]);
@@ -555,11 +583,11 @@ function UserProfile() {
                             <div>
                                 <div>
                                     <FontAwesomeIcon icon={faArrowUpFromBracket} />
-                                    <span>{`${uploadedSaves.length}`}</span>
+                                    <span>{`${nUploads}`}</span>
                                     <FontAwesomeIcon icon={faDownload} />
-                                    <span>{`${user.downloadHistory.length}`}</span>
+                                    <span>{`${nDownloads}`}</span>
                                     <FontAwesomeIcon icon={faEye} />
-                                    <span>{`${reviewedSaves.length}`}</span>
+                                    <span>{`${nReviews}`}</span>
                                 </div>
                             </div>
                             <div>
@@ -787,12 +815,12 @@ function UserProfile() {
                         </Tab>
 
                         {/* fav saves */}
-                        {loggedUser && loggedUser.userID === user.userID && (<Tab eventKey="favsaves" title="Favorite save files">
-                        </Tab>)}
+                        {/* {loggedUser && loggedUser.userID === user.userID && (<Tab eventKey="favsaves" title="Favorite save files">
+                        </Tab>)} */}
 
                         {/* download history */}
-                        {loggedUser && loggedUser.userID === user.userID && (<Tab eventKey="history" title="Download history">
-                        </Tab>)}
+                        {/* {loggedUser && loggedUser.userID === user.userID && (<Tab eventKey="history" title="Download history">
+                        </Tab>)} */}
 
 
                     </Tabs>
