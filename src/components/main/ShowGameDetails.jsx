@@ -50,6 +50,9 @@ function ShowGameDetails() {
   const [tempPostedDate, setTempPostedDate] = useState("");
   const [viewType, setViewType] = useState("card");
   const [limit, setLimit] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
 
   const [showInstallModal, setShowInstallModal] = useState(false);
 
@@ -62,6 +65,15 @@ function ShowGameDetails() {
   const [tags, setTags] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
   const [tempTags, setTempTags] = useState([]);
+
+  //se vuelve ala primera pagina cuando se cambia el limit, para evitar errores
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [limit]);
+  // cada vez que cambien limit o currentPage, recalculamos offset
+  useEffect(() => {
+    setOffset((currentPage - 1) * limit);
+  }, [currentPage, limit]);
 
   useEffect(() => {
     const fetchTags = async () => {
@@ -86,7 +98,7 @@ function ShowGameDetails() {
   }, [selectedPlatforms, postedDate, selectedTags]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchGame = async () => {
       try {
         resetLoad();
         block();
@@ -100,14 +112,30 @@ function ShowGameDetails() {
         if (!gameData) throw new Error('Game not found');
 
         setGame(gameData);
+      } catch (err) {
+        if (!game) {
+          navigate('/notfound?g', { replace: true });
+          return;
+        }
+        console.error(err);
+      }
+    };
 
-        const platformIDs = gameData.platformID ?? [];
+    fetchGame();
+  }, [slug]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!game) return;
+      try {
+        const platformIDs = game.platformID ?? [];
         const { data: platformData } = await api.get(`${config.api.platforms}?platformID[in]=${platformIDs.join(',')}`);
         const platformArray = Array.isArray(platformData) ? platformData : [platformData];
         setPlatforms(platformArray);
 
-        const { data: savesRaw } = await api.get(`${config.api.savedatas}?saveID[in]=${gameData.saveID.join(',')}`);
+        const { data: savesRaw } = await api.get(`${config.api.savedatas}?saveID[in]=${game.saveID.join(',')}&limit=${limit}&offset=${offset}`);
         const saves = Array.isArray(savesRaw) ? savesRaw : [savesRaw];
+        setHasMore(saves.length === limit);
 
         // Extraer tagIDs únicos de los saves
         const tagIDs = Array.from(new Set(saves.flatMap(sf => sf.tags || []))).filter(Boolean);
@@ -146,23 +174,19 @@ function ShowGameDetails() {
           })
         );
 
-        const sorted = enriched.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
-        setSaveFiles(sorted);
-      } catch (err) {
-        if (!game) {
-          navigate('/notfound?g', { replace: true });
-          return;
-        }
+        setSaveFiles(enriched);
+      }
+      catch (err) {
         console.error(err);
-      } finally {
+      }
+      finally {
         markAsLoaded();
         unblock();
       }
     };
 
     fetchData();
-  }, [slug]);
-
+  }, [game, limit, offset])
 
   const filteredSaves = saveFiles.filter(sf => {
     const platformIdStr = String(sf.platformID);
@@ -367,6 +391,7 @@ function ShowGameDetails() {
               value={limit}
               onChange={(e) => setLimit(Number(e.target.value))}
             >
+              <option value={5}>5</option>
               <option value={10}>10</option>
               <option value={20}>20</option>
               <option value={40}>40</option>
@@ -426,10 +451,10 @@ function ShowGameDetails() {
                 return acc;
               }, {})}
               limit={limit}
-              offset={0}
-              currentPage={1}
-              hasMore={false}
-              onPageChange={() => { }}
+              offset={offset}
+              currentPage={currentPage}
+              hasMore={hasMore}
+              onPageChange={(page) => setCurrentPage(page)}
             />
           </Col>
         </Row>

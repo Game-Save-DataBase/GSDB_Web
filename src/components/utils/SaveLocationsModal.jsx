@@ -5,7 +5,7 @@ function SaveLocationsModal({ show, onHide, saveLocations }) {
   return (
     <Modal show={show} onHide={onHide} size="lg" centered>
       <Modal.Header closeButton>
-        <Modal.Title>Install Instructions</Modal.Title>
+        <Modal.Title>Save data location</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {saveLocations && saveLocations.length > 0 ? (
@@ -32,7 +32,7 @@ function SaveLocationsModal({ show, onHide, saveLocations }) {
             </tbody>
           </Table>
         ) : (
-          <p>No install instructions available.</p>
+          <p>No savedata info available.</p>
         )}
       </Modal.Body>
       <Modal.Footer>

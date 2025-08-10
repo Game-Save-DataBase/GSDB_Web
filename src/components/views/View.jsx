@@ -1,4 +1,5 @@
 import React, { useRef } from "react";
+import SafeImage from "../utils/SafeImage.jsx";
 import {
   Card,
   ListGroup,
@@ -85,19 +86,19 @@ function View({
                   <div className="view-game-cover-container">
                     {item[renderProps.link] ? (
                       <a href={item[renderProps.link]} style={{ display: "block" }}>
-                        <img
+                        <SafeImage
                           src={item[renderProps.image]}
+                          fallbackSrc={item[renderProps.errorImage]}
                           alt={item[renderProps.title] || "cover"}
                           className="view-game-cover"
-                          onError={(e) => { e.currentTarget.src = item[renderProps.errorImage] }}
                         />
                       </a>
                     ) : (
-                      <img
+                      <SafeImage
                         src={item[renderProps.image]}
+                        fallbackSrc={item[renderProps.errorImage]}
                         alt={item[renderProps.title] || "cover"}
                         className="view-game-cover"
-                        onError={(e) => { e.currentTarget.src = item[renderProps.errorImage] }}
                       />
                     )}
                   </div>
