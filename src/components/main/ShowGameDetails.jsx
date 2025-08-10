@@ -260,6 +260,7 @@ function ShowGameDetails() {
                 <div style={{ display: 'flex', gap: '0.25rem' }}>
                   {platforms.map((platform) => (
                     platform.logo ? (
+                            <div className="platform-logo-wrapper" key={platform.platformID} title={platform.name}>
                       <img
                         className="platform-logo"
                         key={platform.platformID}
@@ -268,6 +269,7 @@ function ShowGameDetails() {
                         title={platform.name}
                         onError={(e) => { e.target.style.display = 'none'; }}
                       />
+                      </div>
                     ) : null
                   ))}
                 </div>
@@ -292,7 +294,7 @@ function ShowGameDetails() {
                 {game.saveLocations && game.saveLocations.length > 0 && (
                   <Button
                     className='saveLocation-button'
-                    variant="info"
+                    variant="success"
                     size="lg"
                     onClick={handleOpenInstallModal}
                   >

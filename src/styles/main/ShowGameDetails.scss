@@ -29,15 +29,51 @@
       color: white;
     }
 
+    .platform-logo-wrapper {
+      width: 24px;            /* mantiene tamaño */
+      height: 24px;           /* mantiene tamaño */
+      padding: 2px;           /* si quieres espacio interior */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      border-radius: 50%;     /* opcional: hace que el fondo sea redondo */
+      overflow: visible;      /* el halo puede sobresalir */
+
+      /* CÍRCULO DIFUMINADO DETRÁS */
+      &::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        /* tamaño del halo relativo al contenedor*/
+        width: 140%;
+        height: 140%;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        /* degradado para un centro blanco y bordes translúcidos */
+        background: radial-gradient(circle at center,
+                    rgb(255, 255, 255) 0%,
+                    rgba(255, 255, 255, 0.619) 30%,
+                    rgba(255, 255, 255, 0.201) 55%,
+                    transparent 80%);
+        filter: blur(6px);    /* suaviza el halo */
+        z-index: 0;
+        pointer-events: none;
+      }
+    }
+
     .platform-logo {
-      width: 24px;
-      height: 24px;
+      width: 100%;
+      height: 100%;
       object-fit: contain;
-      border-radius: 6px;
-      padding: 2px;
-      background-color: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(4px);
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+      position: relative;
+      z-index: 1; /* encima del halo */
+
+      // Sobra al rededor de los NO transparente
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.45))
+              drop-shadow(0 0 6px rgba(255, 255, 255, 0.28));
+
     }
 
     .game-cover {
@@ -65,11 +101,19 @@
       display: flex;
       align-items: center;
       gap: '0.5rem';
-      background-color: #198754 !important;
+      background-color: var(--color-links) !important;
+      border-color: var(--color-links) !important;
+      &:hover {
+        filter: drop-shadow(0 0 3px var(--color-links));
+      }
     }
     .saveLocation-button{
       font-size: 1rem;
-      background-color: #0dcaf0 !important;
+      background-color: var(--color-h1) !important;
+      border-color: var(--color-h1) !important;
+      &:hover {
+        filter: drop-shadow(0 0 3px var(--color-h1));
+      }
     }
 
     .genre-badge {
