@@ -67,6 +67,20 @@
             transform: translateX(-50%);
             display: flex;
             align-items: center;
+            overflow: visible !important;
+            z-index: 1100;
+        }
+
+        .rbt-menu {
+            position: absolute !important;
+            z-index: 1150 !important; 
+            width: 100% !important; 
+            max-height: 300px; 
+            overflow-y: auto;
+            background-color: var(--color-foreground);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .right {
@@ -129,17 +143,17 @@
 
 
 .blocking-overlay-inside {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(20, 20, 20, 0.4); // solo un ligero gris
-  z-index: 10;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  pointer-events: all;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(20, 20, 20, 0.4); // solo un ligero gris
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: all;
 }
 
 

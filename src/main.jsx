@@ -18,6 +18,7 @@ import Test from "./components/test.jsx";
 import ShowGameDetails from "./components/main/ShowGameDetails.jsx";
 import ShowSaveDetails from "./components/main/ShowSaveDetails.jsx";
 import Catalog from "./components/main/Catalog.jsx"
+import Search from "./components/main/Search.jsx"
 
 //user related
 import UploadSave from "./components/user/UploadSave.jsx";
@@ -39,6 +40,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Routes>
             <Route path="/" element={<Layout><Home /></Layout>} />
             <Route path="/catalog" element={<Layout><Catalog /></Layout>} />
+            <Route path="/search" element={<Layout><Search /></Layout>} />
             <Route path="/about" element={<Layout><About /></Layout>} />
             <Route path="/faq" element={<Layout><FAQ /></Layout>} />
             <Route path="/g/:slug" element={<Layout><ShowGameDetails /></Layout>} />
