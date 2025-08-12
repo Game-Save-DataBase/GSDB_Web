@@ -12,6 +12,7 @@ import {
 } from "react-bootstrap";
 import FilterSelect from "../filters/FilterSelect";
 import FilterDate from "../filters/FilterDate";
+import { use } from "react";
 
 const Search = () => {
     const location = useLocation();
@@ -185,7 +186,8 @@ const Search = () => {
                     processed = data.map((d) => ({
                         ...d,
                         img_error: `${config.api.assets}/defaults/game-cover`,
-                        link: `/g/${d.slug}`
+                        link: `/g/${d.slug}`,
+                        nDownloads: null,
                     }));
                     break;
                 case "s":
@@ -216,246 +218,258 @@ const Search = () => {
                                 },
                                 link: `/s/${save.saveID}`,
                                 tagNames: save.tagID?.map(id => tagMap[id]).filter(Boolean) || [],
-
+                                uploads: null,
+                                lastUpdate: null
                             };
                         })
                     );
                     break;
                 case "u":
-                    processed = data.map((d) => ({
-                        ...d,
+                    processed = data.map((user) => ({
+                        ...user,
                         img_error: `${config.api.assets}/defaults/pfp`,
-                        link: `/u/${d.userName}`
+                        link: `/u/${user.userName}`,
+                        title: `${user.alias || `@${user.userName}`}`,
+                        description: user.alias==="" ? user.bio : `@${user.userName} ${user.bio != "" ? `— ${user.bio}` : ""}`,
+                        cover: `${config.api.assets}/user/${user.userID}/pfp`,
+                        nUploads: user.uploads.length,
+                        lastUpdate: null,
+                        nDownloads:null,
+                        nReviews: user.likes.length + user.dislikes.length,
+                        badge: user.admin? 'admin' : user.verified? 'verified' : user.trusted? 'trusted' : null
                     }));
-                    break;
-            }
+            break;
+        }
 
             setResults(processed);
-            setHasMore(processed.length === limit);
-        } catch (err) {
-            console.error("Error fetching results", err);
-        }
-        finally {
-            setLoading(false)
-        }
+        setHasMore(processed.length === limit);
+    } catch (err) {
+        console.error("Error fetching results", err);
+    }
+    finally {
+        setLoading(false)
+    }
+};
+
+// Init page
+useEffect(() => {
+    const initPage = async () => {
+        if (!["g", "s", "u"].includes(type) || !query) return;
+        if (type === "s" && tags.length === 0) return;
+        const initialFilters = buildFiltersFromParams();
+        setTempPlatforms(initialFilters.platformIDs);
+        setTempDateFrom(initialFilters.dateFrom);
+        setTempDateTo(initialFilters.dateTo);
+        setTempTags(initialFilters.tags);
+
+        resetLoad();
+        block();
+        await fetchResults();
+        markAsLoaded();
+        unblock();
     };
+    initPage();
+}, [type, query, tags]);
 
-    // Init page
-    useEffect(() => {
-        const initPage = async () => {
-            if (!["g", "s", "u"].includes(type) || !query) return;
-            if (type === "s" && tags.length === 0) return;
-            const initialFilters = buildFiltersFromParams();
-            setTempPlatforms(initialFilters.platformIDs);
-            setTempDateFrom(initialFilters.dateFrom);
-            setTempDateTo(initialFilters.dateTo);
-            setTempTags(initialFilters.tags);
+useEffect(() => {
+    const search = async () => {
+        await fetchResults();
+    }
+    search();
+}, [limit, offset, searchParams])
 
-            resetLoad();
-            block();
-            await fetchResults();
-            markAsLoaded();
-            unblock();
-        };
-        initPage();
-    }, [type, query, tags]);
+//se vuelve ala primera pagina cuando se cambia el limit, para evitar errores
+useEffect(() => {
+    setCurrentPage(1);
+}, [limit]);
+// cada vez que cambien limit o currentPage, recalculamos offset
+useEffect(() => {
+    setOffset((currentPage - 1) * limit);
+}, [currentPage, limit]);
 
-    useEffect(() => {
-        const search = async () => {
-            await fetchResults();
-        }
-        search();
-    }, [limit, offset, searchParams])
+// Reset filtros sin borrar type y q
+const resetFilters = () => {
+    setTempPlatforms([]);
+    setTempDateFrom("");
+    setTempDateTo("");
+    setTempTags([]);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete("platformID[in]");
+    newParams.delete("release_date[gte]");
+    newParams.delete("release_date[lte]");
+    newParams.delete("postedDate[gte]");
+    newParams.delete("postedDate[lte]");
+    newParams.delete("tagID[in]");
+    setSearchParams(newParams);
+    setOffset(0);
+    setCurrentPage(1);
+    fetchResults();
+};
 
-    //se vuelve ala primera pagina cuando se cambia el limit, para evitar errores
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [limit]);
-    // cada vez que cambien limit o currentPage, recalculamos offset
-    useEffect(() => {
-        setOffset((currentPage - 1) * limit);
-    }, [currentPage, limit]);
-
-    // Reset filtros sin borrar type y q
-    const resetFilters = () => {
-        setTempPlatforms([]);
-        setTempDateFrom("");
-        setTempDateTo("");
-        setTempTags([]);
-        const newParams = new URLSearchParams(searchParams);
+// Aplicar filtros y actualizar URL
+const applyFilters = (f) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (type !== "u") {
         newParams.delete("platformID[in]");
         newParams.delete("release_date[gte]");
         newParams.delete("release_date[lte]");
         newParams.delete("postedDate[gte]");
         newParams.delete("postedDate[lte]");
         newParams.delete("tagID[in]");
-        setSearchParams(newParams);
-        setOffset(0);
-        setCurrentPage(1);
-        fetchResults();
-    };
 
-    // Aplicar filtros y actualizar URL
-    const applyFilters = (f) => {
-        const newParams = new URLSearchParams(searchParams);
-        if (type !== "u") {
-            newParams.delete("platformID[in]");
-            newParams.delete("release_date[gte]");
-            newParams.delete("release_date[lte]");
-            newParams.delete("postedDate[gte]");
-            newParams.delete("postedDate[lte]");
-            newParams.delete("tagID[in]");
-
-            if (f.selectedPlatforms?.length > 0) {
-                newParams.set("platformID[in]", f.selectedPlatforms.join(","));
-            }
-            if (f.selectedDateFrom != "") {
-                if (type === "g")
-                    newParams.set("release_date[gte]", f.selectedDateFrom);
-                else if (type === "s")
-                    newParams.set("postedDate[gte]", f.selectedDateFrom);
-            }
-            if (f.selectedDateTo != "") {
-                if (type === "g")
-                    newParams.set("release_date[lte]", f.selectedDateTo);
-                else if (type === "s")
-                    newParams.set("postedDate[lte]", f.selectedDateTo);
-            }
-            if (type === "s" && f.selectedTags?.length > 0) {
-                newParams.set("tagID[in]", f.selectedTags.join(","));
-            }
+        if (f.selectedPlatforms?.length > 0) {
+            newParams.set("platformID[in]", f.selectedPlatforms.join(","));
         }
-        setSearchParams(newParams);
-    };
-
-    const handleApplyFilters = () => {
-        applyFilters({
-            selectedPlatforms: tempPlatforms,
-            selectedDateFrom: tempDateFrom,
-            selectedDateTo: tempDateTo,
-            selectedTags: tempTags
-        });
-    };
-
-    if (isInitialLoad || !results) {
-        return (
-            <div className="text-center mt-5">
-                <h2>Searching <strong><em>{query}</em></strong> in {typeText}</h2>
-            </div>
-        );
+        if (f.selectedDateFrom != "") {
+            if (type === "g")
+                newParams.set("release_date[gte]", f.selectedDateFrom);
+            else if (type === "s")
+                newParams.set("postedDate[gte]", f.selectedDateFrom);
+        }
+        if (f.selectedDateTo != "") {
+            if (type === "g")
+                newParams.set("release_date[lte]", f.selectedDateTo);
+            else if (type === "s")
+                newParams.set("postedDate[lte]", f.selectedDateTo);
+        }
+        if (type === "s" && f.selectedTags?.length > 0) {
+            newParams.set("tagID[in]", f.selectedTags.join(","));
+        }
     }
+    setSearchParams(newParams);
+};
 
+const handleApplyFilters = () => {
+    applyFilters({
+        selectedPlatforms: tempPlatforms,
+        selectedDateFrom: tempDateFrom,
+        selectedDateTo: tempDateTo,
+        selectedTags: tempTags
+    });
+};
+
+if (isInitialLoad || !results) {
     return (
-        <div className="center mt-3">
-            <h2 className="text-center mb-5">{typeText} search results for <strong><em>{query}</em></strong></h2>
-            <Stack direction="horizontal" gap={3} className="mb-4 flex-wrap align-items-end" style={{ rowGap: "1rem" }}>
-                {(type === "g" || type === "s") && (
-                    <Form.Group style={{ minWidth: "200px" }} className="mb-0 flex-fill">
-                        <FilterSelect
-                            label="Platform"
-                            selected={tempPlatforms}
-                            onChange={setTempPlatforms}
-                            options={platforms}
-                        />
-                    </Form.Group>
-                )}
-                {(type === "g" || type === "s") && (
-                    <>
-                        <Form.Group style={{ minWidth: "100px" }} className="mb-0 flex-fill">
-                            <FilterDate
-                                label={type === 'g' ? "Release Date From" : "Posted Date From"}
-                                value={tempDateFrom}
-                                onChange={setTempDateFrom}
-                            />
-                        </Form.Group>
-                        <Form.Group style={{ minWidth: "100px" }} className="mb-0 flex-fill">
-                            <FilterDate
-                                label={type === 'g' ? "Release Date To" : "Posted Date To"}
-                                value={tempDateTo}
-                                onChange={setTempDateTo}
-                            />
-                        </Form.Group>
-                    </>
-
-                )}
-                {type === "s" && (
-                    <Form.Group style={{ minWidth: "200px" }} className="mb-0 flex-fill">
-                        <FilterSelect
-                            label="Tags"
-                            selected={tempTags}
-                            onChange={setTempTags}
-                            options={tags.map((t) => ({
-                                value: t.tagID?.toString(),
-                                label: t.name
-                            }))}
-                        />
-                    </Form.Group>
-                )}
-
-                <Form.Group style={{ minWidth: "90px" }} className="mb-0 flex-fill">
-                    <Form.Label>View</Form.Label>
-                    <Form.Select value={viewType} onChange={(e) => setViewType(e.target.value)}>
-                        <option value="list">List</option>
-                        <option value="card">Card</option>
-                    </Form.Select>
-                </Form.Group>
-
-                <Form.Group style={{ minWidth: "90px" }} className="mb-0 flex-fill">
-                    <Form.Label>Items per page</Form.Label>
-                    <Form.Select
-                        value={limit}
-                        onChange={(e) => setLimit(parseInt(e.target.value))}
-                    >
-                        <option value={1}>1</option>
-                        <option value={5}>5</option>
-                        <option value={10}>10</option>
-                        <option value={20}>20</option>
-                        <option value={40}>40</option>
-                    </Form.Select>
-                </Form.Group>
-
-                <div className="d-flex align-items-end mb-0 gap-2">
-                    <Button variant="primary" onClick={handleApplyFilters}>
-                        Filter
-                    </Button>
-                    <Button variant="outline-secondary" onClick={resetFilters}>
-                        Clear Filters
-                    </Button>
-                </div>
-            </Stack>
-            {loading ? (
-                <div className="text-center mt-5">
-                    <Spinner animation="border" />
-                </div>
-            ) : (
-                <View
-                    type={viewType}
-                    data={results}
-                    renderProps={{
-                        title: "title",
-                        releaseDate: "release_date",
-                        uploadDate: "postedDate",
-                        lastUpdate: "lastUpdate",
-                        image: "cover",
-                        errorImage: "img_error",
-                        uploads: "nUploads",
-                        link: "link",
-                        platforms: "platformID",
-                        downloads: "nDownloads",
-                        description: type === 's' ? "description" : (type === 'u' ? "bio" : null),
-                        tags: "tagNames"
-                    }}
-                    platformMap={platformAbbrMap}
-                    limit={limit}
-                    offset={offset}
-                    currentPage={currentPage}
-                    hasMore={hasMore}
-                    onPageChange={setCurrentPage}
-                />
-            )}
-
+        <div className="text-center mt-5">
+            <h2>Searching <strong><em>{query}</em></strong> in {typeText}</h2>
         </div>
     );
+}
+
+return (
+    <div className="center mt-3">
+        <h2 className="text-center mb-5">{typeText} search results for <strong><em>{query}</em></strong></h2>
+        <Stack direction="horizontal" gap={3} className="mb-4 flex-wrap align-items-end" style={{ rowGap: "1rem" }}>
+            {(type === "g" || type === "s") && (
+                <Form.Group style={{ minWidth: "200px" }} className="mb-0 flex-fill">
+                    <FilterSelect
+                        label="Platform"
+                        selected={tempPlatforms}
+                        onChange={setTempPlatforms}
+                        options={platforms}
+                    />
+                </Form.Group>
+            )}
+            {(type === "g" || type === "s") && (
+                <>
+                    <Form.Group style={{ minWidth: "100px" }} className="mb-0 flex-fill">
+                        <FilterDate
+                            label={type === 'g' ? "Release Date From" : "Posted Date From"}
+                            value={tempDateFrom}
+                            onChange={setTempDateFrom}
+                        />
+                    </Form.Group>
+                    <Form.Group style={{ minWidth: "100px" }} className="mb-0 flex-fill">
+                        <FilterDate
+                            label={type === 'g' ? "Release Date To" : "Posted Date To"}
+                            value={tempDateTo}
+                            onChange={setTempDateTo}
+                        />
+                    </Form.Group>
+                </>
+
+            )}
+            {type === "s" && (
+                <Form.Group style={{ minWidth: "200px" }} className="mb-0 flex-fill">
+                    <FilterSelect
+                        label="Tags"
+                        selected={tempTags}
+                        onChange={setTempTags}
+                        options={tags.map((t) => ({
+                            value: t.tagID?.toString(),
+                            label: t.name
+                        }))}
+                    />
+                </Form.Group>
+            )}
+
+            <Form.Group style={{ minWidth: "90px" }} className="mb-0 flex-fill">
+                <Form.Label>View</Form.Label>
+                <Form.Select value={viewType} onChange={(e) => setViewType(e.target.value)}>
+                    <option value="list">List</option>
+                    <option value="card">Card</option>
+                </Form.Select>
+            </Form.Group>
+
+            <Form.Group style={{ minWidth: "90px" }} className="mb-0 flex-fill">
+                <Form.Label>Items per page</Form.Label>
+                <Form.Select
+                    value={limit}
+                    onChange={(e) => setLimit(parseInt(e.target.value))}
+                >
+                    <option value={1}>1</option>
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={40}>40</option>
+                </Form.Select>
+            </Form.Group>
+
+            <div className="d-flex align-items-end mb-0 gap-2">
+                <Button variant="primary" onClick={handleApplyFilters}>
+                    Filter
+                </Button>
+                <Button variant="outline-secondary" onClick={resetFilters}>
+                    Clear Filters
+                </Button>
+            </div>
+        </Stack>
+        {loading ? (
+            <div className="text-center mt-5">
+                <Spinner animation="border" />
+            </div>
+        ) : (
+            <View
+                type={viewType}
+                data={results}
+                // openLinksInNewTab={true}
+                renderProps={{
+                    title: "title",
+                    releaseDate: "release_date",
+                    uploadDate: "postedDate",
+                    lastUpdate: "lastUpdate",
+                    image: "cover",
+                    errorImage: "img_error",
+                    uploads: "nUploads",
+                    link: "link",
+                    platforms: "platformID",
+                    downloads: "nDownloads",
+                    description: "description",
+                    tags: "tagNames",
+                    nReviews: "nReviews",
+                    badge: "badge"
+                }}
+                platformMap={platformAbbrMap}
+                limit={limit}
+                offset={offset}
+                currentPage={currentPage}
+                hasMore={hasMore}
+                onPageChange={setCurrentPage}
+            />
+        )}
+
+    </div>
+);
 };
 
 export default Search;

@@ -11,6 +11,7 @@ import {
 
 import '../../styles/views/View.scss';
 import { Link, useLocation } from "react-router-dom";
+import UserCertificateBadge from "../utils/UserCertificateBadge.jsx";
 
 function formatIfDate(value) {
   const date = new Date(value);
@@ -33,8 +34,12 @@ function View({
   hasMore = false,
   onPageChange = () => { },
   platformMap = {},
+  openLinksInNewTab = false
 }) {
   data = Array.isArray(data) ? data.filter(Boolean) : data ? [data] : [];
+  const linkProps = openLinksInNewTab
+    ? { target: "_blank", rel: "noopener noreferrer" }
+    : {};
   const renderTitle = (item) => {
     const title = item[renderProps.title];
     const link = item[renderProps.link];
@@ -43,6 +48,7 @@ function View({
         to={link}
         state={{ from: location }}
         style={{ textDecoration: "none", color: "#4b0082" }}
+        {...linkProps}
       >
         <strong>{title}</strong>
       </Link>
@@ -81,17 +87,17 @@ function View({
       ) : type === "card" ? (
         <Row className="g-4 justify-content-start">
           {data.map((item, idx) => (
-            <Col
-              key={idx} xs={6} sm={4} md={3} lg={2} className="px-2"
-            >
+            <Col key={idx} xs={6} sm={4} md={3} lg={2} className="px-2">
               <Card className="custom-card shadow-sm">
                 {renderProps.image && (
-                  <div className="view-game-cover-container">
+                  <div className="view-game-cover-container position-relative">
+                    {/* Imagen */}
                     {item[renderProps.link] ? (
                       <Link
                         to={item[renderProps.link]}
                         state={{ from: location }}
                         style={{ color: "#4b0082", textDecoration: "none" }}
+                        {...linkProps}
                       >
                         <SafeImage
                           src={item[renderProps.image]}
@@ -107,6 +113,13 @@ function View({
                         alt={item[renderProps.title] || "cover"}
                         className="view-game-cover"
                       />
+                    )}
+
+                    {/* Badge  */}
+                    {renderProps.badge && (
+                      <div className="position-absolute bottom-0 end-0 m-1">
+                        <UserCertificateBadge badgeType={item[renderProps.badge]} disableTooltip={true} />
+                      </div>
                     )}
                   </div>
                 )}
@@ -128,7 +141,7 @@ function View({
                       </Card.Text>
                     )}
 
-                    {renderProps.tags && (
+                    {renderProps.tags && item[renderProps.tags] != null && (
                       (() => {
                         const tags = Array.isArray(item[renderProps.tags]) ? item[renderProps.tags] : [];
                         if (tags.length === 0) {
@@ -189,12 +202,12 @@ function View({
                         <strong>Release date</strong>: {formatIfDate(item[renderProps.releaseDate])}
                       </Card.Text>
                     )}
-                    {renderProps.uploads && (
+                    {renderProps.uploads && item[renderProps.uploads] && (
                       <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
                         <strong>Uploads</strong>: {item[renderProps.uploads] || 0}
                       </Card.Text>
                     )}
-                    {renderProps.lastUpdate && (
+                    {renderProps.lastUpdate && item[renderProps.lastUpdate] && (
                       <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
                         <strong>Last update</strong>:{" "}
                         {item[renderProps.lastUpdate]
@@ -211,7 +224,7 @@ function View({
                       </Card.Text>
                     )}
 
-                    {renderProps.downloads !== undefined && (
+                    {renderProps.downloads !== undefined && item[renderProps.downloads] != null && (
                       <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
                         {item[renderProps.downloads]} downloads
                       </Card.Text>
@@ -245,8 +258,18 @@ function View({
           {data.map((item, idx) => {
             const elements = [];
 
-            if (renderProps.title && item[renderProps.title])
-              elements.push(<strong key="title">{renderTitle(item)}</strong>);
+            if (renderProps.title && item[renderProps.title]) {
+              const titleElement = renderTitle(item);
+              elements.push(
+                <span key="title" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                  {titleElement}
+                  {renderProps.badge && (
+                    <UserCertificateBadge badgeType={item[renderProps.badge]} />
+                  )}
+                </span>
+              );
+            }
+
             if (renderProps.description) {
               const text = item[renderProps.description]?.trim();
               elements.push(
@@ -293,17 +316,17 @@ function View({
               );
             }
 
-            if (renderProps.downloads !== undefined) {
+            if (renderProps.downloads !== undefined && item[renderProps.downloads] != null) {
               elements.push(
                 <span key="downloads"> — {item[renderProps.downloads]} downloads</span>
               );
             }
-            if (renderProps.uploads !== undefined) {
+            if (renderProps.uploads !== undefined && item[renderProps.uploads] !== null) {
               elements.push(
                 <span key="uploads"> — <strong>Uploads</strong>:{item[renderProps.uploads] || 0}</span>
               );
             }
-            if (renderProps.lastUpdate) {
+            if (renderProps.lastUpdate && item[renderProps.lastUpdate] !== null) {
               elements.push(
                 <span key="lastUpdate">
                   {" "}— <strong>Last update</strong>:{" "}

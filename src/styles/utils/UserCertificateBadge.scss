@@ -3,10 +3,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem; // icono más grande
+  font-size: 1.2rem;
   cursor: pointer;
   transition: transform 0.2s ease, filter 0.2s ease;
   padding-left: 10px;
+
   &:hover {
     transform: scale(1.15);
     filter: drop-shadow(0 0 4px currentColor);
@@ -35,15 +36,21 @@
     transform: translateX(-50%) translateY(0);
   }
 
+  &.no-tooltip::after {
+    display: none;
+    content: none;
+  }
+
   &.admin {
-    color: purple;
+    color: purple !important;
   }
 
   &.verified {
-    color: royalblue;
+    color: royalblue !important;
   }
 
   &.trusted {
-    color: seagreen;
+    color: seagreen !important;
   }
+
 }
