@@ -244,7 +244,7 @@ function UserProfile() {
                 const savesResponse = await api.get(`${config.api.savedatas}?saveID[in]=${paginatedUploadsIDs.join(',')}`)
                 const savesResponseData = Array.isArray(savesResponse.data) ? savesResponse.data : [savesResponse.data];
                 setUploadsHasMore(savesResponseData.length === uploadsLimit);
-                const tagIDs = Array.from(new Set(savesResponseData.flatMap(sf => sf.tags || []))).filter(Boolean);
+                const tagIDs = Array.from(new Set(savesResponseData.flatMap(sf => sf.tagID || []))).filter(Boolean);
                 // Obtener los tags
                 let tagMap = {};
                 if (tagIDs.length) {
@@ -265,7 +265,7 @@ function UserProfile() {
                                 ...save,
                                 save_img: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
                                 save_img_error: gameResponse.data.cover || `${config.api.assets}/defaults/game-cover`,
-                                tagNames: save.tags?.map(id => tagMap[id]).filter(Boolean) || [],
+                                tagNames: save.tagID?.map(id => tagMap[id]).filter(Boolean) || [],
                                 link: `/s/${save.saveID}`
                             };
                         } catch (err) {
@@ -274,7 +274,7 @@ function UserProfile() {
                                 ...save,
                                 save_img: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
                                 save_img_error: `${config.api.assets}/defaults/game-cover`,
-                                tagNames: save.tags?.map(id => tagMap[id]).filter(Boolean) || [],
+                                tagNames: save.tagID?.map(id => tagMap[id]).filter(Boolean) || [],
                                 link: `/s/${save.saveID}`
                             };
                         }
@@ -333,7 +333,7 @@ function UserProfile() {
                 const savesResponse = await api.get(`${config.api.savedatas}?saveID[in]=${paginatedReviewsIDs.join(',')}`)
                 const savesResponseData = Array.isArray(savesResponse.data) ? savesResponse.data : [savesResponse.data];
                 setReviewsHasMore(savesResponseData.length === uploadsLimit);
-                const tagIDs = Array.from(new Set(savesResponseData.flatMap(sf => sf.tags || []))).filter(Boolean);
+                const tagIDs = Array.from(new Set(savesResponseData.flatMap(sf => sf.tagID || []))).filter(Boolean);
                 // Obtener los tags
                 let tagMap = {};
                 if (tagIDs.length) {
@@ -374,7 +374,7 @@ function UserProfile() {
                                 name: userData.userName || "unknown",
                                 link: `/u/${userData.userName}`
                             },
-                            tagNames: save.tags?.map(id => tagMap[id]).filter(Boolean) || [],
+                            tagNames: save.tagID?.map(id => tagMap[id]).filter(Boolean) || [],
                             link: `/s/${save.saveID}`
                         };
                     })
@@ -444,7 +444,7 @@ function UserProfile() {
             //como tags esta guardado como strings en savedata....
             const selectedStr = selectedUploadsTags.map(t => t.toString().trim().toLowerCase());
             filtered = filtered.filter(sf =>
-                sf.tags?.some(pid => selectedStr.includes(pid.toString()))
+                sf.tagID?.some(pid => selectedStr.includes(pid.toString()))
             );
         }
         // Filtrar por fecha si hay rango
@@ -472,7 +472,7 @@ function UserProfile() {
             //como tags esta guardado como strings en savedata....
             const selectedStr = selectedReviewsTags.map(t => t.toString().trim().toLowerCase());
             filtered = filtered.filter(sf =>
-                sf.tags?.some(pid => selectedStr.includes(pid.toString()))
+                sf.tagID?.some(pid => selectedStr.includes(pid.toString()))
             );
         }
         // Filtrar por fecha si hay rango

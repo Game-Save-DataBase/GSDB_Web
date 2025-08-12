@@ -142,7 +142,7 @@ const Search = () => {
                         : "";
         }
         if (type === "s" && filters.tags.length > 0) {
-            filterQuery += `&tags[in]=${filters.tags.join(",")}`;
+            filterQuery += `&tagID[in]=${filters.tags.join(",")}`;
         }
 
         let endpoint = "";
@@ -275,7 +275,7 @@ const Search = () => {
         newParams.delete("platformID[in]");
         newParams.delete("release_date[gte]");
         newParams.delete("postedDate[gte]");
-        newParams.delete("tags[in]");
+        newParams.delete("tagID[in]");
         setSearchParams(newParams);
         setOffset(0);
         setCurrentPage(1);
@@ -291,7 +291,7 @@ const Search = () => {
             newParams.delete("release_date[lte]");
             newParams.delete("postedDate[gte]");
             newParams.delete("postedDate[lte]");
-            newParams.delete("tags[in]");
+            newParams.delete("tagID[in]");
 
             if (f.selectedPlatforms?.length>0) {
                 newParams.set("platformID[in]", f.selectedPlatforms.join(","));
@@ -309,7 +309,7 @@ const Search = () => {
                     newParams.set("postedDate[lte]", f.selectedDateTo);
             }
             if (type === "s" && f.selectedTags?.length>0) {
-                newParams.set("tags[in]", f.selectedTags.join(","));
+                newParams.set("tagID[in]", f.selectedTags.join(","));
             }
         }
         setSearchParams(newParams);

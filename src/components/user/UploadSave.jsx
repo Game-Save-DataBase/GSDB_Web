@@ -206,7 +206,7 @@ function NewSavePage() {
       formData.append("file", saveFile);
 
       screenshots.forEach(img => formData.append("screenshots", img));
-      selectedTags.forEach(tag => formData.append("tags[]", tag.tagID));
+      selectedTags.forEach(tag => formData.append("tagID[]", tag.tagID));
 
       const res = await api.post(`${config.api.savedatas}/async`, formData, {
         headers: { "Content-Type": "multipart/form-data" },

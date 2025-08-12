@@ -1,6 +1,7 @@
 import config from '../../utils/config';
 import api from '../../utils/interceptor';
 import { useState, useEffect, useContext } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { UserContext } from '../../contexts/UserContext';
 import history from '../../utils/history';
 import zxcvbn from 'zxcvbn';
@@ -17,7 +18,13 @@ const Login = () => {
   });
   const [message, setMessage] = useState('');
   const [passwordStrength, setPasswordStrength] = useState(0);
-
+  const location = useLocation();
+  const from = location.state?.from?.pathname
+    || (document.referrer.startsWith(window.location.origin)
+      ? new URL(document.referrer).pathname
+      : '/')
+    || '/';
+  const navigate = useNavigate();
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -51,7 +58,8 @@ const Login = () => {
         setMessage('Login successful ✅');
         setTimeout(() => {
           setUser(res.data.user);
-          history.push('/');
+          console.log(from)
+          navigate(from, { replace: true });
         }, 2000);
       } else {
         console.log(formData.userName.toLowerCase(), formData.userName.toLowerCase(), formData.password)
@@ -70,7 +78,9 @@ const Login = () => {
 
         setTimeout(() => {
           setUser(res.data.user);
-          history.push('/');
+          console.log(from)
+
+          navigate(from, { replace: true });
         }, 2000);
       }
     } catch (err) {

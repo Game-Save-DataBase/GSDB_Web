@@ -138,7 +138,7 @@ function ShowGameDetails() {
         setHasMore(saves.length === limit);
 
         // Extraer tagIDs únicos de los saves
-        const tagIDs = Array.from(new Set(saves.flatMap(sf => sf.tags || []))).filter(Boolean);
+        const tagIDs = Array.from(new Set(saves.flatMap(sf => sf.tagID || []))).filter(Boolean);
 
         // Obtener los tags
         let tagMap = {};
@@ -161,14 +161,14 @@ function ShowGameDetails() {
                 ...sf,
                 userName: user?.userName || "Unknown",
                 platformName: platformArray.find(p => p.platformID === sf.platformID)?.name || 'Unknown',
-                tagNames: sf.tags?.map(id => tagMap[id]).filter(Boolean) || [],
+                tagNames: sf.tagID?.map(id => tagMap[id]).filter(Boolean) || [],
               };
             } catch {
               return {
                 ...sf,
                 userName: "Unknown",
                 platformName: "Unknown",
-                tagNames: sf.tags?.map(id => tagMap[id]).filter(Boolean) || [],
+                tagNames: sf.tagID?.map(id => tagMap[id]).filter(Boolean) || [],
               };
             }
           })
@@ -202,7 +202,7 @@ function ShowGameDetails() {
     const selectedTagsStr = selectedTags.map(t => t.toString().trim().toLowerCase());
 
     const matchTags = selectedTagsStr.length > 0
-      ? sf.tags?.some(tag => selectedTagsStr.includes(tag?.toString()))
+      ? sf.tagID?.some(tag => selectedTagsStr.includes(tag?.toString()))
       : true;
 
     return matchPlatform && matchDate && matchTags;
@@ -228,7 +228,6 @@ function ShowGameDetails() {
   if (isInitialLoad || !game) {
     return (
       <div className="text-center mt-5">
-        <Spinner animation="border" />
       </div>
     );
   }

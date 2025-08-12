@@ -89,9 +89,9 @@ function ShowSaveDetails() {
         }
 
         // 6. Tags (si existen)
-        if (save.tags && save.tags.length > 0) {
+        if (save.tagID && save.tagID.length > 0) {
           try {
-            const { data: rawTags } = await api.get(`${config.api.tags}?tagID[in]=${save.tags.join(',')}`);
+            const { data: rawTags } = await api.get(`${config.api.tags}?tagID[in]=${save.tagID.join(',')}`);
             setTags(Array.isArray(rawTags) ? rawTags : [rawTags]);
           } catch {
             console.warn('Error cargando tags');

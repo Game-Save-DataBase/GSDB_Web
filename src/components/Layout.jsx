@@ -1,6 +1,6 @@
 import config from "../utils/config";
 import React, { useState, useContext, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import api from "../utils/interceptor";
 import { UserContext } from "../contexts/UserContext";
 import NotificationBoard from "../components/user/NotificationBoard";
@@ -17,7 +17,7 @@ const Layout = ({ children }) => {
   const navigate = useNavigate();
   const { user: loggedUser, setUser } = useContext(UserContext);
   const { isBlocked } = useContext(LoadingContext);
-
+  const location = useLocation();
   const [searchType, setSearchType] = useState("save data");
   const [searchInput, setSearchInput] = useState(""); // ✅ ahora está definido
   const [options, setOptions] = useState([]);
@@ -51,8 +51,8 @@ const Layout = ({ children }) => {
           return;
       }
       console.log(endpoint)
-      const { data } = await api.get(endpoint);
-
+      let data = await api.get(endpoint);
+      if (!Array.isArray(data)) data = [data]
       const formatted = data.map(item => ({
         id: item.gameID || item.userID || item.saveID,
         label: item.title || item.userName || "unknown"
@@ -77,7 +77,7 @@ const Layout = ({ children }) => {
         typeParam = "g";
         break;
       case "users":
-        typeParam = "u"; 
+        typeParam = "u";
         break;
       default:
         typeParam = "s";
@@ -174,7 +174,7 @@ const Layout = ({ children }) => {
                 </div>
               </>
             ) : (
-              <Link to="/login">Log in</Link>
+              <Link to="/login" state={{ from: location }}>Log in</Link>
             )}
           </div>
         </nav>

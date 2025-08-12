@@ -10,7 +10,7 @@ import {
 } from "react-bootstrap";
 
 import '../../styles/views/View.scss';
-
+import { Link, useLocation } from "react-router-dom";
 
 function formatIfDate(value) {
   const date = new Date(value);
@@ -39,9 +39,13 @@ function View({
     const title = item[renderProps.title];
     const link = item[renderProps.link];
     return link ? (
-      <a href={link} style={{ textDecoration: "none", color: "#4b0082" }}>
+      <Link
+        to={link}
+        state={{ from: location }}
+        style={{ textDecoration: "none", color: "#4b0082" }}
+      >
         <strong>{title}</strong>
-      </a>
+      </Link>
     ) : (
       <strong>{title}</strong>
     );
@@ -66,6 +70,7 @@ function View({
 
   };
 
+  const location = useLocation();
 
   return (
     <Container>
@@ -83,14 +88,18 @@ function View({
                 {renderProps.image && (
                   <div className="view-game-cover-container">
                     {item[renderProps.link] ? (
-                      <a href={item[renderProps.link]} style={{ display: "block" }}>
+                      <Link
+                        to={item[renderProps.link]}
+                        state={{ from: location }}
+                        style={{ color: "#4b0082", textDecoration: "none" }}
+                      >
                         <SafeImage
                           src={item[renderProps.image]}
                           fallbackSrc={item[renderProps.errorImage]}
                           alt={item[renderProps.title] || "cover"}
                           className="view-game-cover"
                         />
-                      </a>
+                      </Link>
                     ) : (
                       <SafeImage
                         src={item[renderProps.image]}
@@ -101,6 +110,8 @@ function View({
                     )}
                   </div>
                 )}
+
+
                 <Card.Body className="card-body-scaled">
                   <div className="card-body-content">
                     <Card.Title className="fs-6 mb-1 text-truncate">
@@ -203,17 +214,22 @@ function View({
                         {item[renderProps.downloads]} downloads
                       </Card.Text>
                     )}
-                    {renderProps.user && item[renderProps.user] && (
+                    {renderProps.user && item[renderProps.user] && item[renderProps.user].link ? (
                       <Card.Text className="text-muted" style={{ fontSize: "0.75rem" }}>
-                        <span><strong>By:</strong>: </span>
-                        <a
-                          href={item[renderProps.user].link}
+                        <span><strong>By:</strong> </span>
+                        <Link
+                          to={item[renderProps.user].link}
+                          state={{ from: location }}
                           style={{ color: "#4b0082", textDecoration: "none" }}
                         >
                           {item[renderProps.user].name}
-                        </a>
+                        </Link>
                       </Card.Text>
-                    )}
+                    ) : renderProps.user && item[renderProps.user] ? (
+                      <Card.Text className="text-muted" style={{ fontSize: "0.75rem" }}>
+                        <span><strong>By:</strong> {item[renderProps.user].name}</span>
+                      </Card.Text>
+                    ) : null}
                   </div>
                 </Card.Body>
 
@@ -286,9 +302,13 @@ function View({
                 <span key="user">
                   {" "}
                   — <strong>By</strong>:{" "}
-                  <a href={item[renderProps.user].link} style={{ color: "#4b0082" }}>
+                  <Link
+                    to={item[renderProps.link]}
+                    state={{ from: location }}
+                    style={{ display: "block" }}
+                  >
                     {item[renderProps.user].name}
-                  </a>
+                  </Link>
                 </span>
               );
             }
