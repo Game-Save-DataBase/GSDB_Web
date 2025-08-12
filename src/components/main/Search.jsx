@@ -115,8 +115,8 @@ const Search = () => {
         if (searchParams.get("postedDate[lte]") && type === "s") {
             f.dateTo = searchParams.get("postedDate[lte]");
         }
-        if (type === "s" && searchParams.get("tags[in]")) {
-            f.tags = searchParams.get("tags[in]").split(",");
+        if (type === "s" && searchParams.get("tagID[in]")) {
+            f.tags = searchParams.get("tagID[in]").split(",");
         }
         return f;
     };
@@ -166,11 +166,18 @@ const Search = () => {
                 )}&limit=${limit}&offset=${offset}`;
                 break;
         }
-        console.log(endpoint)
         try {
             setLoading(true);
+            console.log(endpoint)
             const res = await api.get(endpoint);
-            let data = Array.isArray(res.data) ? res.data : [res.data];
+            if (res.status === 204 || !res.data || (Array.isArray(res.data) && res.data.length === 0)) {
+                setResults([]);
+                setHasMore(false);
+                return;
+            }
+
+            let data = Array.isArray(res.data) ? res.data.filter(Boolean) : [res.data].filter(Boolean);
+
             let processed = [];
 
             switch (type) {
@@ -198,7 +205,6 @@ const Search = () => {
                                 );
                                 userData = uRes.data || {};
                             } catch { }
-
                             return {
                                 ...save,
                                 cover: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
@@ -279,7 +285,9 @@ const Search = () => {
         const newParams = new URLSearchParams(searchParams);
         newParams.delete("platformID[in]");
         newParams.delete("release_date[gte]");
+        newParams.delete("release_date[lte]");
         newParams.delete("postedDate[gte]");
+        newParams.delete("postedDate[lte]");
         newParams.delete("tagID[in]");
         setSearchParams(newParams);
         setOffset(0);
@@ -355,14 +363,14 @@ const Search = () => {
                     <>
                         <Form.Group style={{ minWidth: "100px" }} className="mb-0 flex-fill">
                             <FilterDate
-                                label={type==='g'? "Release Date From" : "Posted Date From"}
+                                label={type === 'g' ? "Release Date From" : "Posted Date From"}
                                 value={tempDateFrom}
                                 onChange={setTempDateFrom}
                             />
                         </Form.Group>
                         <Form.Group style={{ minWidth: "100px" }} className="mb-0 flex-fill">
                             <FilterDate
-                                label={type==='g'? "Release Date To" : "Posted Date To"}
+                                label={type === 'g' ? "Release Date To" : "Posted Date To"}
                                 value={tempDateTo}
                                 onChange={setTempDateTo}
                             />

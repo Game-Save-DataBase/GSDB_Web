@@ -189,12 +189,12 @@ function View({
                         <strong>Release date</strong>: {formatIfDate(item[renderProps.releaseDate])}
                       </Card.Text>
                     )}
-                    {renderProps.uploads !== undefined && item[renderProps.uploads] && (
+                    {renderProps.uploads && (
                       <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
-                        <strong>Uploads</strong>: {item[renderProps.uploads]}
+                        <strong>Uploads</strong>: {item[renderProps.uploads] || 0}
                       </Card.Text>
                     )}
-                    {renderProps.lastUpdate && item[renderProps.lastUpdate] && (
+                    {renderProps.lastUpdate && (
                       <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
                         <strong>Last update</strong>:{" "}
                         {item[renderProps.lastUpdate]
@@ -252,7 +252,7 @@ function View({
               elements.push(
                 <span key="description" style={{ fontSize: "0.75rem", color: "#666" }}>
                   {" — "}
-                  {text.length === 0 ? "No description" : (text.length > 80 ? text.slice(0, 80) + "..." : text)}
+                  {!text || text.length === 0 ? "No description" : (text.length > 80 ? text.slice(0, 80) + "..." : text)}
                 </span>
               );
             }
@@ -261,16 +261,7 @@ function View({
               elements.push(
                 <span key="releaseDate"> — <strong>Release date</strong>: {formatIfDate(item[renderProps.releaseDate])}</span>
               );
-            if (renderProps.lastUpdate && item[renderProps.lastUpdate]) {
-              elements.push(
-                <span key="lastUpdate">
-                  {" "}— <strong>Last update</strong>:{" "}
-                  {item[renderProps.lastUpdate]
-                    ? formatIfDate(item[renderProps.lastUpdate])
-                    : "N/A"}
-                </span>
-              );
-            }
+
 
             if (renderProps.uploadDate && item[renderProps.uploadDate])
               elements.push(
@@ -307,7 +298,21 @@ function View({
                 <span key="downloads"> — {item[renderProps.downloads]} downloads</span>
               );
             }
-
+            if (renderProps.uploads !== undefined) {
+              elements.push(
+                <span key="uploads"> — <strong>Uploads</strong>:{item[renderProps.uploads] || 0}</span>
+              );
+            }
+            if (renderProps.lastUpdate) {
+              elements.push(
+                <span key="lastUpdate">
+                  {" "}— <strong>Last update</strong>:{" "}
+                  {item[renderProps.lastUpdate]
+                    ? formatIfDate(item[renderProps.lastUpdate])
+                    : "N/A"}
+                </span>
+              );
+            }
             if (renderProps.user && item[renderProps.user]) {
               elements.push(
                 <span key="user">
