@@ -46,6 +46,10 @@ const Search = () => {
         if (p.value && p.abbreviation) acc[p.value] = p.abbreviation;
         return acc;
     }, {});
+    const tagMap = tags.reduce((acc, tag) => {
+        acc[tag.tagID] = tag.name;
+        return acc;
+    }, {});
 
     // Validaciones iniciales
     useEffect(() => {
@@ -120,7 +124,6 @@ const Search = () => {
     // Fetch results usando filters
     const fetchResults = async () => {
         const filters = buildFiltersFromParams();
-        console.log(filters)
         let filterQuery = "";
         if (filters.platformIDs.length > 0) {
             filterQuery += `&platformID[in]=${filters.platformIDs.join(",")}`;
@@ -205,7 +208,8 @@ const Search = () => {
                                     name: userData.userName || "unknown",
                                     link: `/u/${userData.userName}`
                                 },
-                                link: `/s/${d.saveID}`
+                                link: `/s/${save.saveID}`,
+                                tagNames: save.tagID?.map(id => tagMap[id]).filter(Boolean) || [],
 
                             };
                         })
@@ -234,6 +238,7 @@ const Search = () => {
     useEffect(() => {
         const initPage = async () => {
             if (!["g", "s", "u"].includes(type) || !query) return;
+            if (type === "s" && tags.length === 0) return;
             const initialFilters = buildFiltersFromParams();
             setTempPlatforms(initialFilters.platformIDs);
             setTempDateFrom(initialFilters.dateFrom);
@@ -247,7 +252,7 @@ const Search = () => {
             unblock();
         };
         initPage();
-    }, [type, query]);
+    }, [type, query, tags]);
 
     useEffect(() => {
         const search = async () => {
@@ -293,10 +298,10 @@ const Search = () => {
             newParams.delete("postedDate[lte]");
             newParams.delete("tagID[in]");
 
-            if (f.selectedPlatforms?.length>0) {
+            if (f.selectedPlatforms?.length > 0) {
                 newParams.set("platformID[in]", f.selectedPlatforms.join(","));
             }
-            if (f.selectedDateFrom!= "") {
+            if (f.selectedDateFrom != "") {
                 if (type === "g")
                     newParams.set("release_date[gte]", f.selectedDateFrom);
                 else if (type === "s")
@@ -308,7 +313,7 @@ const Search = () => {
                 else if (type === "s")
                     newParams.set("postedDate[lte]", f.selectedDateTo);
             }
-            if (type === "s" && f.selectedTags?.length>0) {
+            if (type === "s" && f.selectedTags?.length > 0) {
                 newParams.set("tagID[in]", f.selectedTags.join(","));
             }
         }
@@ -350,14 +355,14 @@ const Search = () => {
                     <>
                         <Form.Group style={{ minWidth: "100px" }} className="mb-0 flex-fill">
                             <FilterDate
-                                label="Release Date From"
+                                label={type==='g'? "Release Date From" : "Posted Date From"}
                                 value={tempDateFrom}
                                 onChange={setTempDateFrom}
                             />
                         </Form.Group>
                         <Form.Group style={{ minWidth: "100px" }} className="mb-0 flex-fill">
                             <FilterDate
-                                label="Release Date To"
+                                label={type==='g'? "Release Date To" : "Posted Date To"}
                                 value={tempDateTo}
                                 onChange={setTempDateTo}
                             />
@@ -393,6 +398,7 @@ const Search = () => {
                         value={limit}
                         onChange={(e) => setLimit(parseInt(e.target.value))}
                     >
+                        <option value={1}>1</option>
                         <option value={5}>5</option>
                         <option value={10}>10</option>
                         <option value={20}>20</option>
@@ -420,12 +426,16 @@ const Search = () => {
                     renderProps={{
                         title: "title",
                         releaseDate: "release_date",
+                        uploadDate: "postedDate",
                         lastUpdate: "lastUpdate",
                         image: "cover",
                         errorImage: "img_error",
                         uploads: "nUploads",
                         link: "link",
-                        platforms: "platformID"
+                        platforms: "platformID",
+                        downloads: "nDownloads",
+                        description: type === 's' ? "description" : (type === 'u' ? "bio" : null),
+                        tags: "tagNames"
                     }}
                     platformMap={platformAbbrMap}
                     limit={limit}

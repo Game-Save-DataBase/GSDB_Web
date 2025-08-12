@@ -430,7 +430,7 @@ function ShowGameDetails() {
                   platforms: [sf.platformID],
                   description: sf.description || "No description",
                   postedDate: sf.postedDate,
-                  downloads: sf.nDownloads ?? 0,
+                  downloads: sf.nDownloads ? sf.nDownloads :  0,
                   tags: Array.isArray(sf.tagNames) ? sf.tagNames : [],
                   user: {
                     name: sf.userName,
