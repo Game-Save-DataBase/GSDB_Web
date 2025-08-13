@@ -62,20 +62,37 @@
         }
 
         .center {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
+            // position: absolute;
+            // left: 50%;
+            // transform: translateX(-50%);
             display: flex;
             align-items: center;
             overflow: visible !important;
             z-index: 1100;
+            max-width: 700px;
+            width: 100%;
+
+            .input-group {
+                width: 100%;
+                gap: 0.5rem;
+            }
+
+            .rbt-input-main {
+                flex-grow: 1;
+                min-width: 0;
+                /* para evitar overflow */
+            }
+
+            .btn {
+                flex-shrink: 0;
+            }
         }
 
         .rbt-menu {
             position: absolute !important;
-            z-index: 1150 !important; 
-            width: 100% !important; 
-            max-height: 300px; 
+            z-index: 1150 !important;
+            width: 100% !important;
+            max-height: 300px;
             overflow-y: auto;
             background-color: var(--color-foreground);
             border: 1px solid #ccc;

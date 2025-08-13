@@ -12,6 +12,7 @@ import { Spinner } from "reactstrap";
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import { Form, InputGroup, Button } from "react-bootstrap";
+import UserCertificateBadge from "./utils/UserCertificateBadge.jsx";
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
@@ -19,9 +20,11 @@ const Layout = ({ children }) => {
   const { isBlocked } = useContext(LoadingContext);
   const location = useLocation();
   const [searchType, setSearchType] = useState("save data");
-  const [searchInput, setSearchInput] = useState(""); // ✅ ahora está definido
+  const [searchInput, setSearchInput] = useState("");
   const [options, setOptions] = useState([]);
   const debounceRef = useRef(null); // para controlar el temporizador
+  const [loading, setLoading] = useState(false);
+  const [platforms, setPlatforms] = useState([]);
 
   const handleLogout = async () => {
     try {
@@ -32,35 +35,112 @@ const Layout = ({ children }) => {
       console.error("Error cerrando sesión", error);
     }
   };
+  useEffect(() => {
+    const fetchPlatforms = async () => {
+      try {
+        const res = await api.get(`${config.api.platforms}?limit=500`);
+        const data = Array.isArray(res.data) ? res.data : [res.data];
+        const platformsFormatted = data.map((p) => ({
+          value: p.platformID?.toString() ?? "",
+          label: p.name ?? "",
+          abbreviation: p.abbreviation ?? "",
+        }));
+        setPlatforms(platformsFormatted);
+      } catch (err) {
+        console.error("Error fetching platforms", err);
+      }
+    };
+    fetchPlatforms();
+  }, []);
 
   const fetchResults = async () => {
     if (!searchInput) return;
+    setLoading(true);
     try {
       let endpoint = "";
       switch (searchType) {
         case "save data":
-          endpoint = `${config.api.savedatas}/search?q=${encodeURIComponent(searchInput)}&limit=10`;
+          endpoint = `${config.api.savedatas}/search?fast=true&q=${encodeURIComponent(searchInput)}&limit=10&offset=0`;
           break;
         case "games":
-          endpoint = `${config.api.games}/search?q=${encodeURIComponent(searchInput)}&limit=10`;
+          endpoint = `${config.api.games}/search?fast=true&q=${encodeURIComponent(searchInput)}&limit=10&offset=0`;
           break;
         case "users":
-          endpoint = `${config.api.users}/search?q=${encodeURIComponent(searchInput)}&limit=10`;
+          endpoint = `${config.api.users}/search?fast=true&q=${encodeURIComponent(searchInput)}&limit=10&offset=0`;
           break;
         default:
+          setLoading(false);
           return;
       }
-      console.log(endpoint)
-      let data = await api.get(endpoint);
-      if (!Array.isArray(data)) data = [data]
-      const formatted = data.map(item => ({
-        id: item.gameID || item.userID || item.saveID,
-        label: item.title || item.userName || "unknown"
-      }));
+      const res = await api.get(endpoint);
+      let data = res.data;
+      if (!Array.isArray(data)) data = [data];
+      if (!data || data.length === 0) {
+        setOptions([]);
+        return;
+      }
+      let formatted;
+      if (searchType === "save data") {
+        // Filtrar saves inválidos o vacíos (sin gameID)
+        const validSaves = data.filter(save => save && save.gameID);
 
+        const savesWithGame = await Promise.all(
+          validSaves.map(async (save) => {
+            try {
+              const gameRes = await api.get(`${config.api.games}?gameID=${save.gameID}&complete=false&external=false`);
+              const game = gameRes.data;
+
+              const platform = platforms.find(p => p.value === save.platformID?.toString());
+
+              return {
+                id: save.saveID,
+                label: save.title,
+                gameTitle: game?.title || "Unknown game",
+                platformAbbr: platform?.abbreviation || "",
+              };
+            } catch (err) {
+              return {
+                id: save.saveID,
+                label: save.title,
+                gameTitle: "Unknown game",
+                platformAbbr: "",
+              };
+            }
+          })
+        );
+
+        formatted = savesWithGame;
+      }
+      else if (searchType === "games") {
+        formatted = data.map(item => {
+          const gamePlatforms = item.platformID
+            ? item.platformID
+              .map(pid => platforms.find(p => p.value === pid.toString()))
+              .filter(Boolean)
+            : [];
+          return {
+            id: item.gameID,
+            label: item.title,
+            slug: item.slug,
+            platforms: gamePlatforms
+          };
+        });
+      } else if (searchType === "users") {
+        formatted = data.map(item => ({
+          id: item.userID,
+          label: item.userName,
+          alias: item.alias ?? "",
+          badge: item.admin ? "admin" : (item.verified ? "verified" : (item.trusted ? "trusted" : null))
+        }));
+      }
+
+      console.log(formatted)
       setOptions(formatted);
+
     } catch (err) {
       console.error("Error obtaining results:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -89,7 +169,7 @@ const Layout = ({ children }) => {
   // Debounce: ejecuta la búsqueda 2s después de que el usuario deje de escribir
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (searchInput.trim().length >= 2) {
+    if (searchInput.trim().length > 0) {
       debounceRef.current = setTimeout(() => {
         fetchResults();
       }, 2000);
@@ -110,10 +190,13 @@ const Layout = ({ children }) => {
           </div>
 
           <div className="center d-flex align-items-center">
-            <InputGroup>
+            <InputGroup style={{ width: '100%', maxWidth: '700px', gap: '0.5rem' }}>
               <Form.Select
                 value={searchType}
-                onChange={(e) => setSearchType(e.target.value)}
+                onChange={(e) => {
+                  setSearchType(e.target.value);
+                  setOptions([]);
+                }}
                 style={{ maxWidth: "140px" }}
               >
                 <option value="save data">Save Data</option>
@@ -126,20 +209,105 @@ const Layout = ({ children }) => {
                 onInputChange={(text) => setSearchInput(text)}
                 onChange={(selected) => {
                   if (selected.length > 0) {
-                    setSearchInput(selected[0].label);
+                    if (searchType === "games") {
+                      setSearchInput(selected[0].label);
+                      navigate(`/g/${selected[0].slug}`);
+                    } else if (searchType === "save data") {
+                      setSearchInput(selected[0].label);
+                      navigate(`/s/${selected[0].id}`);
+                    } else if (searchType === "users") {
+                      setSearchInput(selected[0].label);
+                      navigate(`/u/${selected[0].label}`);
+                    }
+                    setOptions([]);
                   }
                 }}
                 options={options}
-                placeholder={`Buscar en ${searchType}...`}
+                placeholder={`type for quick search in ${searchType}...`}
                 labelKey="label"
-                minLength={2}
+                minLength={1}
+                isLoading={loading}
+                style={{ flexGrow: 1, minWidth: 0 }}
+                filterBy={(option, props) => {
+                  const field = option[props.labelKey];
+                  return typeof field === "string" && field.toLowerCase().includes(props.text.toLowerCase());
+                }}
+                renderMenuItemChildren={(option) => {
+                  if (searchType === "save data") {
+                    return (
+                      <div style={{ width: "100%" }}>
+                        <strong>{option.label}</strong>{" "}
+                        <small style={{ color: "#666", fontSize: "0.85em" }}>
+                          - {option.gameTitle} [{option.platformAbbr}]
+                        </small>
+                      </div>
+                    );
+                  }
+                  else if (searchType === "games") {
+                    return (
+                      <div
+                        style={{
+                          display: "inline",
+                          whiteSpace: "normal",
+                          overflowWrap: "break-word",
+                        }}
+                      >
+                        <strong>{option.label}</strong>{" "}
+                        {option.platforms && option.platforms.length > 0 && (
+                          <small
+                            style={{
+                              color: "#666",
+                              fontSize: "0.85em",
+                              display: "inline",
+                            }}
+                          >
+                            [{option.platforms.map(p => p.abbreviation).join(", ")}]
+                          </small>
+                        )}
+                      </div>
+                    );
+                  }
+                  else if (searchType === "users") {
+                    return (
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", width: "100%" }}>
+                        <img
+                          src={`${config.api.assets}/user/${option.id}/pfp?${Date.now()}`}
+                          alt={`@${option.label}'s profile`}
+                          style={{
+                            width: 30,
+                            height: 30,
+                            borderRadius: "50%",
+                            objectFit: "cover",
+                            flexShrink: 0,
+                          }}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = `${config.api.assets}/defaults/pfp`;
+                          }}
+                        />
+                        <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flexGrow: 1 }}>
+                          {option.alias && option.alias.trim() !== "" ? (
+                            <>
+                              <strong>{option.alias}</strong> — @{option.label}
+                            </>
+                          ) : (
+                            <><strong>@{option.label}</strong></>
+                          )}
+                        </div>
+                        <UserCertificateBadge badgeType={option.badge} disableTooltip={true} />
+                      </div>
+                    );
+                  }
+                }}
               />
 
-              <Button variant="primary" onClick={handleSearch}>
-                Search
+
+              <Button variant="primary" onClick={handleSearch} style={{ flexShrink: 0 }}>
+                Advanced Search
               </Button>
             </InputGroup>
           </div>
+
 
           <div className="right d-flex align-items-center">
             {loggedUser ? (
@@ -160,7 +328,7 @@ const Layout = ({ children }) => {
                       style={{ width: "30px", height: "30px", objectFit: "cover", marginRight: "10px" }}
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = `${config.connection}${config.paths.pfp_default}`;
+                        e.target.src = `${config.api.assets}/defaults/pfp`;
                       }}
                     />
                     {loggedUser.userName || loggedUser.Alias || "Account"}
@@ -205,7 +373,7 @@ const Layout = ({ children }) => {
       <footer className="bottom-bar">
         <p>© 2025 Game Save Database. UCM. Jorge Bello Martín - Eva Lucas Leiro.</p>
       </footer>
-    </div>
+    </div >
   );
 };
 
