@@ -31,7 +31,7 @@
     position: absolute;
     top: 50%;
     left: 10%;
-    width: 100%;
+    width: 80%;
     transform: translateY(-50%);
     z-index: 1;
 
@@ -69,10 +69,13 @@
     }
 
     .carousel-right {
+        flex: 1;
+        max-width: 40%;
         display: flex;
         align-items: center;
-        justify-content: center;
-        padding: 12rem;
+        justify-content: flex-end; 
+        padding: 0; 
+        box-sizing: border-box;
 
         .game-cover {
             max-height: 150px;
