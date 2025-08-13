@@ -351,7 +351,7 @@ const Layout = ({ children }) => {
       <aside className="left-sidebar">
         <ul>
           <li><Link to="/">Home</Link></li>
-          <li><Link to="/catalog">Catalog</Link></li>
+          <li><Link to="/catalog">Game Catalog</Link></li>
           <li><Link to="/about">About Us</Link></li>
           <li><Link to="/faq">FAQ</Link></li>
         </ul>

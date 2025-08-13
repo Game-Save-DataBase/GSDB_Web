@@ -193,7 +193,7 @@ function Catalog() {
 
   return (
     <Container className="mt-4">
-      <h1 className="text-center mb-3">GSDB Catalog</h1>
+      <h1 className="text-center mb-3">GSDB Game Catalog</h1>
 
       <div className="d-flex justify-content-center flex-wrap mb-3">
         <Button
