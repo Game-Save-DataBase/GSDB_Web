@@ -1,12 +1,12 @@
 //interceptor de axios para manejar errores genericos (login, etc)
 import config from './config';
 import axios from 'axios';
-import history from './history'; // <- history propio ya que no podemos usar react router dom
+import history from './history'; // <- history propio
 
 // Crear una instancia personalizada de axios
 const api = axios.create({
     baseURL: config.connection, // URL base de la API
-    timeout: 60000,  // Configura un timeout si lo necesitas
+    timeout: 60000,  
     withCredentials:true,
 });
 api.defaults.withCredentials = true; //para las cookies de sesion
