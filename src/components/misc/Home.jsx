@@ -92,7 +92,7 @@ function Home() {
 
             <div className="games-grid-columns">
                 <div className="games-column">
-                    <h3 className="column-title">Column 1</h3>
+                    <h3 className="column-title">Higher Ratings</h3>
                     {games.map((game) => (
                         <div className="game-card" key={game.gameID}>
                             <img
@@ -113,7 +113,7 @@ function Home() {
                 </div>
 
                 <div className="games-column">
-                    <h3 className="column-title">Column 2</h3>
+                    <h3 className="column-title">Recent Uploads</h3>
                     {games.map((game) => (
                         <div className="game-card" key={game.gameID}>
                             <img
@@ -134,7 +134,7 @@ function Home() {
                 </div>
 
                 <div className="games-column">
-                    <h3 className="column-title">Column 3</h3>
+                    <h3 className="column-title">Most Downloaded</h3>
                     {games.map((game) => (
                         <div className="game-card" key={game.gameID}>
                             <img
@@ -154,8 +154,6 @@ function Home() {
                     ))}
                 </div>
             </div>
-
-
         </div>
     );
 }
