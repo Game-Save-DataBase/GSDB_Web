@@ -30,15 +30,20 @@
     }
 
     .platform-logo-wrapper {
-      width: 24px;            /* mantiene tamaño */
-      height: 24px;           /* mantiene tamaño */
-      padding: 2px;           /* si quieres espacio interior */
+      width: 24px;
+      /* mantiene tamaño */
+      height: 24px;
+      /* mantiene tamaño */
+      padding: 2px;
+      /* si quieres espacio interior */
       display: inline-flex;
       align-items: center;
       justify-content: center;
       position: relative;
-      border-radius: 50%;     /* opcional: hace que el fondo sea redondo */
-      overflow: visible;      /* el halo puede sobresalir */
+      border-radius: 50%;
+      /* opcional: hace que el fondo sea redondo */
+      overflow: visible;
+      /* el halo puede sobresalir */
 
       /* CÍRCULO DIFUMINADO DETRÁS */
       &::before {
@@ -53,11 +58,12 @@
         border-radius: 50%;
         /* degradado para un centro blanco y bordes translúcidos */
         background: radial-gradient(circle at center,
-                    rgb(255, 255, 255) 0%,
-                    rgba(255, 255, 255, 0.619) 30%,
-                    rgba(255, 255, 255, 0.201) 55%,
-                    transparent 80%);
-        filter: blur(6px);    /* suaviza el halo */
+            rgb(255, 255, 255) 0%,
+            rgba(255, 255, 255, 0.619) 30%,
+            rgba(255, 255, 255, 0.201) 55%,
+            transparent 80%);
+        filter: blur(6px);
+        /* suaviza el halo */
         z-index: 0;
         pointer-events: none;
       }
@@ -68,11 +74,11 @@
       height: 100%;
       object-fit: contain;
       position: relative;
-      z-index: 1; /* encima del halo */
+      z-index: 1;
+      /* encima del halo */
 
       // Sobra al rededor de los NO transparente
-      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.45))
-              drop-shadow(0 0 6px rgba(255, 255, 255, 0.28));
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.45)) drop-shadow(0 0 6px rgba(255, 255, 255, 0.28));
 
     }
 
@@ -96,24 +102,37 @@
       margin-top: 0.5rem;
     }
 
-    .upload-button{
+    .upload-button {
       font-size: 1rem;
       display: flex;
       align-items: center;
       gap: '0.5rem';
       background-color: var(--color-links) !important;
       border-color: var(--color-links) !important;
+
       &:hover {
         filter: drop-shadow(0 0 3px var(--color-links));
       }
     }
-    .saveLocation-button{
+
+    .saveLocation-button {
       font-size: 1rem;
       background-color: var(--color-h1) !important;
       border-color: var(--color-h1) !important;
+
       &:hover {
         filter: drop-shadow(0 0 3px var(--color-h1));
       }
+    }
+
+    .external-link-icon {
+      height: 24px;
+      cursor: pointer;
+      transition: transform 0.25s ease;
+    }
+
+    .external-link-icon:hover {
+      transform: scale(1.1) translateY(-2px);
     }
 
     .genre-badge {

@@ -285,26 +285,27 @@ function ShowGameDetails() {
                 <div style={{ display: 'flex', gap: '0.25rem' }}>
                   {platforms.map((platform) => (
                     platform.logo ? (
-                            <div className="platform-logo-wrapper" key={platform.platformID} title={platform.name}>
-                      <img
-                        className="platform-logo"
-                        key={platform.platformID}
-                        src={platform.logo}
-                        alt={platform.name}
-                        title={platform.name}
-                        onError={(e) => { e.target.style.display = 'none'; }}
-                      />
+                      <div className="platform-logo-wrapper" key={platform.platformID} title={platform.name}>
+                        <img
+                          className="platform-logo"
+                          key={platform.platformID}
+                          src={platform.logo}
+                          alt={platform.name}
+                          title={platform.name}
+                          onError={(e) => { e.target.style.display = 'none'; }}
+                        />
                       </div>
                     ) : null
                   ))}
                 </div>
               </div>
 
-              <div className="genres-container">
+              {/* <div className="genres-container">
                 {genres.map((genre, index) => (
                   <span key={index} className="genre-badge">{genre}</span>
                 ))}
-              </div>
+              </div> */}
+
               <div className="header-buttons mt-3 d-flex gap-2">
                 <Button
                   className="upload-button"
@@ -337,7 +338,31 @@ function ShowGameDetails() {
                 className="game-cover"
                 onError={(e) => { e.target.src = `${config.api.assets}/default/game-cover`; }}
               />
+
+              <div className="external-links d-flex justify-content-end gap-2 mt-2">
+                {game.IGDB_url && (
+                  <a href={game.IGDB_url} target="_blank" rel="noopener noreferrer">
+                    <img
+                      src="/assets/igdblogo.png"
+                      alt="IGDB"
+                      style={{ height: '24px', cursor: 'pointer' }}
+                      className="external-link-icon"
+                    />
+                  </a>
+                )}
+                {game.PCGW_url && (
+                  <a href={game.PCGW_url} target="_blank" rel="noopener noreferrer">
+                    <img
+                      src="/assets/pcgwlogo.png"
+                      alt="PCGamingWiki"
+                      style={{ height: '24px', cursor: 'pointer' }}
+                      className="external-link-icon"
+                    />
+                  </a>
+                )}
+              </div>
             </Col>
+
 
           </Row>
         </Container>
@@ -430,7 +455,7 @@ function ShowGameDetails() {
                   platforms: [sf.platformID],
                   description: sf.description || "No description",
                   postedDate: sf.postedDate,
-                  downloads: sf.nDownloads ? sf.nDownloads :  0,
+                  downloads: sf.nDownloads ? sf.nDownloads : 0,
                   tags: Array.isArray(sf.tagNames) ? sf.tagNames : [],
                   user: {
                     name: sf.userName,

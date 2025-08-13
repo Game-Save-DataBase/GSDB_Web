@@ -54,7 +54,6 @@ const Login = () => {
           identifier: formData.userName || formData.mail,
           password: formData.password
         });
-        console.log("USER:", res.data.user)
         setMessage('Login successful ✅');
         setTimeout(() => {
           setUser(res.data.user);
