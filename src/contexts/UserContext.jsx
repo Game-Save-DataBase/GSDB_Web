@@ -14,6 +14,7 @@ export const UserProvider = ({ children }) => {
       const res = await api.get(`${config.api.auth}/me`);
       console.log("RESULTADO AUTH/ME:", res.data)
     };
+    printuser();
   }, [user]);
 
   const updateUser = async () => {
