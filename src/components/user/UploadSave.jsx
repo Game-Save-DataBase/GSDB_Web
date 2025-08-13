@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Form, Button } from 'react-bootstrap';
 import { Typeahead } from 'react-bootstrap-typeahead';
@@ -7,10 +7,18 @@ import config from '../../utils/config';
 import api from '../../utils/interceptor';
 import ImageCarouselModal from '../utils/ImageCarouselModal';
 import '../../styles/user/UploadSave.scss';
+import { UserContext } from "../../contexts/UserContext.jsx";
 
 function NewSavePage() {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user: loggedUser, loading } = useContext(UserContext);
+  useEffect(() => {
+    if (!loading && !loggedUser) {
+      navigate('/login', {replace:true});
+    }
+  }, [loading, loggedUser, navigate]);
+
+  const [searchParams] = useSearchParams();
   const [title, setTitle] = useState('');
   const [games, setGames] = useState([]);
   const [selectedGameObj, setSelectedGameObj] = useState(null);

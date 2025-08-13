@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import SafeImage from "../utils/SafeImage.jsx";
 import {
   Card,
@@ -56,6 +56,28 @@ function View({
       <strong>{title}</strong>
     );
   };
+  const cardsRef = useRef([]);
+  const [maxHeight, setMaxHeight] = useState(null);
+
+  useEffect(() => {
+    if (!cardsRef.current || cardsRef.current.length === 0) return;
+
+    const heights = cardsRef.current
+      .map(card => card?.offsetHeight || 0)
+      .filter(h => typeof h === "number" && !isNaN(h));
+
+    if (heights.length === 0) return;
+
+    const max = Math.max(...heights);
+
+    // Solo asignar si max es un número válido y no infinito
+    if (isFinite(max) && max > 0) {
+      setMaxHeight(max);
+    }
+  }, [data]);
+  useEffect(() => {
+    cardsRef.current = [];
+  }, [data]);
 
   const handlePrev = () => {
     if (currentPage > 1) {
@@ -88,7 +110,11 @@ function View({
         <Row className="g-4 justify-content-start">
           {data.map((item, idx) => (
             <Col key={idx} xs={6} sm={4} md={3} lg={2} className="px-2">
-              <Card className="custom-card shadow-sm">
+              <Card
+                ref={(el) => (cardsRef.current[idx] = el)}
+                className="custom-card shadow-sm"
+                style={maxHeight ? { height: maxHeight } : {}}
+              >
                 {renderProps.image && (
                   <div className="view-game-cover-container position-relative">
                     {/* Imagen */}
@@ -131,7 +157,7 @@ function View({
                       {renderTitle(item)}
                     </Card.Title>
 
-                    {renderProps.description && (
+                    {renderProps.description && item[renderProps.description] != null && (
                       <Card.Text className="text-muted" style={{ fontSize: "0.65rem" }}>
                         {(() => {
                           const text = item[renderProps.description]?.trim();
@@ -202,7 +228,7 @@ function View({
                         <strong>Release date</strong>: {formatIfDate(item[renderProps.releaseDate])}
                       </Card.Text>
                     )}
-                    {renderProps.uploads && item[renderProps.uploads] && (
+                    {renderProps.uploads && item[renderProps.uploads] != null && (
                       <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
                         <strong>Uploads</strong>: {item[renderProps.uploads] || 0}
                       </Card.Text>
@@ -270,7 +296,7 @@ function View({
               );
             }
 
-            if (renderProps.description) {
+            if (renderProps.description && item[renderProps.description] != null) {
               const text = item[renderProps.description]?.trim();
               elements.push(
                 <span key="description" style={{ fontSize: "0.75rem", color: "#666" }}>

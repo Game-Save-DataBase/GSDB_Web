@@ -7,11 +7,16 @@
 
 
 .custom-card {
-  display: flex;
-  flex-direction: column;
-  border-radius: 8px;
-  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  will-change: transform;
 }
+
+.custom-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(123, 44, 191, 0.4); 
+  z-index: 10; 
+}
+
 
 .view-game-cover-container {
   position: relative;
