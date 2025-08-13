@@ -1,5 +1,5 @@
 //constantes para la configuracion
-const isProd = import.meta.env.VITE_PROD_MODE === 'true';
+const isProd = process.env.NODE_ENV === 'production';
 const VITE_API_BASE_URL = isProd ? import.meta.env.VITE_API_BASE_URL : import.meta.env.VITE_DIR_GSDB + import.meta.env.VITE_PORT;
 
 const config = {
