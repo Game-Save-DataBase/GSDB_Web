@@ -450,7 +450,7 @@ function UserProfile() {
         // Filtrar por fecha si hay rango
         if (selectedUploadsDate) {
             filtered = filtered.filter(sf => {
-                const uDate = new Date(sf.release_date);
+                const uDate = new Date(sf.postedDate);
                 const selectedDate = new Date(selectedUploadsDate);
                 return uDate >= selectedDate;
             });
@@ -478,7 +478,7 @@ function UserProfile() {
         // Filtrar por fecha si hay rango
         if (selectedReviewsDate) {
             filtered = filtered.filter(sf => {
-                const uDate = new Date(sf.release_date);
+                const uDate = new Date(sf.postedDate);
                 const selectedDate = new Date(selectedReviewsDate);
                 return uDate >= selectedDate;
             });

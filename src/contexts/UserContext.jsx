@@ -8,15 +8,6 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const printuser = async () => {
-      console.log("USER AHORA MISMO ES:", user)
-      const res = await api.get(`${config.api.auth}/me`);
-      console.log("RESULTADO AUTH/ME:", res.data)
-    };
-    printuser();
-  }, [user]);
-
   const updateUser = async () => {
     try {
       const res = await api.get(`${config.api.auth}/me`);
