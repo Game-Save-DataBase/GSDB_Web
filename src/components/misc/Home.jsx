@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from 'react';
 import Carousel from 'react-bootstrap/Carousel';
+import SafeImage from "../utils/SafeImage.jsx";
 import config from '../../utils/config.js';
 import api from '../../utils/interceptor';
 import '../../styles/misc/Home.scss';
@@ -19,6 +20,12 @@ function Home() {
     const [index, setIndex] = useState(0);
     const [games, setGames] = useState([]);
     const [loading, setLoading] = useState(true);
+
+
+    const [recentSaves, setRecentSaves] = useState([]);
+    const [popularSaves, setPopularSaves] = useState([]);
+    const [downloadedSaves, setDownloadedSaves] = useState([]);
+    const [loadingSaves, setLoadingSaves] = useState(true);
 
     const handleSelect = (selectedIndex) => {
         setIndex(selectedIndex);
@@ -44,7 +51,111 @@ function Home() {
             }
         };
 
+        const fetchSaveDatas = async () => {
+            try {
+                setLoadingSaves(true);
+                const [recentRes, popularRes, downloadedRes] = await Promise.all([
+                    api.get(`${config.api.savedatas}?limit=4&offset=0&sort[desc]=postedDate`),
+                    api.get(`${config.api.savedatas}?limit=4&offset=0&sort[desc]=rating`),
+                    api.get(`${config.api.savedatas}?limit=4&offset=0&sort[desc]=nDownloads`),
+                ]);
+                const recentResData = Array.isArray(recentRes.data) ? recentRes.data : [recentRes.data];
+                const popularResData = Array.isArray(popularRes.data) ? popularRes.data : [popularRes.data];
+                const downloadedResData = Array.isArray(downloadedRes.data) ? downloadedRes.data : [downloadedRes.data];
+
+                const UpdatedRecentResData = await Promise.all(
+                    recentResData.map(async (save) => {
+                        try {
+                            const gameResponse = await api.get(`${config.api.games}?gameID=${save.gameID}&complete=false&external=false`);
+                            if (!gameResponse.data) { throw ("No game fetched"); }
+                            return {
+                                ...save,
+                                save_img: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
+                                save_img_error: gameResponse.data.cover || `${config.api.assets}/defaults/game-cover`,
+                                link: `/s/${save.saveID}`,
+                                game_name: gameResponse.data.title,
+                                game_link:  `/g/${gameResponse.data.slug}`
+                            };
+                        } catch (err) {
+                            console.log(`Error fetching game image for save ${save.saveID}:`, err);
+                            return {
+                                ...save,
+                                save_img: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
+                                save_img_error: `${config.api.assets}/defaults/game-cover`,
+                                link: `/s/${save.saveID}`,
+                                game_name: "unknown",
+                                game_link:  `/NotFound`
+                            };
+                        }
+                    })
+
+                )
+                const UpdatedPopularResData = await Promise.all(
+                    popularResData.map(async (save) => {
+                        try {
+                            const gameResponse = await api.get(`${config.api.games}?gameID=${save.gameID}&complete=false&external=false`);
+                            if (!gameResponse.data) { throw ("No game fetched"); }
+                            return {
+                                ...save,
+                                save_img: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
+                                save_img_error: gameResponse.data.cover || `${config.api.assets}/defaults/game-cover`,
+                                link: `/s/${save.saveID}`,
+                                game_name: gameResponse.data.title,
+                                game_link:  `/g/${gameResponse.data.slug}`
+                            };
+                        } catch (err) {
+                            console.log(`Error fetching game image for save ${save.saveID}:`, err);
+                            return {
+                                ...save,
+                                save_img: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
+                                save_img_error: `${config.api.assets}/defaults/game-cover`,
+                                link: `/s/${save.saveID}`,
+                                game_name: "unknown",
+                                game_link:  `/NotFound`
+                            };
+                        }
+                    })
+
+                )
+                const UpdatedDownloadedResData = await Promise.all(
+                    downloadedResData.map(async (save) => {
+                        try {
+                            const gameResponse = await api.get(`${config.api.games}?gameID=${save.gameID}&complete=false&external=false`);
+                            if (!gameResponse.data) { throw ("No game fetched"); }
+                            return {
+                                ...save,
+                                save_img: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
+                                save_img_error: gameResponse.data.cover || `${config.api.assets}/defaults/game-cover`,
+                                link: `/s/${save.saveID}`,
+                                game_name: gameResponse.data.title,
+                                game_link:  `/g/${gameResponse.data.slug}`
+                            };
+                        } catch (err) {
+                            console.log(`Error fetching game image for save ${save.saveID}:`, err);
+                            return {
+                                ...save,
+                                save_img: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
+                                save_img_error: `${config.api.assets}/defaults/game-cover`,
+                                link: `/s/${save.saveID}`,
+                                game_name: "unknown",
+                                game_link:  `/NotFound`
+                            };
+                        }
+                    })
+
+                )
+
+                setRecentSaves(UpdatedRecentResData);
+                setPopularSaves(UpdatedPopularResData);
+                setDownloadedSaves(UpdatedDownloadedResData);
+            } catch (err) {
+                console.error("Error fetching savedatas", err);
+            } finally {
+                setLoadingSaves(false);
+            }
+        };
         fetchGames();
+        fetchSaveDatas();
     }, []);
 
     return (
@@ -90,64 +201,67 @@ function Home() {
                 </Carousel>
             )}
 
-            <div className="games-grid-columns">
-                <div className="games-column">
+            <div className="saves-grid-columns">
+                <div className="saves-column">
                     <h3 className="column-title">Higher Ratings</h3>
-                    {games.map((game) => (
-                        <div className="game-card" key={game.gameID}>
-                            <img
-                                src={game.cover || `${config.api.assets}/defaults/banner`}
-                                alt={game.title}
-                                className="game-card-img"
+                    {popularSaves.map((sd) => (
+                        <div className="saves-card" key={sd.saveID}>
+                           <SafeImage
+                                src={sd.save_img}
+                                fallbackSrc={sd.save_img_error}
+                                alt= {sd.title}
+                                className="saves-card-img"
                             />
-                            <div className="game-card-content">
-                                <h4 className="game-card-title">
-                                    <Link to={game.url}>{game.title}</Link>
+                            <div className="saves-card-content">
+                                <h4 className="saves-card-title">
+                                    <Link to={sd.link}>{sd.title}</Link> - <Link to={sd.game_link}>{sd.game_name}</Link>
                                 </h4>
-                                <p className="game-card-date">
-                                    Release Date: {formatIfDate(game.release_date || 'N/A')}
+                                <p className="saves-card-info">
+                                    Rating: {sd.rating}
                                 </p>
                             </div>
                         </div>
                     ))}
                 </div>
 
-                <div className="games-column">
+                <div className="saves-column">
                     <h3 className="column-title">Recent Uploads</h3>
-                    {games.map((game) => (
-                        <div className="game-card" key={game.gameID}>
-                            <img
-                                src={game.cover || `${config.api.assets}/defaults/banner`}
-                                alt={game.title}
-                                className="game-card-img"
+                    {recentSaves.map((sd) => (
+                        <div className="saves-card" key={sd.saveID}>
+                            <SafeImage
+                                src={sd.save_img}
+                                fallbackSrc={sd.save_img_error}
+                                alt= {sd.title}
+                                className="saves-card-img"
                             />
-                            <div className="game-card-content">
-                                <h4 className="game-card-title">
-                                    <Link to={game.url}>{game.title}</Link>
+                            <div className="saves-card-content">
+                                <h4 className="saves-card-title">
+                                    <Link to={sd.link}>{sd.title}</Link> - <Link to={sd.game_link}>{sd.game_name}</Link>
                                 </h4>
-                                <p className="game-card-date">
-                                    Release Date: {formatIfDate(game.release_date || 'N/A')}
+                                <p className="saves-card-info">
+                                    Posted Date: {formatIfDate(sd.postedDate || 'N/A')}
                                 </p>
                             </div>
                         </div>
                     ))}
                 </div>
 
-                <div className="games-column">
+                <div className="saves-column">
                     <h3 className="column-title">Most Downloaded</h3>
-                    {games.map((game) => (
-                        <div className="game-card" key={game.gameID}>
-                            <img
-                                src={game.cover || `${config.api.assets}/defaults/banner`}
-                                alt={game.title}
-                                className="game-card-img"
+                    {downloadedSaves.map((sd) => (
+                        <div className="saves-card" key={sd.saveID}>
+                           <SafeImage
+                                src={sd.save_img}
+                                fallbackSrc={sd.save_img_error}
+                                alt= {sd.title}
+                                className="saves-card-img"
                             />
-                            <div className="game-card-content">
-                                <h4 className="game-card-title">
-                                    <Link to={game.url}>{game.title}</Link>
+                            <div className="saves-card-content">
+                                <h4 className="saves-card-title">
+                                    <Link to={sd.link}>{sd.title}</Link> - <Link to={sd.game_link}>{sd.game_name}</Link>
                                 </h4>
-                                <p className="game-card-date">
-                                    Release Date: {formatIfDate(game.release_date || 'N/A')}
+                                <p className="saves-card-info">
+                                    Downloads: {sd.nDownloads ? sd.nDownloads : 0}
                                 </p>
                             </div>
                         </div>
