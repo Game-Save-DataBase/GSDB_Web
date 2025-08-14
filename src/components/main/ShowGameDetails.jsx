@@ -343,7 +343,7 @@ function ShowGameDetails() {
                 {game.IGDB_url && (
                   <a href={game.IGDB_url} target="_blank" rel="noopener noreferrer">
                     <img
-                      src="/assets/igdblogo.png"
+                      src={`${config.paths.assetsFolder}/igdblogo.png`}
                       alt="IGDB"
                       style={{ height: '24px', cursor: 'pointer' }}
                       className="external-link-icon"
@@ -353,7 +353,7 @@ function ShowGameDetails() {
                 {game.PCGW_url && (
                   <a href={game.PCGW_url} target="_blank" rel="noopener noreferrer">
                     <img
-                      src="/assets/pcgwlogo.png"
+                      src={`${config.paths.assetsFolder}/pcgwlogo.png`}
                       alt="PCGamingWiki"
                       style={{ height: '24px', cursor: 'pointer' }}
                       className="external-link-icon"
