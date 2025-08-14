@@ -42,7 +42,7 @@ function Catalog() {
   const [order, setOrder] = useState("asc"); // "asc" o "down"
 
   const toggleOrder = () => {
-    setOrder((prev) => (prev === "asc" ? "down" : "asc"));
+    setOrder((prev) => (prev === "asc" ? "desc" : "asc"));
   };
 
   useEffect(() => {
