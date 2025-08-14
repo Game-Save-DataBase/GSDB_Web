@@ -39,7 +39,7 @@ function Catalog() {
   const [viewType, setViewType] = useState("card");
 
   const [sortFilter, setSort] = useState("")
-  const [order, setOrder] = useState("asc"); // "asc" o "down"
+  const [order, setOrder] = useState("asc"); // "asc" o "desc"
 
   const toggleOrder = () => {
     setOrder((prev) => (prev === "asc" ? "desc" : "asc"));
@@ -96,7 +96,7 @@ function Catalog() {
   const fetchGames = async (filters, pageOffset = 0, newLimit = limit) => {
     try {
       setLoading(true);
-      let query = `?complete=false&limit=${newLimit}&offset=${pageOffset}${sortFilter!="" ? `&sort[${order}]=${sortFilter}` : ""}`;
+      let query = `?complete=false&limit=${newLimit}&offset=${pageOffset}${sortFilter != "" ? `&sort[${order}]=${sortFilter}` : ""}`;
       if (filters.letter && filters.letter !== "ALL") {
         query += `&title[start]=${filters.letter}`;
       }
@@ -277,20 +277,10 @@ function Catalog() {
             <option value={40}>40</option>
           </Form.Select>
         </Form.Group>
-
-        <div className="d-flex align-items-end mb-0 gap-2">
-          <Button variant="primary" onClick={handleApplyFilters}>
-            Filter
-          </Button>
-          <Button variant="outline-secondary" onClick={resetFilters}>
-            Clear Filters
-          </Button>
-        </div>
         <Form.Group
-          style={{ minWidth: "160px" }}
+          style={{ minWidth: "130px" }}
           className="mb-0 flex-fill"
         >
-          {/* ESTO TIENE QUE APARECER ENCIMA DEL SELECT Y DEL FONT AWESOME */}
           <Form.Label>Sort by</Form.Label>
           <div style={{ display: "flex", alignItems: "center" }}>
             <Form.Select
@@ -298,7 +288,7 @@ function Catalog() {
               onChange={(e) => setSort(e.target.value)}
               style={{ flexGrow: 1 }}
             >
-              <option value="title">Alphabetical</option>
+              <option value="title">Title</option>
               <option value="nUploads">Uploads</option>
               <option value="lastUpdate">Last update</option>
               <option value="">Popularity</option>
@@ -316,6 +306,15 @@ function Catalog() {
             />
           </div>
         </Form.Group>
+        <div className="d-flex align-items-end mb-0 gap-2">
+          <Button variant="primary" onClick={handleApplyFilters}>
+            Filter
+          </Button>
+          <Button variant="outline-secondary" onClick={resetFilters}>
+            Clear Filters
+          </Button>
+        </div>
+
 
       </Stack>
 
