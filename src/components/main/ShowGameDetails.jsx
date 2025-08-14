@@ -333,10 +333,10 @@ function ShowGameDetails() {
 
             <Col md={4} className="text-end">
               <img
-                src={game.cover || `${config.api.assets}/default/game-cover`}
+                src={game.cover || `${config.api.assets}/defaults/game-cover`}
                 alt={`${game.title} cover`}
                 className="game-cover"
-                onError={(e) => { e.target.src = `${config.api.assets}/default/game-cover`; }}
+                onError={(e) => { e.target.src = `${config.api.assets}/defaults/game-cover`; }}
               />
 
               <div className="external-links d-flex justify-content-end gap-2 mt-2">
@@ -450,7 +450,7 @@ function ShowGameDetails() {
                   ...sf,
                   title: sf.title || "Untitled",
                   image: `${config.api.assets}/savedata/${sf.saveID}/scr/main`,
-                  errorImage: game.cover || `${config.api.assets}/default/game-cover`,
+                  errorImage: game.cover || `${config.api.assets}/defaults/game-cover`,
                   link: `/s/${sf.saveID}`,
                   platforms: [sf.platformID],
                   description: sf.description || "No description",

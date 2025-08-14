@@ -88,7 +88,7 @@ function Catalog() {
   const fetchGames = async (filters, pageOffset = 0, newLimit = limit) => {
     try {
       setLoading(true);
-      let query = `?complete=false&limit=${newLimit}&offset=${pageOffset}`;
+      let query = `?complete=false&limit=${newLimit}&offset=${pageOffset}&sort[asc]=title`;
 
       if (filters.letter && filters.letter !== "ALL") {
         query += `&title[start]=${filters.letter}`;
@@ -108,6 +108,7 @@ function Catalog() {
       const processedGames = data.map((game) => ({
         ...game,
         url: `/g/${game.slug}`,
+        errorImage: `${config.api.assets}/defaults/game-cover`
       }));
 
       setGames(processedGames);
@@ -296,7 +297,7 @@ function Catalog() {
             releaseDate: "release_date",
             lastUpdate: "lastUpdate",
             image: "cover",
-            errorImage: `${config.api.assets}/default/game-cover`,
+            errorImage: "errorImage",
             uploads: "nUploads",
             link: "url",
             platforms: "platformID",

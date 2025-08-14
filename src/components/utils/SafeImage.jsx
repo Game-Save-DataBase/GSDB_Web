@@ -12,7 +12,11 @@ function SafeImage({ src, fallbackSrc, alt, ...props }) {
         const response = await fetch(src, { method: "HEAD" });
 
         if (!isMounted) return;
-
+        if(src===undefined){
+          setImgSrc(fallbackSrc)
+          setLoading(false);
+          return;
+        }
         if (response.status === 204 || !response.ok) {
           // Si status 204 o no ok (404, etc) usamos fallback
           setImgSrc(fallbackSrc);
@@ -34,7 +38,7 @@ function SafeImage({ src, fallbackSrc, alt, ...props }) {
     };
   }, [src, fallbackSrc]);
 
-  if (loading) return null; 
+  if (loading) return null;
 
   return <img src={imgSrc} alt={alt} {...props} />;
 }
