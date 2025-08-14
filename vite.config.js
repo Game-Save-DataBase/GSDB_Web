@@ -18,5 +18,5 @@ export default defineConfig({
     port: 3000, 
     hmr: false
   },
-  base: './'
+  base: '/'
 })
