@@ -14,7 +14,8 @@ import {
 import View from "../views/View.jsx";
 import FilterSelect from "../filters/FilterSelect";
 import FilterDate from "../filters/FilterDate";
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowDownShortWide, faArrowUpShortWide } from '@fortawesome/free-solid-svg-icons';
 const ALPHABET = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")];
 
 function Catalog() {
@@ -36,6 +37,13 @@ function Catalog() {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [viewType, setViewType] = useState("card");
+
+  const [sortFilter, setSort] = useState("")
+  const [order, setOrder] = useState("asc"); // "asc" o "down"
+
+  const toggleOrder = () => {
+    setOrder((prev) => (prev === "asc" ? "down" : "asc"));
+  };
 
   useEffect(() => {
     const fetchPlatforms = async () => {
@@ -88,8 +96,7 @@ function Catalog() {
   const fetchGames = async (filters, pageOffset = 0, newLimit = limit) => {
     try {
       setLoading(true);
-      let query = `?complete=false&limit=${newLimit}&offset=${pageOffset}&sort[asc]=title`;
-
+      let query = `?complete=false&limit=${newLimit}&offset=${pageOffset}${sortFilter!="" ? `&sort[${order}]=${sortFilter}` : ""}`;
       if (filters.letter && filters.letter !== "ALL") {
         query += `&title[start]=${filters.letter}`;
       }
@@ -279,7 +286,36 @@ function Catalog() {
             Clear Filters
           </Button>
         </div>
+        <Form.Group
+          style={{ minWidth: "160px" }}
+          className="mb-0 flex-fill"
+        >
+          {/* ESTO TIENE QUE APARECER ENCIMA DEL SELECT Y DEL FONT AWESOME */}
+          <Form.Label>Sort by</Form.Label>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <Form.Select
+              value={sortFilter}
+              onChange={(e) => setSort(e.target.value)}
+              style={{ flexGrow: 1 }}
+            >
+              <option value="title">Alphabetical</option>
+              <option value="nUploads">Uploads</option>
+              <option value="lastUpdate">Last update</option>
+              <option value="">Popularity</option>
+              <option value="release_date">Release date</option>
+            </Form.Select>
 
+            <FontAwesomeIcon
+              icon={order === "asc" ? faArrowDownShortWide : faArrowUpShortWide}
+              onClick={toggleOrder}
+              style={{
+                marginLeft: "8px",
+                cursor: "pointer",
+                fontSize: "1.2em"
+              }}
+            />
+          </div>
+        </Form.Group>
 
       </Stack>
 
