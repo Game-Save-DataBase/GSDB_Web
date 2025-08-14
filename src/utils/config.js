@@ -7,7 +7,7 @@ const config = {
   // connection: import.meta.env.VITE_DIR_GSDB + import.meta.env.VITE_PORT, //la conexión a localhost o a un servidor
   connection: VITE_API_BASE_URL, //la conexión a localhost o a un servidor
   paths: {
-    assetsFolder: VITE_API_BASE_URL + import.meta.env.VITE_DIR_ASSETS,
+    assetsFolder: import.meta.env.VITE_DIR_ASSETS,
     uploads: import.meta.env.VITE_DIR_ASSETS + import.meta.env.VITE_DIR_UPLOADS,
     defaults: import.meta.env.VITE_DIR_ASSETS + import.meta.env.VITE_DIR_DEFAULT,
     gameCover_default: import.meta.env.VITE_DIR_ASSETS + import.meta.env.VITE_DIR_DEFAULT + '/' + import.meta.env.VITE_ASSET_GAMECOVER,
