@@ -278,7 +278,7 @@ function Catalog() {
           </Form.Select>
         </Form.Group>
         <Form.Group
-          style={{ minWidth: "130px" }}
+          style={{ minWidth: "100px" }}
           className="mb-0 flex-fill"
         >
           <Form.Label>Sort by</Form.Label>

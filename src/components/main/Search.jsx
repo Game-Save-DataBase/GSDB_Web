@@ -430,6 +430,19 @@ const Search = () => {
                         />
                     </Form.Group>
                 )}
+                {type === "s" && (
+                    <Form.Group style={{ minWidth: "200px" }} className="mb-0 flex-fill">
+                        <FilterSelect
+                            label="Tags"
+                            selected={tempTags}
+                            onChange={setTempTags}
+                            options={tags.map((t) => ({
+                                value: t.tagID?.toString(),
+                                label: t.name
+                            }))}
+                        />
+                    </Form.Group>
+                )}
                 {(type === "g" || type === "s") && (
                     <>
                         <Form.Group style={{ minWidth: "100px" }} className="mb-0 flex-fill">
@@ -449,19 +462,7 @@ const Search = () => {
                     </>
 
                 )}
-                {type === "s" && (
-                    <Form.Group style={{ minWidth: "200px" }} className="mb-0 flex-fill">
-                        <FilterSelect
-                            label="Tags"
-                            selected={tempTags}
-                            onChange={setTempTags}
-                            options={tags.map((t) => ({
-                                value: t.tagID?.toString(),
-                                label: t.name
-                            }))}
-                        />
-                    </Form.Group>
-                )}
+
 
                 <Form.Group style={{ minWidth: "90px" }} className="mb-0 flex-fill">
                     <Form.Label>View</Form.Label>
@@ -485,7 +486,7 @@ const Search = () => {
                     </Form.Select>
                 </Form.Group>
                 <Form.Group
-                    style={{ minWidth: "130px" }}
+                    style={{ minWidth: "100px" }}
                     className="mb-0 flex-fill"
                 >
                     <Form.Label>Sort by</Form.Label>

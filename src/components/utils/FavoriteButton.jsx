@@ -36,8 +36,8 @@ const FavoriteButton = ({ gameID, saveID }) => {
       const payload = idType === 'game' ? { gameID: idValue } : { saveID: idValue };
       const endpoint = isFavorite ? '/remove-favorite' : '/add-favorite';
 
-      await api.post(`${config.api.users}${endpoint}`, payload);
       setIsFavorite(!isFavorite);
+      await api.post(`${config.api.users}${endpoint}`, payload);
       updateUser();
     } catch (err) {
       console.error('error updating favorites:', err);
