@@ -65,9 +65,21 @@ function Home() {
                 const downloadedResData = Array.isArray(downloadedRes.data) ? downloadedRes.data : [downloadedRes.data];
 
                 const enrichSave = async (save) => {
+                    if (!save.gameID) {
+                        console.log(`Save ${save.saveID} has no gameID.`);
+                        return {
+                            ...save,
+                            save_img: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
+                            save_img_error: `${config.api.assets}/defaults/game-cover`,
+                            link: `/s/${save.saveID}`,
+                            game_name: "unknown",
+                            game_link: `/NotFound`
+                        };
+                    }
+
                     try {
                         const gameResponse = await api.get(`${config.api.games}?gameID=${save.gameID}&complete=false&external=false`);
-                        if (!gameResponse.data) throw ("No game fetched");
+                        if (!gameResponse.data) throw new Error("No game fetched");
                         return {
                             ...save,
                             save_img: `${config.api.assets}/savedata/${save.saveID}/scr/main`,
@@ -88,6 +100,7 @@ function Home() {
                         };
                     }
                 };
+
 
                 const UpdatedRecentResData = await Promise.all(recentResData.map(enrichSave));
                 const UpdatedPopularResData = await Promise.all(popularResData.map(enrichSave));
@@ -167,62 +180,74 @@ function Home() {
                     <div className="saves-grid-columns">
                         <div className="saves-column">
                             <h3 className="column-title">Higher Ratings</h3>
-                            {popularSaves.map((sd) => (
-                                <div className="saves-card" key={sd.saveID}>
-                                    <SafeImage
-                                        src={sd.save_img}
-                                        fallbackSrc={sd.save_img_error}
-                                        alt={sd.title}
-                                        className="saves-card-img"
-                                    />
-                                    <div className="saves-card-content">
-                                        {renderSaveCardTitle(sd)}
-                                        <p className="saves-card-info">
-                                            Rating: {sd.rating.toFixed(2)}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
+                            {popularSaves.filter(sd => sd && sd.saveID).length > 0 ? (
+                                popularSaves
+                                    .filter(sd => sd && sd.saveID)
+                                    .map((sd, index) => (
+                                        <div className="save-card" key={sd.saveID || `${sd.title}-${index}`}>
+                                            <p className="saves-card-info">
+                                                Rating: {sd.rating !== undefined ? sd.rating.toFixed(2) : "N/A"}
+                                            </p>
+                                            <p className="saves-card-info">
+                                                Descargas: {sd.nDownloads || 0}
+                                            </p>
+                                        </div>
+                                    ))
+                            ) : (
+                                <p>No hay saves disponibles.</p>
+                            )}
                         </div>
 
                         <div className="saves-column">
                             <h3 className="column-title">Recent Uploads</h3>
-                            {recentSaves.map((sd) => (
-                                <div className="saves-card" key={sd.saveID}>
-                                    <SafeImage
-                                        src={sd.save_img}
-                                        fallbackSrc={sd.save_img_error}
-                                        alt={sd.title}
-                                        className="saves-card-img"
-                                    />
-                                    <div className="saves-card-content">
-                                        {renderSaveCardTitle(sd)}
-                                        <p className="saves-card-info">
-                                            Posted Date: {formatIfDate(sd.postedDate || 'N/A')}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
+                            {recentSaves.filter(sd => sd && sd.saveID).length > 0 ? (
+                                recentSaves
+                                    .filter(sd => sd && sd.saveID)
+                                    .map((sd, index) => (
+                                        <div className="saves-card" key={sd.saveID || `${sd.title}-${index}`}>
+                                            <SafeImage
+                                                src={sd.save_img}
+                                                fallbackSrc={sd.save_img_error}
+                                                alt={sd.title || "Save Image"}
+                                                className="saves-card-img"
+                                            />
+                                            <div className="saves-card-content">
+                                                {renderSaveCardTitle(sd)}
+                                                <p className="saves-card-info">
+                                                    Posted Date: {sd.postedDate ? formatIfDate(sd.postedDate) : 'N/A'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))
+                            ) : (
+                                <p>No recent uploads available.</p>
+                            )}
                         </div>
 
                         <div className="saves-column">
                             <h3 className="column-title">Most Downloaded</h3>
-                            {downloadedSaves.map((sd) => (
-                                <div className="saves-card" key={sd.saveID}>
-                                    <SafeImage
-                                        src={sd.save_img}
-                                        fallbackSrc={sd.save_img_error}
-                                        alt={sd.title}
-                                        className="saves-card-img"
-                                    />
-                                    <div className="saves-card-content">
-                                        {renderSaveCardTitle(sd)}
-                                        <p className="saves-card-info">
-                                            Downloads: {sd.nDownloads ? sd.nDownloads : 0}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
+                            {downloadedSaves.filter(sd => sd && sd.saveID).length > 0 ? (
+                                downloadedSaves
+                                    .filter(sd => sd && sd.saveID)
+                                    .map((sd, index) => (
+                                        <div className="saves-card" key={sd.saveID || `${sd.title}-${index}`}>
+                                            <SafeImage
+                                                src={sd.save_img}
+                                                fallbackSrc={sd.save_img_error}
+                                                alt={sd.title || "Save Image"}
+                                                className="saves-card-img"
+                                            />
+                                            <div className="saves-card-content">
+                                                {renderSaveCardTitle(sd)}
+                                                <p className="saves-card-info">
+                                                    Downloads: {sd.nDownloads !== undefined ? sd.nDownloads : 0}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))
+                            ) : (
+                                <p>No downloads available.</p>
+                            )}
                         </div>
                     </div>
                 </>
