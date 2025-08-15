@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../../utils/interceptor';
 import config from '../../utils/config'
 
 
 const UserFollowButton = ({ user, loggedUser }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isFollowing, setIsFollowing] = useState(false);
 
   // Detectar si ya sigue al usuario
@@ -18,7 +19,7 @@ const UserFollowButton = ({ user, loggedUser }) => {
 
   const handleFollow = async () => {
     if (!loggedUser) {
-      navigate('/login');
+      navigate('/login', { state: { from: location } });
       return;
     }
     if (loggedUser.userID === user.userID) {

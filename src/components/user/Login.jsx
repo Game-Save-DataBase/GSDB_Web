@@ -25,6 +25,21 @@ const Login = () => {
       : '/')
     || '/';
   const navigate = useNavigate();
+  useEffect(() => {
+  const checkAuth = async () => {
+    try {
+      const res = await api.get(`${config.api.auth}/me`);
+      if (res.data?.user) {
+        navigate(`/u/${res.data?.user.userName}`, { replace: true });
+      }
+    } catch (err) {
+      // No logueado → no hacemos nada
+    }
+  };
+
+  checkAuth();
+}, [navigate]);
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -57,7 +72,6 @@ const Login = () => {
         setMessage('Login successful ✅');
         setTimeout(() => {
           setUser(res.data.user);
-          console.log(from)
           navigate(from, { replace: true });
         }, 2000);
       } else {

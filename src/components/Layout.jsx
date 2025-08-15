@@ -30,7 +30,7 @@ const Layout = ({ children }) => {
     try {
       await api.get(`${config.api.auth}/logout`);
       setUser(null);
-      navigate('/');
+      window.location.reload(); // recarga la página actual
     } catch (error) {
       console.error("Error cerrando sesión", error);
     }

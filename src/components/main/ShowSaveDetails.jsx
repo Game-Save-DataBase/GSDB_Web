@@ -44,7 +44,7 @@ function ShowSaveDetails() {
   const [hiddenReplies, setHiddenReplies] = useState({});
 
   const navigate = useNavigate();
-
+  const location = useLocation();
 
   useEffect(() => {
     const loadAll = async () => {
@@ -206,7 +206,7 @@ function ShowSaveDetails() {
     const text = isReply ? replyText : newComment;
     if (!text.trim()) return;
     if (!user) {
-      navigate('/login');
+      navigate('/login', { state: { from: location } });
       return;
     }
 
@@ -254,7 +254,7 @@ function ShowSaveDetails() {
   const handleLike = async (like) => {
     try {
       if (!user) {
-        navigate('/login');
+      navigate('/login', { state: { from: location } });
         return;
       }
 

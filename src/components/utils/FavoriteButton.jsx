@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../../utils/interceptor';
 import config from '../../utils/config';
 import { UserContext } from "../../contexts/UserContext.jsx";
@@ -10,6 +10,7 @@ import '../../styles/utils/FavoriteButton.scss';
 
 const FavoriteButton = ({ gameID, saveID }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isFavorite, setIsFavorite] = useState(false);
   const { user: loggedUser, updateUser } = useContext(UserContext);
 
@@ -29,7 +30,7 @@ const FavoriteButton = ({ gameID, saveID }) => {
 
   const handleFavorite = async () => {
     if (!loggedUser) {
-      navigate('/login');
+      navigate('/login', { state: { from: location } });
       return;
     }
     try {
