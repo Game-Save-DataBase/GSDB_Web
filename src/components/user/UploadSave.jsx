@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Form, Button } from 'react-bootstrap';
+import { Form, Button, Accordion } from 'react-bootstrap';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import config from '../../utils/config';
@@ -14,7 +14,7 @@ function NewSavePage() {
   const { user: loggedUser, loading } = useContext(UserContext);
   useEffect(() => {
     if (!loading && !loggedUser) {
-      navigate('/login', {replace:true});
+      navigate('/login', { replace: true });
     }
   }, [loading, loggedUser, navigate]);
 
@@ -37,6 +37,134 @@ function NewSavePage() {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const searchTimeout = useRef(null);
+
+  // Estados para metadata
+  const [sugestedMetadata, setSugestedMetadata] = useState([{ key: 'play_time', description: 'Play time', type: 'Time', value: "00:00:00", sugested: true },
+  { key: 'difficulty', description: 'Game difficulty', type: 'Text', value: '', sugested: true },
+  { key: 'completition_perc', description: 'Completion percentage', type: '%', value: -1, sugested: true },
+  // { key: 'finished', description: 'Finished main game', type: 'Boolean', value: false, sugested: true },
+  // { key: 'completed', description: 'Completed main game + extras', type: 'Boolean', value: false, sugested: true },
+  { key: 'level', description: 'Actual level', type: 'Number', value: 0, sugested: true },
+  { key: 'chapter', description: 'Actual chapter', type: 'Text', value: "", sugested: true },
+  { key: 'saveState', description: 'Is save state', type: 'Boolean', value: false, sugested: true },
+  { key: 'libretro_core', description: 'Libretro core used', type: 'Text', value: "", sugested: true },
+  { key: 'mods', description: 'Mods used', type: 'Text', value: "", sugested: true },
+  { key: 'character', description: 'Character, class...', type: 'Text', value: "", sugested: true },
+  { key: 'seed', description: 'Seed', type: 'Text', value: "", sugested: true }
+  ]);
+  const [metadataList, setMetadataList] = useState([]);
+
+  const [newMetaKey, setNewMetaKey] = useState('');
+  const [newMetaDescription, setNewMetaDescription] = useState('');
+  const [newMetaType, setNewMetaType] = useState('Number');
+  const [newMetaValue, setNewMetaValue] = useState('');
+
+  // Array de tipos de valor
+  const metaTypes = ['Number', '%', 'Text', 'Time', 'Boolean'];
+
+  const removeMetadata = (key) => {
+    setMetadataList(prev => {
+      const metaToRemove = prev.find(meta => meta.key === key);
+      if (metaToRemove && metaToRemove.sugested) {
+        // Añadir de nuevo a la lista de sugeridos
+        setSugestedMetadata(prevSugested => [...prevSugested, metaToRemove]);
+      }
+      // Filtrar de la lista principal
+      return prev.filter(meta => meta.key !== key);
+    });
+  };
+
+  const validateMetadataValue = (type, value) => {
+    switch (type) {
+      case 'Number':
+        return !isNaN(Number(value));
+      case '%':
+        const num = Number(value);
+        return !isNaN(num) && num >= 0 && num <= 200;
+      case 'Text':
+        return typeof value === 'string';
+      case 'Time':
+        // Formato HHHH:MM:SS (horas 0-9999, minutos 0-59, segundos 0-59)
+        return /^(\d{1,4}):([0-5]?\d):([0-5]?\d)$/.test(value);
+      case 'Boolean':
+        return value === true || value === false || value === 'true' || value === 'false';
+      default:
+        return false;
+    }
+  };
+  const handleMetadataChange = (key, field, newValue) => {
+    setMetadataList(prev =>
+      prev.map(meta => {
+        if (meta.key !== key) return meta;
+        // Solo actualiza el valor sin validar
+        return { ...meta, [field]: newValue };
+      })
+    );
+  };
+
+  const handleMetadataBlur = (key, field, value) => {
+    setMetadataList(prev =>
+      prev.map(meta => {
+        if (meta.key !== key) return meta;
+
+        if (field === 'value') {
+          if (!validateMetadataValue(meta.type, value)) {
+            console.log("alerta", key, field, value)
+            alert(`Value does not match type ${meta.type}`);
+            return meta; // no cambia si es inválido
+          }
+        }
+
+        return meta; // ya está actualizado en handleMetadataChange
+      })
+    );
+  };
+
+  // Función para añadir un metadata sugerido
+  const handleAddSugested = (key) => {
+    const metaToAdd = sugestedMetadata.find(meta => meta.key === key);
+
+    if (!metaToAdd) return;
+
+    if (metadataList.some(meta => meta.key === key)) return;
+
+    setMetadataList(prev => [...prev, metaToAdd]);
+    setSugestedMetadata(prev => prev.filter(meta => meta.key !== key));
+  };
+
+  const handleAddMetadata = () => {
+    if (!newMetaKey || !newMetaType || !newMetaDescription || (newMetaType != 'Boolean' && !newMetaValue)) {
+      alert("All fields are required.");
+      return;
+    }
+    if (metadataList.some(meta => meta.key === newMetaKey) || sugestedMetadata.some(meta => meta.key === newMetaKey)) {
+      alert(`Metadata key "${newMetaKey}" already exists.`);
+      return;
+    }
+
+    if (!/^[a-z-_]+$/.test(newMetaKey)) {
+      alert("Key must be lowercase letters only, no spaces, numbers or special chars.");
+      return;
+    }
+
+    console.log(newMetaType, newMetaValue)
+    if (!validateMetadataValue(newMetaType, newMetaValue)) {
+      alert(`Value does not match type ${newMetaType}`);
+      return;
+    }
+
+    setMetadataList(prev => [
+      ...prev,
+      { key: newMetaKey, description: newMetaDescription, type: newMetaType, value: newMetaValue, sugested: false }
+    ]);
+
+    // Limpiar inputs
+    setNewMetaKey('');
+    setNewMetaDescription('');
+    setNewMetaValue('');
+    setNewMetaType(metaTypes[0]);
+  };
+
 
   useEffect(() => {
     const gameIDFromParam = searchParams.get("gameID");
@@ -216,6 +344,18 @@ function NewSavePage() {
       screenshots.forEach(img => formData.append("screenshots", img));
       selectedTags.forEach(tag => formData.append("tagID[]", tag.tagID));
 
+      const metadataObj = {};
+      const metadataDescObj = {};
+
+      metadataList.forEach(meta => {
+        metadataObj[meta.key] = meta.value;
+        metadataDescObj[meta.key] = meta.description;
+      });
+
+      formData.append("metadata", JSON.stringify(metadataObj));
+      formData.append("metadataDesc", JSON.stringify(metadataDescObj));
+
+
       const res = await api.post(`${config.api.savedatas}/async`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -359,6 +499,161 @@ function NewSavePage() {
               className="mt-2"
             />
 
+            <h3>
+              Metadata
+            </h3>
+            {metadataList.length > 0 ? (
+              <div className="table-responsive">
+                <table className="table table-sm table-bordered">
+                  <thead>
+                    <tr>
+                      <th>Key</th>
+                      <th>Description</th>
+                      <th>Type</th>
+                      <th>Value</th>
+                      <th> </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {metadataList.map(meta => (
+                      <tr key={meta.key}>
+                        <td>{meta.key}</td>
+                        {meta.sugested ? (
+                          <td>
+                            {meta.description}
+                          </td>) : (
+                          <td>
+                            <Form.Control
+                              type="text"
+                              value={meta.description}
+                              onChange={(e) => handleMetadataChange(meta.key, 'description', e.target.value)}
+                              onBlur={(e) => handleMetadataBlur(meta.key, 'description', e.target.value)}
+                            />
+                          </td>
+                        )}
+                        <td>{meta.type}</td>
+                        <td>
+                          <Form.Control
+                            type="text"
+                            value={meta.value}
+                            onChange={(e) => handleMetadataChange(meta.key, 'value', e.target.value)}
+                            onBlur={(e) => handleMetadataBlur(meta.key, 'value', e.target.value)}
+                          />
+                        </td>
+                        <td>
+                          <Button variant="danger" size="sm" onClick={() => removeMetadata(meta.key)}>Delete</Button>
+                        </td>
+
+                      </tr>
+
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) :
+              (<p>No metadata</p>)}
+
+            {/* añadir sugested */}
+            {sugestedMetadata.length > 0 && (
+              <Accordion className="mb-3 small-accordion">
+                <Accordion.Item eventKey="0">
+                  <Accordion.Header >add sugested metadata</Accordion.Header>
+                  <Accordion.Body>
+                    <div className="table-responsive">
+                      <table className="table table-sm table-bordered">
+                        <thead>
+                          <tr>
+                            <th>Key</th>
+                            <th>Description</th>
+                            <th>Type</th>
+                            <th> </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sugestedMetadata.map(meta => (
+                            <tr key={meta.key}>
+                              <td>{meta.key}</td>
+                              <td>{meta.description}</td>
+                              <td>{meta.type}</td>
+                              <td>
+                                <Button variant="success" onClick={() => handleAddSugested(meta.key)}>Add</Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </Accordion.Body>
+                </Accordion.Item>
+              </Accordion>
+            )}
+            <Accordion className="mb-3 small-accordion">
+              <Accordion.Item eventKey="0">
+                <Accordion.Header >add custom metadata</Accordion.Header>
+                <Accordion.Body>
+
+                  <div className="mb-3">
+                    <Form>
+                      <div className="d-flex gap-2 mb-2">
+                        <Form.Control
+                          type="text"
+                          placeholder="Key"
+                          value={newMetaKey}
+                          onChange={(e) => setNewMetaKey(e.target.value)}
+                        />
+                        <Form.Control
+                          type="text"
+                          placeholder="Description"
+                          value={newMetaDescription}
+                          onChange={(e) => setNewMetaDescription(e.target.value)}
+                        />
+                        <Form.Select value={newMetaType} onChange={(e) => {
+                          const selectedType = e.target.value;
+                          setNewMetaType(selectedType);
+                          if (selectedType === 'Boolean') {
+                            setNewMetaValue(false);
+                          } else {
+                            setNewMetaValue('');
+                          }
+                        }}>
+                          {metaTypes.map(type => (
+                            <option key={type} value={type}>{type}</option>
+                          ))}
+                        </Form.Select>
+                        {newMetaType != 'Boolean' ? (
+                          <>
+                            <Form.Control
+                              type="text"
+                              placeholder={
+                                newMetaType === "Text"
+                                  ? "insert text..."
+                                  : newMetaType === "Number"
+                                    ? "insert number..."
+                                    : newMetaType === "%"
+                                      ? "[0-200]"
+                                      : "HHHH:MM:SS"
+                              } value={newMetaValue}
+                              onChange={(e) => setNewMetaValue(e.target.value)}
+                            />
+                          </>
+                        ) : (
+                          <Form.Check
+                            type="checkbox"
+                            checked={newMetaValue === true}
+                            onChange={(e) => setNewMetaValue(e.target.checked)}
+                          />
+
+                        )
+
+                        }
+
+                        <Button variant="success" onClick={handleAddMetadata}>Add</Button>
+                      </div>
+                    </Form>
+                  </div>
+                </Accordion.Body>
+              </Accordion.Item>
+            </Accordion>
 
             <h3>Tags</h3>
             <div className="mb-3">
