@@ -1,10 +1,10 @@
 @use '../Common' as *;
 
 .carousel-title {
-    font-size: 1.5em; // tamaño del título
-    color: black; // color editable
-    margin-bottom: 1rem; // separa título de las tarjetas
-    text-align: left; // opcional, centrado
+    font-size: 1.5em;
+    color: black;
+    margin-bottom: 1rem;
+    text-align: left;
     text-decoration: underline var(--color-text-secondary);
     text-decoration-thickness: 3px;
     text-underline-offset: 8px;
@@ -38,7 +38,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 4rem; // deja espacio a las flechas
+    padding: 0 4rem;
     gap: 1rem;
 
     .carousel-left {
@@ -73,8 +73,8 @@
         max-width: 40%;
         display: flex;
         align-items: center;
-        justify-content: flex-end; 
-        padding: 0; 
+        justify-content: flex-end;
+        padding: 0;
         box-sizing: border-box;
 
         .game-cover {
@@ -99,10 +99,10 @@
         gap: 1rem;
 
         .column-title {
-            font-size: 1rem; // tamaño del título
-            color: black; // color editable
-            margin-bottom: 1rem; // separa título de las tarjetas
-            text-align: left; // opcional, centrado
+            font-size: 1rem;
+            color: black;
+            margin-bottom: 1rem;
+            text-align: left;
             text-decoration: underline var(--color-text-secondary);
             text-decoration-thickness: 3px;
             text-underline-offset: 8px;
@@ -112,17 +112,21 @@
             display: flex;
             align-items: center;
             background-color: var(--color-foreground);
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 0.5rem 1rem;
             gap: 1rem;
             box-shadow: 0 0 8px var(--color-foreground);
             color: var(--color-text-secondary);
 
             .saves-card-img {
-                width: 80px;
-                height: 80px;
-                object-fit: contain;
+                aspect-ratio: 3 / 4; // relación de aspecto 3/4
+                width: 80px; // ancho reducido
+                height: auto; // altura proporcional
+                object-fit: cover; // rellena el contenedor
+                border-radius: 12px; // bordes redondeados
+                flex-shrink: 0;
             }
+
 
             .saves-card-content {
                 flex: 1;
