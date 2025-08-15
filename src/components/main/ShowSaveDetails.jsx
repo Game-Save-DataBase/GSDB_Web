@@ -429,7 +429,7 @@ function ShowSaveDetails() {
         <header className="save-header">
           <div className="header-left">
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FavoriteButton saveID={saveData.saveID} style={{ width: '24px', height: '24px' }} />
+              {/* <FavoriteButton saveID={saveData.saveID} style={{ width: '24px', height: '24px' }} /> */}
               <h1 style={{ margin: 0 }}>{saveData.title || 'Untitled Save'}</h1>
             </div>
             {relatedGame && relatedPlatform && (
