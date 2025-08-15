@@ -1,5 +1,6 @@
 import config from '../../utils/config';
 import React, { useState, useEffect, useContext } from 'react';
+import { Table } from 'react-bootstrap';
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import api from '../../utils/interceptor';
 import { LoadingContext } from '../../contexts/LoadingContext';
@@ -57,7 +58,7 @@ function ShowSaveDetails() {
           navigate('/notfound?s', { replace: true });
           return;
         }
-
+        console.log(save.metadata, save.metadataDesc)
         // 2. Juego relacionado
         if (save.gameID) {
           try {
@@ -469,6 +470,33 @@ function ShowSaveDetails() {
               <span key={tag._id} className="tag-badge" data-tooltip={tag.description}>{tag.name}</span>
             ))}
           </div>
+        )}
+
+        <h3>Metadata</h3>
+        {saveData.metadata && Object.keys(saveData.metadata).length > 0 ? (
+          <div className="metadata-table-container mb-4">
+            <Table striped bordered hover responsive>
+              <thead>
+                <tr>
+                  <th>Key / Description</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(saveData.metadata).map(([key, value], idx) => {
+                  const label = saveData.metadataDesc?.[key] || key;
+                  return (
+                    <tr key={idx}>
+                      <td>{label}</td>
+                      <td>{value}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </Table>
+          </div>
+        ) : (
+          <p>No metadata.</p>
         )}
 
         {/* Miniaturas */}

@@ -254,11 +254,45 @@ Estilos para esta pagina. Tiene dos secciones principales: la de la info del sav
     text-decoration: underline;
   }
 }
+
 .reply-form {
-  width: 50vw; /* ancho total de la ventana */
+  width: 50vw;
+  /* ancho total de la ventana */
   max-width: 50vw;
-  position: relative; 
+  position: relative;
   box-sizing: border-box;
-  padding: 10px 20px; 
+  padding: 10px 20px;
   z-index: 10;
+}
+
+
+/* En ShowSaveDetails.scss o Common.scss */
+.metadata-table-container {
+  margin: 20px 0;
+  overflow-x: auto; // para pantallas pequeñas
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background-color: #f9f9f9;
+  padding: 10px;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+
+    th,
+    td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #eee;
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+  }
 }
