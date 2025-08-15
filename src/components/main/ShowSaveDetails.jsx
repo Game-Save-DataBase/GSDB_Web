@@ -17,6 +17,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsDown, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 import ImageCarouselModal from '../utils/ImageCarouselModal';
 import FavoriteButton from '../utils/FavoriteButton';
+import UserCertificateBadge from "../utils/UserCertificateBadge.jsx";
 
 function ShowSaveDetails() {
   const [saveData, setSaveData] = useState({});
@@ -291,10 +292,9 @@ function ShowSaveDetails() {
       const u = usersMap[comment.userID];
       const alias = u ? (u.alias?.trim() || u.userName) : 'Unknown';
       const username = u ? u.userName : 'unknown';
-
+      const badgeClass = u ? (u.admin ? 'admin' : u.verified ? 'verified' : u.trusted ? 'trusted' : null) : null
       const hasReplies = (groupedComments[comment.commentID] || []).length > 0;
       const repliesHidden = hiddenReplies[comment.commentID];
-
       return (
         <div
           key={comment.commentID || `${comment.userID}-${index}`}
@@ -314,7 +314,7 @@ function ShowSaveDetails() {
             <div>
               <div className="comment-header mb-1">
                 <Link to={`/u/${username}`} className="comment-user-link">
-                  <strong>{alias}</strong> <span className="text-muted">(@{username})</span>
+                  <strong>{alias}</strong> <span className="text-muted">(@{username})                                 <UserCertificateBadge badgeType={badgeClass} /></span>
                 </Link>
                 <span className="comment-date ms-2 text-muted">
                   {comment.postedDate ? new Date(comment.postedDate).toLocaleDateString('es-ES') : ''}
@@ -546,6 +546,7 @@ function ShowSaveDetails() {
               <Link to={`/u/${relatedUser?.userName || ''}`} className="uploader-name">
                 @{relatedUser?.userName || 'Unknown'}
               </Link>
+              <UserCertificateBadge user={relatedUser} />
             </div>
           </div>
 

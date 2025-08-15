@@ -145,7 +145,7 @@ const Layout = ({ children }) => {
   };
 
   const handleSearch = () => {
-    if (!searchInput.trim()) return;
+    // if (!searchInput.trim()) return;
 
     // Mapear tipo a letra
     let typeParam = "";

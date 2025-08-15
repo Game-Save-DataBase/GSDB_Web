@@ -26,7 +26,7 @@ const Search = () => {
     };
     const type = searchParams.get("type");
     const typeText = type === 'g' ? "Game" : (type === 's' ? "Save" : "User")
-    const query = searchParams.get("q");
+    const query = searchParams.get("q") || "";
 
     const { isInitialLoad, block, unblock, markAsLoaded, resetLoad } =
         useContext(LoadingContext);
@@ -59,7 +59,8 @@ const Search = () => {
 
     // Validaciones iniciales
     useEffect(() => {
-        if (!["g", "s", "u"].includes(type) || !query) {
+        // if (!["g", "s", "u"].includes(type) || !query) {
+        if (!["g", "s", "u"].includes(type)) {
             navigate("/notfound", { replace: true });
         }
     }, [type, query, navigate]);
