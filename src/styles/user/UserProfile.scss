@@ -23,8 +23,30 @@
       align-items: center;
       gap: 1.5rem;
       margin-right: 30px;
-    }
 
+      .user-header-stats-icons {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .user-header-stats-link {
+        cursor: pointer;
+        display: inline-block;
+        margin-right: 1rem;
+        padding: 0.3rem 0.3rem;
+        border-radius: 5px;
+        text-decoration: underline var(--color-text-secondary);
+        text-decoration-thickness: 3px;
+        text-underline-offset: 8px;
+        transition: all 0.2s ease;
+
+        &:hover {
+          color: var(--color-text-secondary);
+          text-shadow: 0px 0px 4px var(--color-text-secondary);
+        }
+      }
+    }
 
   }
 

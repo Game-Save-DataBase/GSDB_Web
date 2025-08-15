@@ -29,6 +29,8 @@ import FilterSelect from "../filters/FilterSelect";
 import FilterDate from "../filters/FilterDate";
 import View from "../views/View.jsx";
 
+import RelatedUsersModal from '../utils/RelatedUsersModal.jsx'
+
 function UserProfile() {
     const navigate = useNavigate();
     const { userNameParam } = useParams();
@@ -43,6 +45,9 @@ function UserProfile() {
     const [favGames, setFavGames] = useState([]);
     const [notFound, setNotFound] = useState(false);
     const [tags, setTags] = useState([]);
+    const [followers, setFollowers] = useState([]);
+    const [following, setFollowing] = useState([]);
+    const [modalUsers, setModalUsers] = useState([]);
 
     //filtros para los favGames
     const [favGamesPlatforms, setFavGamesPlatforms] = useState([]);
@@ -94,6 +99,17 @@ function UserProfile() {
         }
         return acc;
     }, {});
+
+    const [showModal, setShowModal] = useState(false);
+    const handleOpenModal = (isFollowers) => {
+        if (isFollowers) {
+            setModalUsers(followers);
+        } else {
+            setModalUsers(following);
+        } setShowModal(true)
+    };
+    const handleCloseModal = () => { setShowModal(false) }; 
+
     useEffect(() => {
         const fetchTags = async () => {
             try {
@@ -388,6 +404,36 @@ function UserProfile() {
         }
     }
 
+    useEffect(() => {
+        if (!user) return;
+
+        const fetchData = async () => {
+            const followingPromise = user.following?.length
+                ? api.get(`${config.api.users}?userID[in]=${user.following.join(",")}`)
+                : Promise.resolve({ data: [] });
+
+            const followersPromise = user.followers?.length
+                ? api.get(`${config.api.users}?userID[in]=${user.followers.join(",")}`)
+                : Promise.resolve({ data: [] });
+
+            const [followingRes, followersRes] = await Promise.all([followingPromise, followersPromise]);
+
+            const mapUsers = (data) =>
+                (Array.isArray(data) ? data : [data]).map((u) => ({
+                    ...u,
+                    avatar: `${config.api.assets}/user/${u.userID}/pfp?${Date.now()}`,
+                    url: `/u/${u.userName}`,
+                }));
+
+            const newFollowing = mapUsers(followingRes.data);
+            const newFollowers = mapUsers(followersRes.data);
+
+            setFollowing((prev) => (JSON.stringify(prev) !== JSON.stringify(newFollowing) ? newFollowing : prev));
+            setFollowers((prev) => (JSON.stringify(prev) !== JSON.stringify(newFollowers) ? newFollowers : prev));
+        };
+
+        fetchData();
+    }, [user]);
 
     useEffect(() => {
         if (user) { fetchGames(); }
@@ -405,7 +451,6 @@ function UserProfile() {
         if (user) { fetchReviews(); }
 
     }, [user]);
-
 
     useEffect(() => {
         let filtered = [...favGames];
@@ -581,7 +626,7 @@ function UserProfile() {
 
                         <div className="user-header-stats">
                             <div>
-                                <div>
+                                <div className="user-header-stats-icons">
                                     <FontAwesomeIcon icon={faArrowUpFromBracket} />
                                     <span>{`${nUploads}`}</span>
                                     <FontAwesomeIcon icon={faDownload} />
@@ -591,8 +636,8 @@ function UserProfile() {
                                 </div>
                             </div>
                             <div>
-                                <div>{`${user.followers.length} followers`}</div>
-                                <div>{`${user.following.length} following`}</div>
+                                <div className="user-header-stats-link" onClick={() => handleOpenModal(true)}>{`${user.followers.length} followers`}</div>
+                                <div className="user-header-stats-link" onClick={() => handleOpenModal(false)}>{`${user.following.length} following`}</div>
                             </div>
                         </div>
                     </div>
@@ -824,9 +869,12 @@ function UserProfile() {
 
 
                     </Tabs>
-
-
-
+                    <RelatedUsersModal
+                        show={showModal}
+                        onHide={handleCloseModal}
+                        title={modalUsers === followers ? "Followers" : "Following"}
+                        users={modalUsers}
+                    />
                 </>
             )
             }
