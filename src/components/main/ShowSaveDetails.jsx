@@ -155,12 +155,6 @@ function ShowSaveDetails() {
         await loadCommentsAndUsers();
 
 
-        if (user && saveData) {
-          if (saveData.likes?.includes(user.userID)) { setIsDislike(false); setIsLike(true); }
-          else if (saveData.dislikes?.includes(user.userID)) { setIsDislike(true); setIsLike(false); }
-          else { setIsDislike(false); setIsLike(false); }
-        }
-
       } catch (err) {
         console.error('Error general al cargar el archivo de guardado:', err);
       } finally {
@@ -171,6 +165,21 @@ function ShowSaveDetails() {
     };
     loadAll();
   }, [id, user, resetLoad, block, unblock, markAsLoaded]);
+  useEffect(() => {
+    if (user && saveData) {
+      if (saveData.likes?.includes(user.userID)) {
+        setIsLike(true);
+        setIsDislike(false);
+      } else if (saveData.dislikes?.includes(user.userID)) {
+        setIsLike(false);
+        setIsDislike(true);
+      } else {
+        setIsLike(false);
+        setIsDislike(false);
+      }
+    }
+  }, [saveData, user]);
+
   // Función para abrir modal y establecer imagen activa
   const openModalAtIndex = (index) => {
     setActiveIndex(index);
