@@ -184,13 +184,19 @@ function Home() {
                                 popularSaves
                                     .filter(sd => sd && sd.saveID)
                                     .map((sd, index) => (
-                                        <div className="save-card" key={sd.saveID || `${sd.title}-${index}`}>
-                                            <p className="saves-card-info">
-                                                Rating: {sd.rating !== undefined ? sd.rating.toFixed(2) : "N/A"}
-                                            </p>
-                                            <p className="saves-card-info">
-                                                Descargas: {sd.nDownloads || 0}
-                                            </p>
+                                        <div className="saves-card" key={sd.saveID || `${sd.title}-${index}`}>
+                                             <SafeImage
+                                                src={sd.save_img}
+                                                fallbackSrc={sd.save_img_error}
+                                                alt={sd.title || "Save Image"}
+                                                className="saves-card-img"
+                                            />
+                                            <div className="saves-card-content">
+                                                {renderSaveCardTitle(sd)}
+                                                <p className="saves-card-info">
+                                                    Rating: {sd.rating.toFixed(2)}
+                                                </p>
+                                            </div>
                                         </div>
                                     ))
                             ) : (
