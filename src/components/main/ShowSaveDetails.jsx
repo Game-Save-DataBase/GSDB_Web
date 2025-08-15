@@ -254,7 +254,7 @@ function ShowSaveDetails() {
   const handleLike = async (like) => {
     try {
       if (!user) {
-      navigate('/login', { state: { from: location } });
+        navigate('/login', { state: { from: location } });
         return;
       }
 
@@ -560,7 +560,33 @@ function ShowSaveDetails() {
           {/* Likes */}
           <div className="block likes-block">
             <div className="label">Community rating:</div>
-            <div className="content">
+            <div className="content" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              {/* Rating circle */}
+              {saveData.rating !== undefined && (
+                <div
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 'bold',
+                    color: 'white',
+                    backgroundColor:
+                      saveData.rating > 90
+                        ? 'gold'
+                        : saveData.rating > 60
+                          ? 'green'
+                          : 'purple',
+                    fontSize: '0.9rem',
+                  }}
+                >
+                  {saveData.rating.toFixed(2)}
+                </div>
+              )}
+
+              {/* Like / dislike buttons */}
               <button
                 className={`favorite-button ${isLike ? 'favorite' : 'not-favorite'} ${user?.userID === saveData.userID ? 'disabled' : ''}`}
                 onClick={() => user?.userID !== saveData.userID && handleLike(true)}
@@ -579,9 +605,9 @@ function ShowSaveDetails() {
                 <FontAwesomeIcon icon={faThumbsDown} size="2x" />
               </button>
               <span>{saveData.dislikes.length}</span>
-
             </div>
           </div>
+
         </div>
       </div >
       <div className="comments-section mt-4">

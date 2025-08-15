@@ -511,7 +511,7 @@ const Search = () => {
                                 <>
                                     <option value="postedDate">Posted date</option>
                                     <option value="nDownloads">Downloads</option>
-                                    <option value="rating">Rating</option>
+                                    <option value="rating">User rating</option>
                                 </>)}
                             {type === 'u' && (
                                 <>
