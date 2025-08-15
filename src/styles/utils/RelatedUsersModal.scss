@@ -1,0 +1,45 @@
+@use '../Common' as *;
+
+.user-card {
+    display: flex;
+    align-items: center;
+    background-color: var(--color-foreground);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    gap: 1rem;
+    box-shadow: 0 0 8px var(--color-foreground);
+    color: var(--color-text-secondary);
+
+    .user-card-img {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 50%
+    }
+
+    .user-card-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: left;
+
+        .user-card-title {
+            font-size: 1rem;
+            margin: 0;
+            color: var(--color-text-secondary);
+            text-decoration: none;
+
+            &:hover {
+                color: var(--color-text-secondary);
+                text-shadow: 0px 0px 4px var(--color-text-secondary);
+            }
+
+        }
+
+        .user-card-info {
+            font-size: 0.8rem;
+            color: #6e6e6e;
+        }
+    }
+}
