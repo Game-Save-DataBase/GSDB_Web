@@ -15,7 +15,7 @@ export default defineConfig({
     outDir: 'dist'
   },
   server: {
-    port: 3000, 
+    port: process.env.VITE_PORT_WEB, 
     hmr: false
   },
   base: '/'
