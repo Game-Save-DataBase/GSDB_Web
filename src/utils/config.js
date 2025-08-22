@@ -24,7 +24,8 @@ const config = {
     users: VITE_API_BASE_URL + import.meta.env.VITE_API + import.meta.env.VITE_API_USERS,
     info: VITE_API_BASE_URL + import.meta.env.VITE_API + import.meta.env.VITE_API_INFO,
     auth: VITE_API_BASE_URL + import.meta.env.VITE_API + import.meta.env.VITE_API_AUTH,
-    tags: VITE_API_BASE_URL + import.meta.env.VITE_API + import.meta.env.VITE_API_TAGS
+    tags: VITE_API_BASE_URL + import.meta.env.VITE_API + import.meta.env.VITE_API_TAGS,
+    apiKeys: VITE_API_BASE_URL + import.meta.env.VITE_API + import.meta.env.VITE_API_APIKEYS
   }
 };
 

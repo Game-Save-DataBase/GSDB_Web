@@ -10,12 +10,43 @@ import PasswordInput from "../utils/PasswordInput.jsx";
 function UserArea() {
   const navigate = useNavigate();
   const { user: loggedUser, loading, updateUser } = useContext(UserContext);
+  const [apiKey, setApiKey] = useState(null);
+  const [loadingApiKey, setLoadingApiKey] = useState(true);
 
   useEffect(() => {
     if (!loading && !loggedUser) {
-      navigate('/login', {replace:true});
+      navigate('/login', { replace: true });
     }
   }, [loading, loggedUser, navigate]);
+
+  //fetch de la api key
+  useEffect(() => {
+    if (loggedUser) {
+      const fetchApiKey = async () => {
+        try {
+          const res = await api.get(`${config.api.apiKeys}/list/${loggedUser._id}`);
+          if (res.data.length > 0) {
+            setApiKey(res.data[0].key);
+          }
+        } catch (err) {
+          console.error("Error fetching API key:", err);
+        } finally {
+          setLoadingApiKey(false);
+        }
+      };
+      fetchApiKey();
+    }
+  }, [loggedUser]);
+  const generateApiKey = async () => {
+    try {
+      const res = await api.post(`${config.api.apiKeys}/create`, { userId: loggedUser._id });
+      setApiKey(res.data.apiKey);
+    } catch (err) {
+      console.error("Error creating API key:", err);
+      alert("Failed to generate API key.");
+    }
+  };
+
 
   // Imagen
   const [pendingBanner, setPendingBanner] = useState(null);
@@ -167,7 +198,7 @@ function UserArea() {
 
 
   const hasPendingChanges = () =>
-    hasAliasChanged  || hasBioChanged  || pendingBanner || pendingPfp;
+    hasAliasChanged || hasBioChanged || pendingBanner || pendingPfp;
 
   const saveAll = () => {
     setIsSavingAll(true);
@@ -246,7 +277,7 @@ function UserArea() {
         {/* Imagen de perfil */}
         <div className="position-absolute top-100 start-0 translate-middle-y ms-3">
           <ImageUploader
-            src={pendingPfp ? URL.createObjectURL(pendingPfp) :  `${config.api.assets}/user/${loggedUser.userID}/pfp?${Date.now()}`}
+            src={pendingPfp ? URL.createObjectURL(pendingPfp) : `${config.api.assets}/user/${loggedUser.userID}/pfp?${Date.now()}`}
             alt="Profile"
             onFileSelect={handlePfpSelect}
             onSave={savePfp}
@@ -318,7 +349,27 @@ function UserArea() {
           </div>
         ))}
       </div>
-
+ <div className="mt-4">
+        <h5>API Key Management</h5>
+        {loadingApiKey ? (
+          <p>Loading API key...</p>
+        ) : apiKey ? (
+          <div>
+            <p><strong>Your API key:</strong> {apiKey}</p>
+          </div>
+        ) : (
+          <div>
+            <p>
+              Generate an API key to access your account programmatically.
+              Keep it secret and do not share it.
+            </p>
+            <button className="btn btn-primary" onClick={generateApiKey}>
+              Generate API Key
+            </button>
+          </div>
+        )}
+      </div>
+      
       <hr />
       <PasswordInput mode="update" onSubmit={handlePasswordUpdate} />
 
