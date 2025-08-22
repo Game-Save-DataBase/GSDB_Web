@@ -41,9 +41,11 @@ function NewSavePage() {
   // Estados para metadata
   const [sugestedMetadata, setSugestedMetadata] = useState([{ key: 'play_time', description: 'Play time', type: 'Time', value: "00:00:00", sugested: true },
   { key: 'difficulty', description: 'Game difficulty', type: 'Text', value: '', sugested: true },
+  { key: 'region', description: 'Region', type: 'Text', value: '', sugested: true },
+  { key: 'language', description: 'Language', type: 'Text', value: '', sugested: true },
   { key: 'completition_perc', description: 'Completion percentage', type: '%', value: -1, sugested: true },
-  // { key: 'finished', description: 'Finished main game', type: 'Boolean', value: false, sugested: true },
-  // { key: 'completed', description: 'Completed main game + extras', type: 'Boolean', value: false, sugested: true },
+  { key: 'finished', description: 'Finished main game', type: 'Boolean', value: false, sugested: true },
+  { key: 'completed', description: 'Completed main game + extras', type: 'Boolean', value: false, sugested: true },
   { key: 'level', description: 'Actual level', type: 'Number', value: 0, sugested: true },
   { key: 'chapter', description: 'Actual chapter', type: 'Text', value: "", sugested: true },
   { key: 'saveState', description: 'Is save state', type: 'Boolean', value: false, sugested: true },
