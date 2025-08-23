@@ -521,7 +521,7 @@ const Search = () => {
                                     <option value="admin">Is admin</option>
                                     <option value="verified">Is verified</option>
                                     <option value="trusted">Is trusted</option>
-                                    <option value="rating">Rating</option>                                </>)}
+                                    <option value="rating">User Rating</option>                                </>)}
                         </Form.Select>
 
                         <FontAwesomeIcon

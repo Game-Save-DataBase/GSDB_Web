@@ -805,7 +805,7 @@ function UserProfile() {
                                                 uploadDate: "postedDate"
                                             }}
                                             platformMap={uploadsPlatformAbbrMap} limit={uploadsLimit} offset={uploadsOffset} currentPage={uploadsCurrentPage} hasMore={uploadsHasMore} onPageChange={(page) => setUploadsCurrentPage(page)}
-                                            minHeight={450}
+                                            minHeight={550}
 
                                         />
                                     </Col>
@@ -872,7 +872,7 @@ function UserProfile() {
                                                 user: "user"
                                             }}
                                             platformMap={reviewsPlatformAbbrMap} limit={reviewsLimit} offset={reviewsOffset} currentPage={reviewsCurrentPage} hasMore={reviewsHasMore} onPageChange={(page) => setReviewsCurrentPage(page)}
-                                            minHeight={450}
+                                            minHeight={550}
                                         />
                                     </Col>
                                 </Row>
