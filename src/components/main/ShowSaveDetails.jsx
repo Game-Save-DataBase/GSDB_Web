@@ -596,7 +596,7 @@ function ShowSaveDetails() {
               >
                 <FontAwesomeIcon icon={faThumbsUp} size="2x" />
               </button>
-              <span>{saveData.likes.length}</span>
+              <span>{saveData.nLikes}</span>
               <button
                 className={`favorite-button ${isDislike ? 'favorite' : 'not-favorite'} ${user?.userID === saveData.userID ? 'disabled' : ''}`}
                 onClick={() => user?.userID !== saveData.userID && handleLike(false)}
@@ -605,7 +605,7 @@ function ShowSaveDetails() {
               >
                 <FontAwesomeIcon icon={faThumbsDown} size="2x" />
               </button>
-              <span>{saveData.dislikes.length}</span>
+              <span>{saveData.nDislikes}</span>
             </div>
           </div>
 
