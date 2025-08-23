@@ -1,12 +1,12 @@
+// Bootstrap CSS
+import "bootstrap/dist/css/bootstrap.min.css";
+// Bootstrap Bundle JS
+import "bootstrap/dist/js/bootstrap.bundle.min";
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { Route, Routes, unstable_HistoryRouter as HistoryRouter } from 'react-router-dom';
 import history from './utils/history.js';
 
-// Bootstrap CSS
-import "bootstrap/dist/css/bootstrap.min.css";
-// Bootstrap Bundle JS
-import "bootstrap/dist/js/bootstrap.bundle.min";
 
 
 // Components imports

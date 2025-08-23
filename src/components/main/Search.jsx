@@ -22,7 +22,7 @@ const Search = () => {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const [sortFilter, setSort] = useState("")
-    const [order, setOrder] = useState("asc"); // "asc" o "desc"
+    const [order, setOrder] = useState("desc"); // "asc" o "desc"
     const toggleOrder = () => {
         setOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     };
@@ -41,7 +41,7 @@ const Search = () => {
     const [limit, setLimit] = useState(20);
     const [offset, setOffset] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
-    const [viewType, setViewType] = useState("card");
+    const [viewType, setViewType] = useState("list");
     const [hasMore, setHasMore] = useState(false);
 
     const [tempPlatforms, setTempPlatforms] = useState([]);

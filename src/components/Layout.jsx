@@ -210,8 +210,9 @@ const Layout = ({ children }) => {
                     setSearchInput("");
                   }
                 }}
+                emptyLabel="Use search button for more results."
                 options={options}
-                placeholder={`type ${searchType}...`}
+                placeholder={`optional text to search...`}
                 labelKey="label"
                 minLength={1}
                 isLoading={loading}

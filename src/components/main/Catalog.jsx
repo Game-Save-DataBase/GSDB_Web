@@ -38,8 +38,8 @@ function Catalog() {
   const [loading, setLoading] = useState(false);
   const [viewType, setViewType] = useState("card");
 
-  const [sortFilter, setSort] = useState("")
-  const [order, setOrder] = useState("asc"); // "asc" o "desc"
+  const [sortFilter, setSort] = useState("nUploads")
+  const [order, setOrder] = useState("desc"); // "asc" o "desc"
 
   const toggleOrder = () => {
     setOrder((prev) => (prev === "asc" ? "desc" : "asc"));
@@ -296,7 +296,7 @@ function Catalog() {
             </Form.Select>
 
             <FontAwesomeIcon
-              icon={order === "asc" ? faArrowDownShortWide : faArrowUpShortWide}
+              icon={order === "asc" ? faArrowUpShortWide : faArrowDownShortWide}
               onClick={toggleOrder}
               style={{
                 marginLeft: "8px",
