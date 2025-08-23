@@ -126,12 +126,14 @@ function View({
                         state={{ from: location }}
                         style={{ color: "#4b0082", textDecoration: "none" }}
                         {...linkProps}
+                        title={item[renderProps.title]}
                       >
                         <SafeImage
                           src={item[renderProps.image]}
                           fallbackSrc={item[renderProps.errorImage]}
                           alt={item[renderProps.title] || "cover"}
                           className="view-game-cover"
+                          title={item[renderProps.title]}
                         />
                       </Link>
                     ) : (
@@ -140,6 +142,7 @@ function View({
                         fallbackSrc={item[renderProps.errorImage]}
                         alt={item[renderProps.title] || "cover"}
                         className="view-game-cover"
+                        title={item[renderProps.title]}
                       />
                     )}
 
@@ -158,17 +161,58 @@ function View({
                     <Card.Title className="fs-6 mb-1 text-truncate">
                       {renderTitle(item)}
                     </Card.Title>
+                    {renderProps.rating !== undefined && item[renderProps.rating] !== undefined && (
+                      <div
+                        className="d-flex align-items-center"
+                        style={{ gap: "10px" }}
+                      >
+                        <div className="label" style={{ fontSize: "0.75rem", fontWeight: "bold" }}>
+                          Community rating:
+                        </div>
+                        <div
+                          style={{
+                            width: "30px",
+                            height: "30px",
+                            borderRadius: "50%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontWeight: "bold",
+                            color: "white",
+                            backgroundColor:
+                              item[renderProps.rating] > 90
+                                ? "gold"
+                                : item[renderProps.rating] > 60
+                                  ? "green"
+                                  : "purple",
+                            fontSize: "0.7rem",
+                          }}
+                        >
+                          {item[renderProps.rating].toFixed(2)}
+                        </div>
+                      </div>
+                    )}
 
                     {renderProps.description && item[renderProps.description] != null && (
                       <Card.Text className="text-muted" style={{ fontSize: "0.65rem" }}>
                         {(() => {
                           const text = item[renderProps.description]?.trim();
                           if (!text || text === "") return "No description";
-                          return text.length > 80 ? text.slice(0, 80) + "..." : text;
+                          return text.length > 30 ? text.slice(0, 30) + "..." : text;
                         })()}
                       </Card.Text>
                     )}
 
+                    {renderProps.platforms && item[renderProps.platforms] && (
+                      <Card.Text className="text-muted" style={{ fontSize: "0.75rem" }}>
+                        <strong>{(!Array.isArray(item[renderProps.platforms]) || (Array.isArray(item[renderProps.platforms]) && item[renderProps.platforms].length === 1)) ?
+                          "Platform" : "Platforms"}</strong>: {
+                          (Array.isArray(item[renderProps.platforms]) ? item[renderProps.platforms] : [item[renderProps.platforms]])
+                            .map((pid) => platformMap[pid?.toString()] || null)
+                            .filter(Boolean)
+                            .join(" / ")}
+                      </Card.Text>
+                    )}
                     {renderProps.tags && item[renderProps.tags] != null && (
                       (() => {
                         const tags = Array.isArray(item[renderProps.tags]) ? item[renderProps.tags] : [];
@@ -212,19 +256,6 @@ function View({
                         );
                       })()
                     )}
-
-
-                    {renderProps.platforms && item[renderProps.platforms] && (
-                      <Card.Text className="text-muted" style={{ fontSize: "0.75rem" }}>
-                        <strong>{(!Array.isArray(item[renderProps.platforms]) || (Array.isArray(item[renderProps.platforms]) && item[renderProps.platforms].length === 1)) ?
-                          "Platform" : "Platforms"}</strong>: {
-                          (Array.isArray(item[renderProps.platforms]) ? item[renderProps.platforms] : [item[renderProps.platforms]])
-                            .map((pid) => platformMap[pid?.toString()] || null)
-                            .filter(Boolean)
-                            .join(" / ")}
-                      </Card.Text>
-                    )}
-
                     {renderProps.releaseDate && item[renderProps.releaseDate] && (
                       <Card.Text className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>
                         <strong>Release date</strong>: {formatIfDate(item[renderProps.releaseDate])}
@@ -286,6 +317,7 @@ function View({
           {data.map((item, idx) => {
             const elements = [];
 
+
             if (renderProps.title && item[renderProps.title]) {
               const titleElement = renderTitle(item);
               elements.push(
@@ -297,28 +329,43 @@ function View({
                 </span>
               );
             }
-
+            if (renderProps.rating !== undefined && item[renderProps.rating] !== undefined) {
+              elements.push(
+                <span key="rating">
+                  {" "}— <strong>Rating</strong>:{" "}
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "28px",
+                      height: "28px",
+                      borderRadius: "50%",
+                      fontWeight: "bold",
+                      color: "white",
+                      backgroundColor:
+                        item[renderProps.rating] > 90
+                          ? "gold"
+                          : item[renderProps.rating] > 60
+                            ? "green"
+                            : "purple",
+                      fontSize: "0.7rem",
+                    }}
+                  >
+                    {item[renderProps.rating].toFixed(1)}
+                  </span>
+                </span>
+              );
+            }
             if (renderProps.description && item[renderProps.description] != null) {
               const text = item[renderProps.description]?.trim();
               elements.push(
                 <span key="description" style={{ fontSize: "0.75rem", color: "#666" }}>
                   {" — "}
-                  {!text || text.length === 0 ? "No description" : (text.length > 80 ? text.slice(0, 80) + "..." : text)}
+                  {!text || text.length === 0 ? "No description" : (text.length > 30 ? text.slice(0, 30) + "..." : text)}
                 </span>
               );
             }
-
-            if (renderProps.releaseDate && item[renderProps.releaseDate])
-              elements.push(
-                <span key="releaseDate"> — <strong>Release date</strong>: {formatIfDate(item[renderProps.releaseDate])}</span>
-              );
-
-
-            if (renderProps.uploadDate && item[renderProps.uploadDate])
-              elements.push(
-                <span key="uploadDate"> — <strong>Upload date</strong>: {formatIfDate(item[renderProps.uploadDate])}</span>
-              );
-
             if (renderProps.platforms && item[renderProps.platforms]) {
               const singular = !Array.isArray(item[renderProps.platforms]) || (Array.isArray(item[renderProps.platforms]) && item[renderProps.platforms].length === 1)
               const platforms = (!singular ? item[renderProps.platforms] : [item[renderProps.platforms]])
@@ -329,6 +376,15 @@ function View({
                 elements.push(<span key="platforms"> — <strong>{!singular ? "Platforms" : "Platform"} </strong>: {platforms}</span>);
               }
             }
+            if (renderProps.releaseDate && item[renderProps.releaseDate])
+              elements.push(
+                <span key="releaseDate"> — <strong>Release date</strong>: {formatIfDate(item[renderProps.releaseDate])}</span>
+              );
+
+            if (renderProps.uploadDate && item[renderProps.uploadDate])
+              elements.push(
+                <span key="uploadDate"> — <strong>Upload date</strong>: {formatIfDate(item[renderProps.uploadDate])}</span>
+              );
 
             if (renderProps.tags && item[renderProps.tags]) {
               elements.push(
@@ -349,7 +405,7 @@ function View({
                 <span key="downloads"> — {item[renderProps.downloads]} downloads</span>
               );
             }
-            if (renderProps.uploads !== undefined && item[renderProps.uploads] !== null) {
+            if (renderProps.uploads && item[renderProps.uploads] !== null) {
               elements.push(
                 <span key="uploads"> — <strong>Uploads</strong>:{item[renderProps.uploads] || 0}</span>
               );

@@ -29,6 +29,8 @@ function UserCertificateBadge({ user, badgeType, disableTooltip = false }) {
     <span
       className={`certificate-badge ${type} ${disableTooltip ? 'no-tooltip' : ''}`}
       data-tooltip={disableTooltip ? '' : tooltipText}
+      title={`${disableTooltip ? `${type}` : ''}`}
+
     >
       <FontAwesomeIcon icon={faCertificate} color={
         type === 'admin' ? 'purple' :

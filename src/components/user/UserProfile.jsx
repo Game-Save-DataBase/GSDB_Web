@@ -478,7 +478,6 @@ function UserProfile() {
         }
 
         // Filtrar por fecha si hay rango
-        // Filtrar por fecha si hay rango
         if (selectedGameDate) {
             filtered = filtered.filter(game => {
                 const releaseDate = new Date(game.release_date);

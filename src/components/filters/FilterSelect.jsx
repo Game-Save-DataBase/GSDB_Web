@@ -43,7 +43,7 @@ function FilterSelect({ label, options, selected = [], onChange }) {
   return (
     <div ref={ref} className="w-100">
       <Dropdown show={show} onToggle={handleToggle}>
-        <Dropdown.Toggle variant="outline-secondary" id="dropdown-platforms">
+        <Dropdown.Toggle variant="outline-secondary" id="dropdown-platforms"   style={{ width: "100%" }} >
           {label} {selected.length > 0 ? `(${selected.length})` : ""}
         </Dropdown.Toggle>
 

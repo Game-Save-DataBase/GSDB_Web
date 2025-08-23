@@ -19,7 +19,7 @@ const Layout = ({ children }) => {
   const { user: loggedUser, setUser } = useContext(UserContext);
   const { isBlocked } = useContext(LoadingContext);
   const location = useLocation();
-  const [searchType, setSearchType] = useState("save data");
+  const [searchType, setSearchType] = useState("games");
   const [searchInput, setSearchInput] = useState("");
   const [options, setOptions] = useState([]);
   const debounceRef = useRef(null); // para controlar el temporizador
@@ -146,8 +146,6 @@ const Layout = ({ children }) => {
 
   const handleSearch = () => {
     // if (!searchInput.trim()) return;
-
-    // Mapear tipo a letra
     let typeParam = "";
     switch (searchType) {
       case "save data":
@@ -162,8 +160,10 @@ const Layout = ({ children }) => {
       default:
         typeParam = "s";
     }
-
-    navigate(`/search?type=${typeParam}&q=${encodeURIComponent(searchInput)}`);
+    let sinpt = searchInput
+    setSearchInput("");
+    setOptions([]);
+    navigate(`/search?type=${typeParam}&q=${encodeURIComponent(sinpt)}`);
   };
 
   // Debounce: ejecuta la búsqueda 2s después de que el usuario deje de escribir
@@ -172,7 +172,7 @@ const Layout = ({ children }) => {
     if (searchInput.trim().length > 0) {
       debounceRef.current = setTimeout(() => {
         fetchResults();
-      }, 2000);
+      }, 1000);
     }
     return () => clearTimeout(debounceRef.current);
   }, [searchInput, searchType]);
@@ -190,20 +190,7 @@ const Layout = ({ children }) => {
           </div>
 
           <div className="center d-flex align-items-center">
-            <InputGroup style={{ width: '100%', maxWidth: '700px', gap: '0.5rem' }}>
-              <Form.Select
-                value={searchType}
-                onChange={(e) => {
-                  setSearchType(e.target.value);
-                  setOptions([]);
-                }}
-                style={{ maxWidth: "140px" }}
-              >
-                <option value="save data">Save Data</option>
-                <option value="games">Games</option>
-                <option value="users">Users</option>
-              </Form.Select>
-
+            <InputGroup style={{ width: '100%', maxWidth: '1200px', gap: '0.5rem' }}>
               <Typeahead
                 id="search-bar"
                 onInputChange={(text) => setSearchInput(text)}
@@ -220,24 +207,26 @@ const Layout = ({ children }) => {
                       navigate(`/u/${selected[0].label}`);
                     }
                     setOptions([]);
+                    setSearchInput("");
                   }
                 }}
                 options={options}
-                placeholder={`type for quick search in ${searchType}...`}
+                placeholder={`type ${searchType}...`}
                 labelKey="label"
                 minLength={1}
                 isLoading={loading}
-                style={{ flexGrow: 1, minWidth: 0 }}
+                style={{ flexGrow: 1, minWidth: 0, fontSize: "0.85rem" }}
                 filterBy={(option, props) => {
                   const field = option[props.labelKey];
                   return typeof field === "string" && field.toLowerCase().includes(props.text.toLowerCase());
                 }}
+                selected={searchInput ? [{ label: searchInput }] : []}
                 renderMenuItemChildren={(option) => {
                   if (searchType === "save data") {
                     return (
                       <div style={{ width: "100%" }}>
                         <strong>{option.label}</strong>{" "}
-                        <small style={{ color: "#666", fontSize: "0.85em" }}>
+                        <small style={{ color: "#666", fontSize: "0.75rem" }}>
                           - {option.gameTitle} [{option.platformAbbr}]
                         </small>
                       </div>
@@ -300,12 +289,55 @@ const Layout = ({ children }) => {
                   }
                 }}
               />
-
-
+              <div className="d-flex align-items-center">
+                <Form.Check
+                  inline
+                  type="radio"
+                  label="Save Data"
+                  name="searchType"
+                  id="search-save-data"
+                  value="save data"
+                  checked={searchType === "save data"}
+                  onChange={(e) => {
+                    setSearchType(e.target.value);
+                    // setOptions([]);
+                    // setSearchInput("");
+                  }}
+                />
+                <Form.Check
+                  inline
+                  type="radio"
+                  label="Games"
+                  name="searchType"
+                  id="search-games"
+                  value="games"
+                  checked={searchType === "games"}
+                  onChange={(e) => {
+                    setSearchType(e.target.value);
+                    // setOptions([]);
+                    // setSearchInput("");
+                  }}
+                />
+                <Form.Check
+                  inline
+                  type="radio"
+                  label="Users"
+                  name="searchType"
+                  id="search-users"
+                  value="users"
+                  checked={searchType === "users"}
+                  onChange={(e) => {
+                    setSearchType(e.target.value);
+                    // setOptions([]);
+                    // setSearchInput("");
+                  }}
+                />
+              </div>
               <Button variant="primary" onClick={handleSearch} style={{ flexShrink: 0 }}>
-                Advanced Search
+                Search
               </Button>
             </InputGroup>
+
           </div>
 
 

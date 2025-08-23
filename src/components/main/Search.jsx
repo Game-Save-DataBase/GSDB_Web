@@ -14,6 +14,8 @@ import FilterSelect from "../filters/FilterSelect";
 import FilterDate from "../filters/FilterDate";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowDownShortWide, faArrowUpShortWide } from '@fortawesome/free-solid-svg-icons';
+import { Accordion, Card } from "react-bootstrap";
+import '../../styles/main/Search.scss';
 
 const Search = () => {
     const location = useLocation();
@@ -39,7 +41,7 @@ const Search = () => {
     const [limit, setLimit] = useState(20);
     const [offset, setOffset] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
-    const [viewType, setViewType] = useState("list");
+    const [viewType, setViewType] = useState("card");
     const [hasMore, setHasMore] = useState(false);
 
     const [tempPlatforms, setTempPlatforms] = useState([]);
@@ -156,12 +158,12 @@ const Search = () => {
             case "s":
                 endpoint = `${config.api.savedatas}/search?q=${encodeURIComponent(
                     query
-                )}&limit=${limit}&offset=${offset}&${sortParam != "" ? `&sort[${orderParam}]=${sortParam}` : ""}${filterQuery}`;
+                )}&limit=${limit}&offset=${offset}${sortParam != "" ? `&sort[${orderParam}]=${sortParam}` : ""}${filterQuery}`;
                 break;
             case "g":
                 endpoint = `${config.api.games}/search?q=${encodeURIComponent(
                     query
-                )}&limit=${limit}&offset=${offset}&${sortParam != "" ? `&sort[${orderParam}]=${sortParam}` : ""}${filterQuery}`;
+                )}&limit=${limit}&offset=${offset}${sortParam != "" ? `&sort[${orderParam}]=${sortParam}` : ""}${filterQuery}`;
                 break;
             case "u":
                 endpoint = `${config.api.users}/search?q=${encodeURIComponent(
@@ -180,7 +182,6 @@ const Search = () => {
             }
 
             let data = Array.isArray(res.data) ? res.data.filter(Boolean) : [res.data].filter(Boolean);
-
             let processed = [];
 
             switch (type) {
@@ -190,6 +191,8 @@ const Search = () => {
                         img_error: `${config.api.assets}/defaults/game-cover`,
                         link: `/g/${d.slug}`,
                         nDownloads: null,
+                        cardTitle: d.title
+
                     }));
                     break;
                 case "s":
@@ -220,8 +223,9 @@ const Search = () => {
                                 },
                                 link: `/s/${save.saveID}`,
                                 tagNames: save.tagID?.map(id => tagMap[id]).filter(Boolean) || [],
-                                uploads: null,
-                                lastUpdate: null
+                                nUploads: null,
+                                lastUpdate: null,
+                                cardTitle: `${gameData.title} - ${save.title}`
                             };
                         })
                     );
@@ -231,7 +235,7 @@ const Search = () => {
                         ...user,
                         img_error: `${config.api.assets}/defaults/pfp`,
                         link: `/u/${user.userName}`,
-                        title: `${user.alias || `@${user.userName}`}`,
+                        cardTitle: `${user.alias || `@${user.userName}`}`,
                         description: user.alias === "" ? user.bio : `@${user.userName} ${user.bio != "" ? `— ${user.bio}` : ""}`,
                         cover: `${config.api.assets}/user/${user.userID}/pfp`,
                         nUploads: user.uploads.length,
@@ -242,7 +246,7 @@ const Search = () => {
                     }));
                     break;
             }
-
+            console.log(processed)
             setResults(processed);
             setHasMore(processed.length === limit);
         } catch (err) {
@@ -402,7 +406,7 @@ const Search = () => {
     };
 
 
-    if (isInitialLoad || !results) {
+    if (loading || !results) {
         return (
             <div className="text-center mt-5">
                 <h2>Searching <strong><em>{query}</em></strong> in {typeText}</h2>
@@ -412,131 +416,134 @@ const Search = () => {
 
     return (
         <div className="center mt-3">
-            <h2 className="text-center mb-5">{typeText} search results for <strong><em>{query}</em></strong></h2>
-            <Stack direction="horizontal" gap={3} className="mb-4 flex-wrap align-items-end" style={{ rowGap: "1rem" }}>
-                {(type === "g" || type === "s") && (
-                    <Form.Group style={{ minWidth: "200px" }} className="mb-0 flex-fill">
-                        <FilterSelect
-                            label="Platform"
-                            selected={tempPlatforms}
-                            onChange={setTempPlatforms}
-                            options={platforms}
-                        />
-                    </Form.Group>
-                )}
-                {type === "s" && (
-                    <Form.Group style={{ minWidth: "200px" }} className="mb-0 flex-fill">
-                        <FilterSelect
-                            label="Tags"
-                            selected={tempTags}
-                            onChange={setTempTags}
-                            options={tags.map((t) => ({
-                                value: t.tagID?.toString(),
-                                label: t.name
-                            }))}
-                        />
-                    </Form.Group>
-                )}
-                {(type === "g" || type === "s") && (
+            <h2 className="text-center mb-5">
+                {typeText} search results{" "}
+                {query !== "" && (
                     <>
-                        <Form.Group style={{ minWidth: "100px" }} className="mb-0 flex-fill">
-                            <FilterDate
-                                label={type === 'g' ? "Release Date From" : "Posted Date From"}
-                                value={tempDateFrom}
-                                onChange={setTempDateFrom}
-                            />
-                        </Form.Group>
-                        <Form.Group style={{ minWidth: "100px" }} className="mb-0 flex-fill">
-                            <FilterDate
-                                label={type === 'g' ? "Release Date To" : "Posted Date To"}
-                                value={tempDateTo}
-                                onChange={setTempDateTo}
-                            />
-                        </Form.Group>
+                        for <strong><em>{query}</em></strong>
                     </>
-
                 )}
+            </h2>
 
+            {/* Desplegable Filters */}
+            <Accordion defaultActiveKey="0" className="mb-4 small-accordion">
+                <Accordion.Item eventKey="0">
+                    <Accordion.Header>Filters</Accordion.Header>
+                    <Accordion.Body style={{ backgroundColor: "#f3e8ff", borderRadius: "0.5rem" }}>
+                        <Stack direction="horizontal" gap={3} className="flex-wrap align-items-end" style={{ rowGap: "1rem" }}>
+                            {(type === "g" || type === "s") && (
+                                <Form.Group style={{ minWidth: "200px" }} className="mb-0 flex-fill">
+                                    <FilterSelect
+                                        label="Platform"
+                                        selected={tempPlatforms}
+                                        onChange={setTempPlatforms}
+                                        options={platforms}
+                                    />
+                                </Form.Group>
+                            )}
 
-                <Form.Group style={{ minWidth: "90px" }} className="mb-0 flex-fill">
-                    <Form.Label>View</Form.Label>
-                    <Form.Select value={viewType} onChange={(e) => setViewType(e.target.value)}>
-                        <option value="list">List</option>
-                        <option value="card">Card</option>
-                    </Form.Select>
-                </Form.Group>
+                            {type === "s" && (
+                                <Form.Group style={{ minWidth: "200px" }} className="mb-0 flex-fill">
+                                    <FilterSelect
+                                        label="Tags"
+                                        selected={tempTags}
+                                        onChange={setTempTags}
+                                        options={tags.map((t) => ({
+                                            value: t.tagID?.toString(),
+                                            label: t.name
+                                        }))}
+                                    />
+                                </Form.Group>
+                            )}
 
-                <Form.Group style={{ minWidth: "90px" }} className="mb-0 flex-fill">
-                    <Form.Label>Items per page</Form.Label>
-                    <Form.Select
-                        value={limit}
-                        onChange={(e) => setLimit(parseInt(e.target.value))}
-                    >
-                        <option value={1}>1</option>
-                        <option value={5}>5</option>
-                        <option value={10}>10</option>
-                        <option value={20}>20</option>
-                        <option value={40}>40</option>
-                    </Form.Select>
-                </Form.Group>
-                <Form.Group
-                    style={{ minWidth: "100px" }}
-                    className="mb-0 flex-fill"
-                >
-                    <Form.Label>Sort by</Form.Label>
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                        <Form.Select
-                            value={sortFilter}
-                            onChange={(e) => setSort(e.target.value)}
-                            style={{ flexGrow: 1 }}
-                        >
-                            <option value="">Default</option>
-                            {type != 'u' && (
+                            {(type === "g" || type === "s") && (
                                 <>
-                                    <option value="title">Title</option>
-                                </>)}
-                            {type === 'g' && (
-                                <>
-                                    <option value="nUploads">Uploads</option>
-                                    <option value="lastUpdate">Last update</option>
-                                    <option value="release_date">Release date</option>
-                                </>)}
-                            {type === 's' && (
-                                <>
-                                    <option value="postedDate">Posted date</option>
-                                    <option value="nDownloads">Downloads</option>
-                                    <option value="rating">User rating</option>
-                                </>)}
-                            {type === 'u' && (
-                                <>
-                                    <option value="userName">User name</option>
-                                    <option value="alias">Alias</option>
-                                    <option value="admin">Is admin</option>
-                                    <option value="verified">Is verified</option>
-                                    <option value="trusted">Is trusted</option>
-                                    <option value="rating">User Rating</option>                                </>)}
-                        </Form.Select>
+                                    <Form.Group style={{ minWidth: "100px" }} className="mb-0 flex-fill">
+                                        <FilterDate
+                                            label={"Date From"}
+                                            value={tempDateFrom}
+                                            onChange={setTempDateFrom}
+                                        />
+                                    </Form.Group>
+                                    <Form.Group style={{ minWidth: "100px" }} className="mb-0 flex-fill">
+                                        <FilterDate
+                                            label={"Date To"}
+                                            value={tempDateTo}
+                                            onChange={setTempDateTo}
+                                        />
+                                    </Form.Group>
+                                </>
+                            )}
 
-                        <FontAwesomeIcon
-                            icon={order === "asc" ? faArrowDownShortWide : faArrowUpShortWide}
-                            onClick={toggleOrder}
-                            style={{
-                                marginLeft: "8px",
-                                cursor: "pointer",
-                                fontSize: "1.2em"
-                            }}
-                        />
-                    </div>
-                </Form.Group>
-                <div className="d-flex align-items-end mb-0 gap-2">
-                    <Button variant="primary" onClick={handleApplyFilters}>
-                        Filter
-                    </Button>
-                    <Button variant="outline-secondary" onClick={resetFilters}>
-                        Clear Filters
-                    </Button>
-                </div>
-            </Stack>
+                            <Form.Group style={{ minWidth: "90px" }} className="mb-0 flex-fill">
+                                <Form.Label>View</Form.Label>
+                                <Form.Select value={viewType} onChange={(e) => setViewType(e.target.value)} className="form-control-sm">
+                                    <option value="list">List</option>
+                                    <option value="card">Card</option>
+                                </Form.Select>
+                            </Form.Group>
+
+                            <Form.Group style={{ minWidth: "90px" }} className="mb-0 flex-fill">
+                                <Form.Label>Items</Form.Label>
+                                <Form.Select value={limit} onChange={(e) => setLimit(parseInt(e.target.value))}>
+                                    <option value={1}>1</option>
+                                    <option value={5}>5</option>
+                                    <option value={10}>10</option>
+                                    <option value={20}>20</option>
+                                    <option value={40}>40</option>
+                                </Form.Select>
+                            </Form.Group>
+
+                            <Form.Group style={{ minWidth: "100px" }} className="mb-0 flex-fill">
+                                <Form.Label>Sort by</Form.Label>
+                                <div style={{ display: "flex", alignItems: "center" }}>
+                                    <Form.Select
+                                        value={sortFilter}
+                                        onChange={(e) => setSort(e.target.value)}
+                                        style={{ flexGrow: 1 }}
+                                    >
+                                        <option value="">Default</option>
+                                        {type !== 'u' && <option value="title">Title</option>}
+                                        {type === 'g' && <>
+                                            <option value="nUploads">Uploads</option>
+                                            <option value="lastUpdate">Last update</option>
+                                            <option value="release_date">Release date</option>
+                                        </>}
+                                        {type === 's' && <>
+                                            <option value="postedDate">Posted date</option>
+                                            <option value="nDownloads">Downloads</option>
+                                            <option value="rating">User rating</option>
+                                        </>}
+                                        {type === 'u' && <>
+                                            <option value="userName">User name</option>
+                                            <option value="alias">Alias</option>
+                                            <option value="admin">Is admin</option>
+                                            <option value="verified">Is verified</option>
+                                            <option value="trusted">Is trusted</option>
+                                            <option value="rating">User Rating</option>
+                                        </>}
+                                    </Form.Select>
+
+                                    <FontAwesomeIcon
+                                        icon={order === "asc" ? faArrowUpShortWide : faArrowDownShortWide}
+                                        onClick={toggleOrder}
+                                        style={{ marginLeft: "8px", cursor: "pointer", fontSize: "1.2em" }}
+                                    />
+                                </div>
+                            </Form.Group>
+
+                            <div className="d-flex align-items-end mb-0 gap-2">
+                                <Button style={{ backgroundColor: "#6f42c1", borderColor: "#5a32a3" }} onClick={handleApplyFilters}>
+                                    Filter
+                                </Button>
+                                <Button style={{ backgroundColor: "#8a63d2", borderColor: "#6f42c1", color: "white" }} onClick={resetFilters}>
+                                    Clear Filters
+                                </Button>
+                            </div>
+                        </Stack>
+                    </Accordion.Body>
+                </Accordion.Item>
+            </Accordion>
             {loading ? (
                 <div className="text-center mt-5">
                     <Spinner animation="border" />
@@ -547,7 +554,7 @@ const Search = () => {
                     data={results}
                     // openLinksInNewTab={true}
                     renderProps={{
-                        title: "title",
+                        title: "cardTitle",
                         releaseDate: "release_date",
                         uploadDate: "postedDate",
                         lastUpdate: "lastUpdate",
@@ -560,7 +567,8 @@ const Search = () => {
                         description: "description",
                         tags: "tagNames",
                         nReviews: "nReviews",
-                        badge: "badge"
+                        badge: "badge",
+                        rating: "rating"
                     }}
                     platformMap={platformAbbrMap}
                     limit={limit}
@@ -568,6 +576,7 @@ const Search = () => {
                     currentPage={currentPage}
                     hasMore={hasMore}
                     onPageChange={setCurrentPage}
+                    minHeight={type === 's' ? 530 : 430}
                 />
             )}
 

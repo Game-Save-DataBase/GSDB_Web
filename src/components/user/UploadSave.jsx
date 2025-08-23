@@ -422,7 +422,7 @@ function NewSavePage() {
                   const year = option.release_date ? new Date(option.release_date).getFullYear() : 'TBD';
                   const platformNames = getPlatformAbbreviations(option.platformID || []);
                   return (
-                    <div>
+                    <div style={{ fontSize: "0.85rem" }}> {/* 🔹 más pequeño en las opciones */}
                       <strong>{option.title}</strong>{" "}
                       <span className="text-muted">
                         ({year}{platformNames ? `) [${platformNames}]` : ")"}
@@ -432,8 +432,14 @@ function NewSavePage() {
                 }}
                 emptyLabel="No games found"
                 className="mb-2"
-                inputProps={{ style: { backgroundColor: 'white', fontSize: '1.1rem' } }}
+                inputProps={{
+                  style: {
+                    backgroundColor: 'white',
+                    fontSize: '0.85rem', // 🔹 input más pequeño
+                  }
+                }}
               />
+
               {' • '}
               <Typeahead
                 id="platform-select"
