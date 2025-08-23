@@ -108,7 +108,7 @@ function UserProfile() {
             setModalUsers(following);
         } setShowModal(true)
     };
-    const handleCloseModal = () => { setShowModal(false) }; 
+    const handleCloseModal = () => { setShowModal(false) };
 
     useEffect(() => {
         const fetchTags = async () => {
@@ -161,7 +161,7 @@ function UserProfile() {
             setFavGames([]);
             setFavGamesPlatforms([]);
         } else {
-            const favgamesreversed = [...user.favGames].reverse()
+            const favgamesreversed = [...user.favGames]
             const paginatedFavGameIDs = [...favgamesreversed].slice(favGamesOffset, favGamesOffset + favGamesLimit);
 
             if (paginatedFavGameIDs.length === 0) {
@@ -170,7 +170,6 @@ function UserProfile() {
                 return;
             }
             try {
-                //TO DO SORT EN EL BACKEND, ORDENAR POR GAMEID
                 const gameResponse = await api.get(`${config.api.games}?gameID[in]=${paginatedFavGameIDs.join(',')}&complete=false&external=false&limit=${favGamesLimit}`)
                 if (!gameResponse.data) {
                     setFavGames([]);
@@ -179,13 +178,29 @@ function UserProfile() {
                     return;
                 }
                 setFavGamesHasMore(gameResponse.data.length === favGamesLimit);
+                const gamesDataRaw = Array.isArray(gameResponse.data)
+                    ? gameResponse.data
+                    : [gameResponse.data];
+                // Normalizar ID (acepta distintas claves y string/number)
+                const getId = (g) => String(g.gameID);
 
-                let gamesData = Array.isArray(gameResponse.data) ? gameResponse.data : [gameResponse.data];
-                setFavGames(gamesData.map((game) => ({
+                // Map por ID para lookup O(1)
+                const byId = new Map(gamesDataRaw.map((g) => [getId(g), g]));
+
+                // Reordenar exactamente como paginatedFavGameIDs
+                const orderedGames = paginatedFavGameIDs
+                    .map((id) => byId.get(String(id)))
+                    .filter(Boolean);
+
+                // Mapear a la forma final
+                const gamesData = orderedGames.map((game) => ({
                     ...game,
                     url: `/g/${game.slug}`,
-                })));
+                }));
+
                 console.log(gamesData);
+
+                setFavGames(gamesData);
                 try {
                     const gamePlatformsID = [
                         ...new Set(
@@ -702,32 +717,34 @@ function UserProfile() {
                                     </Form.Group>
                                 </Stack>
 
-                                {/* View */}
-                                <Row>
-                                    <Col>
-                                        <View
-                                            type={favGamesViewType}
-                                            data={filteredFavGames}
-                                            renderProps={{
-                                                title: "title",
-                                                releaseDate: "release_date",
-                                                lastUpdate: "lastUpdate",
-                                                uploads: "nUploads",
-                                                image: "cover",
-                                                errorImage: `${config.api.assets}/default/game-cover`,
-                                                link: "url",
-                                                platforms: "platformID",
-                                            }}
-                                            platformMap={favGamesPlatformAbbrMap}
-                                            limit={favGamesLimit}
-                                            offset={favGamesOffset}
-                                            currentPage={favGamesCurrentPage}
-                                            hasMore={favGamesHasMore}
-                                            onPageChange={(page) => setFavGamesCurrentPage(page)}
-                                        />
-                                    </Col>
-                                </Row>
                             </Container>
+                            {/* View */}
+                            <Row>
+                                <Col>
+                                    <View
+                                        type={favGamesViewType}
+                                        data={filteredFavGames}
+                                        renderProps={{
+                                            title: "title",
+                                            releaseDate: "release_date",
+                                            lastUpdate: "lastUpdate",
+                                            uploads: "nUploads",
+                                            image: "cover",
+                                            errorImage: `${config.api.assets}/default/game-cover`,
+                                            link: "url",
+                                            platforms: "platformID",
+                                        }}
+                                        platformMap={favGamesPlatformAbbrMap}
+                                        limit={favGamesLimit}
+                                        offset={favGamesOffset}
+                                        currentPage={favGamesCurrentPage}
+                                        hasMore={favGamesHasMore}
+                                        onPageChange={(page) => setFavGamesCurrentPage(page)}
+                                        minHeight={450}
+
+                                    />
+                                </Col>
+                            </Row>
                         </Tab>
 
                         {/* Uploads */}
@@ -788,6 +805,8 @@ function UserProfile() {
                                                 uploadDate: "postedDate"
                                             }}
                                             platformMap={uploadsPlatformAbbrMap} limit={uploadsLimit} offset={uploadsOffset} currentPage={uploadsCurrentPage} hasMore={uploadsHasMore} onPageChange={(page) => setUploadsCurrentPage(page)}
+                                            minHeight={450}
+
                                         />
                                     </Col>
                                 </Row>
@@ -853,6 +872,7 @@ function UserProfile() {
                                                 user: "user"
                                             }}
                                             platformMap={reviewsPlatformAbbrMap} limit={reviewsLimit} offset={reviewsOffset} currentPage={reviewsCurrentPage} hasMore={reviewsHasMore} onPageChange={(page) => setReviewsCurrentPage(page)}
+                                            minHeight={450}
                                         />
                                     </Col>
                                 </Row>

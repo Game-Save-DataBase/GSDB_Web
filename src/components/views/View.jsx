@@ -34,7 +34,8 @@ function View({
   hasMore = false,
   onPageChange = () => { },
   platformMap = {},
-  openLinksInNewTab = false
+  openLinksInNewTab = false,
+  minHeight = null
 }) {
   data = Array.isArray(data) ? data.filter(Boolean) : data ? [data] : [];
   const linkProps = openLinksInNewTab
@@ -57,7 +58,7 @@ function View({
     );
   };
   const cardsRef = useRef([]);
-  const [maxHeight, setMaxHeight] = useState(null);
+  const [maxHeight, setMaxHeight] = useState(minHeight);
 
   useEffect(() => {
     if (!cardsRef.current || cardsRef.current.length === 0) return;
@@ -72,6 +73,7 @@ function View({
 
     // Solo asignar si max es un número válido y no infinito
     if (isFinite(max) && max > 0) {
+      console.log(max)
       setMaxHeight(max);
     }
   }, [data]);
