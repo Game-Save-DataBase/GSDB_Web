@@ -104,26 +104,19 @@ const Search = () => {
             dateTo: "",
             tags: []
         };
-
         if (type === "u") return f; // sin filtros
 
-        if (searchParams.get("platformID[in]")) {
-            f.platformIDs = searchParams.get("platformID[in]").split(",");
+        if (searchParams.get("platforms")) {
+            f.platformIDs = searchParams.get("platforms").split(",");
         }
-        if (searchParams.get("release_date[gte]") && type === "g") {
-            f.dateFrom = searchParams.get("release_date[gte]");
+        if (searchParams.get("dateFrom") && type === "g") {
+            f.dateFrom = searchParams.get("dateFrom");
         }
-        if (searchParams.get("release_date[lte]") && type === "g") {
-            f.dateTo = searchParams.get("release_date[lte]");
+        if (searchParams.get("dateTo") && type === "g") {
+            f.dateTo = searchParams.get("dateTo");
         }
-        if (searchParams.get("postedDate[gte]") && type === "s") {
-            f.dateFrom = searchParams.get("postedDate[gte]");
-        }
-        if (searchParams.get("postedDate[lte]") && type === "s") {
-            f.dateTo = searchParams.get("postedDate[lte]");
-        }
-        if (type === "s" && searchParams.get("tagID[in]")) {
-            f.tags = searchParams.get("tagID[in]").split(",");
+        if (type === "s" && searchParams.get("tags")) {
+            f.tags = searchParams.get("tags").split(",");
         }
         return f;
     };
@@ -134,6 +127,7 @@ const Search = () => {
         const sortParam = searchParams.get("sort") || "";
         const orderParam = searchParams.get("order") || "desc";
         let filterQuery = "";
+        console.log(filters)
         if (filters.platformIDs.length > 0) {
             filterQuery += `&platformID[in]=${filters.platformIDs.join(",")}`;
         }
@@ -330,7 +324,6 @@ const Search = () => {
             let prevOrder = newParams.get("order");
             newParams.delete("sort");
             newParams.delete("order");
-
             if (f.selectedPlatforms?.length > 0) {
                 newParams.set("platformID[in]", f.selectedPlatforms.join(","));
             }
