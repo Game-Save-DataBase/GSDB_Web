@@ -194,6 +194,12 @@ const Layout = ({ children }) => {
               <Typeahead
                 id="search-bar"
                 onInputChange={(text) => setSearchInput(text)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleSearch();
+                  }
+                }}
                 onChange={(selected) => {
                   if (selected.length > 0) {
                     if (searchType === "games") {
@@ -218,7 +224,7 @@ const Layout = ({ children }) => {
                 isLoading={loading}
                 style={{ flexGrow: 1, minWidth: 0, fontSize: "0.85rem" }}
                 filterBy={() => true} // <- siempre deja pasar todas las opciones
-                selected={searchInput ? [{ label: searchInput }] : []}
+                selected={searchInput ? [{ id: -1, label: searchInput }] : []}
                 renderMenuItemChildren={(option) => {
                   if (searchType === "save data") {
                     return (
