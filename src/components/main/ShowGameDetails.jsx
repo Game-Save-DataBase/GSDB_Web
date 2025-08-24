@@ -234,7 +234,7 @@ function ShowGameDetails() {
 
   const platformOptions = platforms.map(p => ({
     value: p.platformID?.toString(),
-    label: p.name ?? 'Unknown',
+    label: `${p.name ?? ""}${p.abbreviation ? ` [${p.abbreviation}]` : ""}`,
   }));
 
   return (

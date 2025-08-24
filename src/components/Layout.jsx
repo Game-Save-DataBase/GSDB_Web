@@ -217,15 +217,15 @@ const Layout = ({ children }) => {
                 minLength={1}
                 isLoading={loading}
                 style={{ flexGrow: 1, minWidth: 0, fontSize: "0.85rem" }}
-                filterBy={(option, props) => {
-                  const field = option[props.labelKey];
-                  return typeof field === "string" && field.toLowerCase().includes(props.text.toLowerCase());
-                }}
+                filterBy={() => true} // <- siempre deja pasar todas las opciones
                 selected={searchInput ? [{ label: searchInput }] : []}
                 renderMenuItemChildren={(option) => {
                   if (searchType === "save data") {
                     return (
-                      <div style={{ width: "100%" }}>
+                      <div
+                        style={{ width: "100%" }}
+                        title={`${option.label} - ${option.gameTitle} [${option.platformAbbr}]`}
+                      >
                         <strong>{option.label}</strong>{" "}
                         <small style={{ color: "#666", fontSize: "0.75rem" }}>
                           - {option.gameTitle} [{option.platformAbbr}]
@@ -241,6 +241,7 @@ const Layout = ({ children }) => {
                           whiteSpace: "normal",
                           overflowWrap: "break-word",
                         }}
+                        title={`${option.label}${option.platforms?.length ? " [" + option.platforms.map(p => p.abbreviation).join(", ") + "]" : ""}`}
                       >
                         <strong>{option.label}</strong>{" "}
                         {option.platforms && option.platforms.length > 0 && (
@@ -259,7 +260,10 @@ const Layout = ({ children }) => {
                   }
                   else if (searchType === "users") {
                     return (
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", width: "100%" }}>
+                      <div
+                        style={{ display: "flex", alignItems: "center", gap: "0.5rem", width: "100%" }}
+                        title={option.alias ? `${option.alias} — @${option.label}` : `@${option.label}`}
+                      >
                         <img
                           src={`${config.api.assets}/user/${option.id}/pfp?${Date.now()}`}
                           alt={`@${option.label}'s profile`}

@@ -29,7 +29,7 @@ const Search = () => {
     const type = searchParams.get("type");
     const typeText = type === 'g' ? "Game" : (type === 's' ? "Save" : "User")
     const query = searchParams.get("q") || "";
-
+    const [tempQuery, setTempQuery] = useState(query);
     const { isInitialLoad, block, unblock, markAsLoaded, resetLoad } =
         useContext(LoadingContext);
     const [loading, setLoading] = useState(false);
@@ -66,7 +66,10 @@ const Search = () => {
             navigate("/notfound", { replace: true });
         }
     }, [type, query, navigate]);
-
+    // Cada vez que cambie la query de la URL, sincronizamos
+    useEffect(() => {
+        setTempQuery(query);
+    }, [query]);
     // Cargar plataformas y tags
     useEffect(() => {
         const fetchPlatforms = async () => {
@@ -76,7 +79,7 @@ const Search = () => {
                 setPlatforms(
                     data.map((p) => ({
                         value: p.platformID?.toString() ?? "",
-                        label: p.name ?? "",
+                        label: `${p.name ?? ""}${p.abbreviation ? ` [${p.abbreviation}]` : ""}`,
                         abbreviation: p.abbreviation ?? ""
                     }))
                 );
@@ -355,9 +358,16 @@ const Search = () => {
         setSearchParams(newParams);
     };
 
-    // Al aplicar filtros
+
     const handleApplyFilters = () => {
         const newParams = new URLSearchParams(searchParams);
+
+        // Guardar texto libre en query
+        if (tempQuery.trim() !== "") {
+            newParams.set("q", tempQuery.trim());
+        } else {
+            newParams.delete("q");
+        }
 
         // Guardar plataformas
         if (tempPlatforms.length > 0) {
@@ -386,7 +396,7 @@ const Search = () => {
             newParams.delete("tags");
         }
 
-        // 👇 Guardar sort y order en la URL
+        // Guardar sort y order en la URL
         if (sortFilter) {
             newParams.set("sort", sortFilter);
         } else {
@@ -394,17 +404,8 @@ const Search = () => {
         }
         newParams.set("order", order);
 
-        // Aplicar
-        applyFilters({
-            selectedPlatforms: tempPlatforms,
-            selectedDateFrom: tempDateFrom,
-            selectedDateTo: tempDateTo,
-            selectedTags: tempTags
-        });
-
         setSearchParams(newParams);
     };
-
 
     if (loading || !results) {
         return (
@@ -431,8 +432,18 @@ const Search = () => {
                     <Accordion.Header>Filters</Accordion.Header>
                     <Accordion.Body style={{ backgroundColor: "#f3e8ff", borderRadius: "0.5rem" }}>
                         <Stack direction="horizontal" gap={3} className="flex-wrap align-items-end" style={{ rowGap: "1rem" }}>
+                            <Form.Group style={{ minWidth: "200px" }} className="mb-0 flex-fill">
+                                <Form.Label>Search text</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Enter text..."
+                                    value={tempQuery}
+                                    onChange={(e) => setTempQuery(e.target.value)}
+                                />
+                            </Form.Group>
+
                             {(type === "g" || type === "s") && (
-                                <Form.Group style={{ minWidth: "200px" }} className="mb-0 flex-fill">
+                                <Form.Group style={{ minWidth: "100px" }} className="mb-0 flex-fill">
                                     <FilterSelect
                                         label="Platform"
                                         selected={tempPlatforms}
